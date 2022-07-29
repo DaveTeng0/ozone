@@ -268,6 +268,8 @@ public class HddsDispatcher implements ContainerDispatcher, Auditor {
           audit(action, eventType, params, AuditEventStatus.FAILURE, sce);
           return ContainerUtils.logAndReturnError(LOG, sce, msg);
         }
+        metrics.incContainerOpsMetrics(Type.CreateContainer);
+
         Preconditions.checkArgument(isWriteStage && container2BCSIDMap != null
             || dispatcherContext == null
             || cmdType == Type.PutBlock);
