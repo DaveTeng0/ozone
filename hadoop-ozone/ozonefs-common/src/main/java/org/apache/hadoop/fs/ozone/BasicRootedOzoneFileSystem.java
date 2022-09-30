@@ -879,6 +879,10 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
       LOG.warn("GetFileStatus failed for path {}", f, e);
       throw e;
     }
+    LOG.info("*** *** 8 *** *** ");
+    LOG.info("basicRootOzoneFileSystem return FileStatus =>  " + fileStatus);
+    LOG.info("*** *** end-8 *** *** ");
+
     return fileStatus;
   }
 
@@ -1176,6 +1180,7 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
 
     FileStatus fileStatus = new FileStatus(
         fileStatusAdapter.getLength(),
+            fileStatusAdapter.getDiskConsumed(),
         fileStatusAdapter.isDir(),
         fileStatusAdapter.getBlockReplication(),
         fileStatusAdapter.getBlocksize(),
@@ -1187,6 +1192,10 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
         symLink,
         fileStatusAdapter.getPath()
     );
+//    fileStatus.setDiskConsumed(); = fileStatusAdapter.getDiskConsumed();
+    LOG.info("*** *** 10 **** *** \n");
+    LOG.info("convertFileStatus = " + fileStatus);
+    LOG.info("*** *** end-10 **** *** \n");
 
     BlockLocation[] blockLocations = fileStatusAdapter.getBlockLocations();
     if (blockLocations == null || blockLocations.length == 0) {

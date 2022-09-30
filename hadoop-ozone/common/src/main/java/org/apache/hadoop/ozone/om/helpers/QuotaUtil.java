@@ -20,6 +20,8 @@ package org.apache.hadoop.ozone.om.helpers;
 import org.apache.hadoop.hdds.client.ECReplicationConfig;
 import org.apache.hadoop.hdds.client.RatisReplicationConfig;
 import org.apache.hadoop.hdds.client.ReplicationConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.apache.hadoop.hdds.protocol.proto.HddsProtos.ReplicationType.EC;
 import static org.apache.hadoop.hdds.protocol.proto.HddsProtos.ReplicationType.RATIS;
@@ -31,6 +33,9 @@ public final class QuotaUtil {
 
   private QuotaUtil() {
   };
+
+  static final Logger LOG =
+          LoggerFactory.getLogger(QuotaUtil.class);
 
   /**
    * From the used space and replicationConfig, calculate the expected
@@ -47,12 +52,24 @@ public final class QuotaUtil {
     } else if (repConfig.getReplicationType() == EC) {
       ECReplicationConfig rc = (ECReplicationConfig)repConfig;
       int dataStripeSize = rc.getData() * rc.getEcChunkSize();
+      LOG.info("@________W________@");
+      LOG.info(String.format("rc.getData() = %d, rc.getEcChunkSize() = %d, dataStripeSize = %d",
+              rc.getData(),rc.getEcChunkSize(),  dataStripeSize));
       long fullStripes = dataSize / dataStripeSize;
+      LOG.info(String.format("dataSize = %d, dataStripeSize = %d, fullStripes = %d", dataSize, dataStripeSize, fullStripes));
       long partialFirstChunk =
           Math.min(rc.getEcChunkSize(), dataSize % dataStripeSize);
+      LOG.info(String.format("partialFirstChunk = %d, Math.min( %d, %d ---  %d) => %d", partialFirstChunk, rc.getEcChunkSize(),
+              dataSize, dataStripeSize, dataSize % dataStripeSize));
       long replicationOverhead =
           fullStripes * rc.getParity() * rc.getEcChunkSize()
               + partialFirstChunk * rc.getParity();
+
+      LOG.info(String.format("replicationOverhead = %d, %d * %d * %d " +
+              " + %d * %d",  replicationOverhead, fullStripes , rc.getParity() , rc.getEcChunkSize(),
+              partialFirstChunk , rc.getParity()
+              ));
+      LOG.info("return " + String.format("%d + %d", dataSize, replicationOverhead));
       return dataSize + replicationOverhead;
     } else {
       return dataSize;

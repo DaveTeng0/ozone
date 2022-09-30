@@ -610,11 +610,22 @@ public class BasicRootedOzoneClientAdapterImpl
     try {
       OzoneBucket bucket = getBucket(ofsPath, false);
       OzoneFileStatus status = bucket.getFileStatus(key);
+      LOG.info("*** *** *** 5-1 *** *** *** %L, %l \n");
+//      LOG.trace("bucket.getFileStatus-trace => ", status);
+      LOG.info("bucket.getFileStatus-e =>  " + status.getKeyInfo().getObjectInfo());
+
+      LOG.info("*** *** *** end- 5-1 *** *** *** \n");
+
+
       return toFileStatusAdapter(status, userName, uri, qualifiedPath,
           ofsPath.getNonKeyPath());
     } catch (OMException e) {
       if (e.getResult() == OMException.ResultCodes.FILE_NOT_FOUND) {
-        throw new FileNotFoundException(key + ": No such file or directory!");
+        LOG.info("*** *** *** 1 *** *** *** ", e);
+        e.printStackTrace();
+        LOG.info("*** *** *** end-1 *** *** *** ");
+
+        throw new FileNotFoundException(key + ": No such file or directory! test-1");
       } else if (e.getResult() == OMException.ResultCodes.BUCKET_NOT_FOUND) {
         throw new FileNotFoundException(key + ": Bucket doesn't exist!");
       }
@@ -944,12 +955,25 @@ public class BasicRootedOzoneClientAdapterImpl
     OmKeyInfo keyInfo = status.getKeyInfo();
     short replication = (short) keyInfo.getReplicationConfig()
         .getRequiredNodes();
+
+    long diskConsumed = keyInfo.getReplicatedSize();
+
+    LOG.info("*** *** 7 *** *** \n");
+    LOG.info("replication type = " + keyInfo.getReplicationConfig().getReplicationType() + ", " +
+            keyInfo.getReplicationConfig().getReplication() + ", @___@ : " + keyInfo.getReplicationConfig() );
+
+
+    LOG.info("keyInfo.getReplicatedSize = " + keyInfo.getReplicatedSize());
+    LOG.info("*** *** end-7 *** ***");
     return new FileStatusAdapter(
         keyInfo.getDataSize(),
+            diskConsumed
+        ,
         new Path(ofsPathPrefix + OZONE_URI_DELIMITER + keyInfo.getKeyName())
             .makeQualified(defaultUri, workingDir),
         status.isDirectory(),
-        replication,
+//        replication,
+            (short) 13,
         status.getBlockSize(),
         keyInfo.getModificationTime(),
         keyInfo.getModificationTime(),
@@ -1048,7 +1072,7 @@ public class BasicRootedOzoneClientAdapterImpl
         UserGroupInformation.createRemoteUser(ozoneVolume.getOwner());
     String owner = ugi.getShortUserName();
     String group = getGroupName(ugi);
-    return new FileStatusAdapter(0L, path, true, (short)0, 0L,
+    return new FileStatusAdapter(0L, 0L, path, true, (short)0, 0L,
         ozoneVolume.getCreationTime().getEpochSecond() * 1000, 0L,
         FsPermission.getDirDefault().toShort(),
         owner, group, path,
@@ -1075,7 +1099,7 @@ public class BasicRootedOzoneClientAdapterImpl
               ozoneBucket.getName(), pathStr);
     }
     Path path = new Path(pathStr);
-    return new FileStatusAdapter(0L, path, true, (short)0, 0L,
+    return new FileStatusAdapter(0L, 0L, path, true, (short)0, 0L,
         ozoneBucket.getCreationTime().getEpochSecond() * 1000, 0L,
         FsPermission.getDirDefault().toShort(),
         owner, group, path, new BlockLocation[0]);
@@ -1090,7 +1114,7 @@ public class BasicRootedOzoneClientAdapterImpl
     // Note that most fields are mimicked from HDFS FileStatus for root,
     //  except modification time, permission, owner and group.
     Path path = new Path(uri.toString() + OZONE_URI_DELIMITER);
-    return new FileStatusAdapter(0L, path, true, (short)0, 0L,
+    return new FileStatusAdapter(0L, 0L, path, true, (short)0, 0L,
         System.currentTimeMillis(), 0L,
         FsPermission.getDirDefault().toShort(),
         null, null, null, new BlockLocation[0]

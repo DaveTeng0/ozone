@@ -189,6 +189,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.protobuf.ByteString;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.apache.hadoop.ozone.om.exceptions.OMException.ResultCodes;
 import static org.apache.hadoop.ozone.om.exceptions.OMException.ResultCodes.TOKEN_ERROR_OTHER;
@@ -1653,11 +1655,14 @@ public final class OzoneManagerProtocolClientSideTranslatorPB
     final GetFileStatusResponse resp;
     try {
       resp = handleError(submitRequest(omRequest)).getGetFileStatusResponse();
+      LOG.trace("*** *** 4 ***  getGetFileStatusResponse = \n", resp);
     } catch (IOException e) {
       throw e;
     }
     return OzoneFileStatus.getFromProtobuf(resp.getStatus());
   }
+  static final Logger LOG =
+          LoggerFactory.getLogger(OzoneManagerProtocolClientSideTranslatorPB.class);
 
   @Override
   public void createDirectory(OmKeyArgs args) throws IOException {

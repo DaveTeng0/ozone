@@ -1028,7 +1028,8 @@ public class BasicOzoneFileSystem extends FileSystem {
 
   private FileStatus convertFileStatus(
       FileStatusAdapter fileStatusAdapter) {
-
+LOG.info("*** *** 11 *** *** \n");
+LOG.info("convertFileStatus receive fileStatusAdapter: " + fileStatusAdapter + ". \n");
     Path symLink = null;
     try {
       fileStatusAdapter.getSymlink();
@@ -1049,7 +1050,7 @@ public class BasicOzoneFileSystem extends FileSystem {
         symLink,
         fileStatusAdapter.getPath()
     );
-
+//    fileStatus.diskConsumed = fileStatusAdapter.getDiskConsumed();
     BlockLocation[] blockLocations = fileStatusAdapter.getBlockLocations();
     if (blockLocations == null || blockLocations.length == 0) {
       return fileStatus;
