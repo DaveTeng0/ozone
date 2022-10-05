@@ -29,6 +29,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.ozone.security.OzoneTokenIdentifier;
 import org.apache.hadoop.security.token.Token;
 
+import org.apache.hadoop.fs.FileStatus;
+
 /**
  * Lightweight adapter to separate hadoop/ozone classes.
  * <p>
@@ -49,6 +51,7 @@ public interface OzoneClientAdapter {
 
   // Users should use rename instead of renameKey in OFS.
   void rename(String pathStr, String newPath) throws IOException;
+  //void renameV2(String pathStr, String newPath) throws IOException;
 
   boolean createDirectory(String keyName) throws IOException;
 
@@ -64,6 +67,10 @@ public interface OzoneClientAdapter {
       String startKey, long numEntries, URI uri,
       Path workingDir, String username) throws IOException;
 
+//  List<FileStatusAdapter> listStatusV2(String keyName, boolean recursive,
+//      String startKey, long numEntries, URI uri,
+//      Path workingDir, String username) throws IOException;
+
   Token<OzoneTokenIdentifier> getDelegationToken(String renewer)
       throws IOException;
 
@@ -77,6 +84,9 @@ public interface OzoneClientAdapter {
 
   FileStatusAdapter getFileStatus(String key, URI uri,
       Path qualifiedPath, String userName) throws IOException;
+
+//   FileStatusAdapter getFileStatusV2(String key, URI uri,
+//       Path qualifiedPath, String userName) throws IOException;
 
   boolean isFSOptimizedBucket();
 

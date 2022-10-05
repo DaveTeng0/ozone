@@ -19,20 +19,7 @@ package org.apache.hadoop.fs.ozone;
 
 import com.google.common.base.Preconditions;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.BlockLocation;
-import org.apache.hadoop.fs.CreateFlag;
-import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.fs.FSDataOutputStream;
-import org.apache.hadoop.fs.FileChecksum;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.InvalidPathException;
-import org.apache.hadoop.fs.LocatedFileStatus;
-import org.apache.hadoop.fs.Options;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.fs.PathIsNotEmptyDirectoryException;
-import org.apache.hadoop.fs.RemoteIterator;
+import org.apache.hadoop.fs.*;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdds.annotation.InterfaceAudience;
 import org.apache.hadoop.hdds.annotation.InterfaceStability;
@@ -326,6 +313,7 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
     Preconditions.checkArgument(dstParent == null,
         "Cannot rename a directory to its own subdirectory");
     // Check if the source exists
+    // FileStatus srcStatus;
     FileStatus srcStatus;
     try {
       srcStatus = getFileStatus(src);
@@ -335,6 +323,7 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
     }
 
     // Check if the destination exists
+    // FileStatus dstStatus;
     FileStatus dstStatus;
     try {
       dstStatus = getFileStatus(dst);
@@ -393,6 +382,110 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
     }
     return result;
   }
+
+
+  // public boolean renameV2(Path src, Path dst) throws IOException {
+  //   incrementCounter(Statistic.INVOCATION_RENAME, 1);
+  //   statistics.incrementWriteOps(1);
+  //   if (src.equals(dst)) {
+  //     return true;
+  //   }
+
+  //   LOG.trace("rename() from: {} to: {}", src, dst);
+  //   if (src.isRoot()) {
+  //     // Cannot rename root of file system
+  //     LOG.trace("Cannot rename the root of a filesystem");
+  //     return false;
+  //   }
+
+  //   // src and dst should be in the same bucket
+  //   OFSPath ofsSrc = new OFSPath(src);
+  //   OFSPath ofsDst = new OFSPath(dst);
+  //   if (!ofsSrc.isInSameBucketAs(ofsDst)) {
+  //     throw new IOException("Cannot rename a key to a different bucket");
+  //   }
+  //   OzoneBucket bucket = adapterImpl.getBucket(ofsSrc, false);
+  //   if (bucket.getBucketLayout().isFileSystemOptimized()) {
+  //     return renameFSO(bucket, ofsSrc, ofsDst);
+  //   }
+
+  //   // Cannot rename a directory to its own subdirectory
+  //   Path dstParent = dst.getParent();
+  //   while (dstParent != null && !src.equals(dstParent)) {
+  //     dstParent = dstParent.getParent();
+  //   }
+  //   Preconditions.checkArgument(dstParent == null,
+  //       "Cannot rename a directory to its own subdirectory");
+  //   // Check if the source exists
+  //   // FileStatus srcStatus;
+  //   FileStatusAdapter srcStatus;
+  //   try {
+  //     srcStatus = getFileStatusV2(src);
+  //   } catch (FileNotFoundException fnfe) {
+  //     // source doesn't exist, return
+  //     return false;
+  //   }
+
+  //   // Check if the destination exists
+  //   // FileStatus dstStatus;
+  //   FileStatusAdapter dstStatus;
+  //   try {
+  //     dstStatus = getFileStatusV2(dst);
+  //   } catch (FileNotFoundException fnde) {
+  //     dstStatus = null;
+  //   }
+
+  //   if (dstStatus == null) {
+  //     // If dst doesn't exist, check whether dst parent dir exists or not
+  //     // if the parent exists, the source can still be renamed to dst path
+  //     dstStatus = getFileStatusV2(dst.getParent());
+  //     if (!dstStatus.isDirectory()) {
+  //       throw new IOException(String.format(
+  //           "Failed to rename %s to %s, %s is a file", src, dst,
+  //           dst.getParent()));
+  //     }
+  //   } else {
+  //     // if dst exists and source and destination are same,
+  //     // check both the src and dst are of same type
+  //     if (srcStatus.getPath().equals(dstStatus.getPath())) {
+  //       return !srcStatus.isDirectory();
+  //     } else if (dstStatus.isDirectory()) {
+  //       // If dst is a directory, rename source as subpath of it.
+  //       // for example rename /source to /dst will lead to /dst/source
+  //       dst = new Path(dst, src.getName());
+  //       FileStatus[] statuses;
+  //       try {
+  //         statuses = listStatus(dst);
+  //       } catch (FileNotFoundException fnde) {
+  //         statuses = null;
+  //       }
+
+  //       if (statuses != null && statuses.length > 0) {
+  //         // If dst exists and not a directory not empty
+  //         LOG.warn("Failed to rename {} to {}, file already exists" +
+  //             " or not empty!", src, dst);
+  //         return false;
+  //       }
+  //     } else {
+  //       // If dst is not a directory
+  //       LOG.warn("Failed to rename {} to {}, file already exists!", src, dst);
+  //       return false;
+  //     }
+  //   }
+
+  //   if (srcStatus.isDirectory()) {
+  //     if (dst.toString().startsWith(src.toString() + OZONE_URI_DELIMITER)) {
+  //       LOG.trace("Cannot rename a directory to a subdirectory of self");
+  //       return false;
+  //     }
+  //   }
+  //   RenameIterator iterator = new RenameIterator(src, dst);
+  //   boolean result = iterator.iterate();
+  //   if (result) {
+  //     createFakeParentDirectory(src);
+  //   }
+  //   return result;
+  // }
 
   private boolean renameFSO(OzoneBucket bucket,
       OFSPath srcPath, OFSPath dstPath) throws IOException {
@@ -569,6 +662,7 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
     incrementCounter(Statistic.INVOCATION_DELETE, 1);
     statistics.incrementWriteOps(1);
     LOG.debug("Delete path {} - recursive {}", f, recursive);
+    // FileStatus status;
     FileStatus status;
     try {
       status = getFileStatus(f);
@@ -745,7 +839,7 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
           adapter.listStatus(pathToKey(f), false, startPath,
               numEntries, uri, workingDir, getUsername())
               .stream()
-              .map(this::convertFileStatus)
+              //.map(this::convertFileStatus)
               .collect(Collectors.toList());
 
       if (!tmpStatusList.isEmpty()) {
@@ -763,6 +857,40 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
 
     return statuses.toArray(new FileStatus[0]);
   }
+
+  // @Override
+//  public FileStatusAdapter[] listStatusV2(Path f) throws IOException {
+//    incrementCounter(Statistic.INVOCATION_LIST_STATUS, 1);
+//    statistics.incrementReadOps(1);
+//    LOG.trace("listStatus() path:{}", f);
+//    int numEntries = LISTING_PAGE_SIZE;
+//    LinkedList<FileStatusAdapter> statuses = new LinkedList<>();
+//    List<FileStatusAdapter> tmpStatusList;
+  //  String startPath = "";
+
+//    do {
+//      tmpStatusList =
+//          adapter.listStatus(pathToKey(f), false, startPath,
+//              numEntries, uri, workingDir, getUsername());
+//              //.stream()
+//              //.map(this::convertFileStatus)
+//              //.collect(Collectors.toList());
+//
+//      if (!tmpStatusList.isEmpty()) {
+//        if (startPath.isEmpty()) {
+//          statuses.addAll(tmpStatusList);
+//        } else {
+//          statuses.addAll(tmpStatusList.subList(1, tmpStatusList.size()));
+//        }
+//        startPath = pathToKey(statuses.getLast().getPath());
+//      }
+      // listStatus returns entries numEntries in size if available.
+      // Any lesser number of entries indicate that the required entries have
+      // exhausted.
+//    } while (tmpStatusList.size() == numEntries);
+
+//    return statuses.toArray(new FileStatus[0]);
+//  }
 
   @Override
   public void setWorkingDirectory(Path newDir) {
@@ -818,7 +946,9 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
    * @return trash roots
    */
   @Override
-  public Collection<FileStatus> getTrashRoots(boolean allUsers) {
+   public Collection<FileStatus> getTrashRoots(boolean allUsers) {
+   // public Collection<FileStatusAdapter> getTrashRoots(boolean allUsers) {
+
     // Since get all trash roots for one or more users requires listing all
     // volumes and buckets, we will let adapter impl handle it.
     return adapterImpl.getTrashRoots(allUsers, this);
@@ -852,8 +982,65 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
         OZONE_SCM_BLOCK_SIZE, OZONE_SCM_BLOCK_SIZE_DEFAULT, StorageUnit.BYTES);
   }
 
+
+  // @Override
+  // public ContentSummary getContentSummary(Path f) throws IOException {
+  //   statistics.incrementReadOps(1);
+  //   storageStatistics.incrementOpCounter(OpType.GET_CONTENT_SUMMARY);
+  //   Path absF = fixRelativePart(f);
+  //   return new FileSystemLinkResolver<ContentSummary>() {
+  //     @Override
+  //     public ContentSummary doCall(final Path p) throws IOException {
+  //       return dfs.getContentSummary(getPathName(p));
+  //     }
+  //     @Override
+  //     public ContentSummary next(final FileSystem fs, final Path p)
+  //             throws IOException {
+  //       return fs.getContentSummary(p);
+  //     }
+  //   }.resolve(this, absF);
+  // }
+    
+  //public FileStatusAdapter getFileStatusV2(Path f) throws IOException {
+  // public FileStatusAdapter getFileStatus(Path f) throws IOException {
+
+//          incrementCounter(Statistic.INVOCATION_GET_FILE_STATUS, 1);
+//          statistics.incrementReadOps(1);
+//          LOG.trace("getFileStatus() path:{}", f);
+//          Path qualifiedPath = f.makeQualified(uri, workingDir);
+//          String key = pathToKey(qualifiedPath);
+//          // Handle DistCp /NONE path
+//          if (key.equals("NONE")) {
+//            throw new FileNotFoundException("File not found. path /NONE.");
+//          }
+//          FileStatusAdapter fileStatus = null;
+//          try {
+          //  fileStatus = convertFileStatus(
+          //      adapter.getFileStatus(key, uri, qualifiedPath, getUsername()));
+//          fileStatus = adapter.getFileStatusV2(key, uri, qualifiedPath, getUsername());
+//          } catch (IOException e) {
+//            if (e instanceof OMException) {
+//              OMException ex = (OMException) e;
+//              if (ex.getResult().equals(OMException.ResultCodes.KEY_NOT_FOUND) ||
+//                  ex.getResult().equals(OMException.ResultCodes.BUCKET_NOT_FOUND) ||
+//                  ex.getResult().equals(OMException.ResultCodes.VOLUME_NOT_FOUND)) {
+//                throw new FileNotFoundException("File not found. path:" + f);
+//              }
+//            }
+//            LOG.warn("GetFileStatus failed for path {}", f, e);
+//            throw e;
+//          }
+//          LOG.info("*** *** 8 *** *** ");
+//          LOG.info("basicRootOzoneFileSystem return FileStatus =>  " + fileStatus);
+//          LOG.info("*** *** end-8 *** *** ");
+//      
+//          return fileStatus;
+//  }
+
   @Override
-  public FileStatus getFileStatus(Path f) throws IOException {
+ public FileStatus getFileStatus(Path f) throws IOException {
+    // public FileStatusAdapter getFileStatus(Path f) throws IOException {
+
     incrementCounter(Statistic.INVOCATION_GET_FILE_STATUS, 1);
     statistics.incrementReadOps(1);
     LOG.trace("getFileStatus() path:{}", f);
@@ -865,8 +1052,9 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
     }
     FileStatus fileStatus = null;
     try {
-      fileStatus = convertFileStatus(
-          adapter.getFileStatus(key, uri, qualifiedPath, getUsername()));
+     //fileStatus = convertFileStatus(
+       //  adapter.getFileStatus(key, uri, qualifiedPath, getUsername()));
+       fileStatus= adapter.getFileStatus(key, uri, qualifiedPath, getUsername());
     } catch (IOException e) {
       if (e instanceof OMException) {
         OMException ex = (OMException) e;
@@ -1034,6 +1222,7 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
    */
   private abstract class OzoneListingIterator {
     private final Path path;
+    // private final FileStatus status;
     private final FileStatus status;
     private String pathKey;
     private Iterator<BasicKeyInfo> keyIterator = null;
@@ -1151,6 +1340,11 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
     FileStatus getStatus() {
       return status;
     }
+
+//    FileStatusAdapter getStatusV2() {
+//      return null;
+ //   }
+
   }
 
   public OzoneClientAdapter getAdapter() {
@@ -1186,7 +1380,7 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
         fileStatusAdapter.getBlocksize(),
         fileStatusAdapter.getModificationTime(),
         fileStatusAdapter.getAccessTime(),
-        new FsPermission(fileStatusAdapter.getPermission()),
+        new FsPermission(fileStatusAdapter.getPermissionV2()),
         fileStatusAdapter.getOwner(),
         fileStatusAdapter.getGroup(),
         symLink,

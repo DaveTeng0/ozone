@@ -443,6 +443,8 @@ public class BasicRootedOzoneClientAdapterImpl
     String newKey = ofsNewPath.getKeyName();
     bucket.renameKey(key, newKey);
   }
+  // @Override
+  // void renameV2(String pathStr, String newPath) throws IOException{}
 
   /**
    * Helper method to create an directory specified by key name in bucket.
@@ -633,6 +635,46 @@ public class BasicRootedOzoneClientAdapterImpl
     }
   }
 
+  // @Override
+  public FileStatusAdapter getFileStatusV2(String path, URI uri,
+      Path qualifiedPath, String userName, String test) throws IOException {
+    incrementCounter(Statistic.OBJECTS_QUERY, 1);
+    OFSPath ofsPath = new OFSPath(path);
+    String key = ofsPath.getKeyName();
+    if (ofsPath.isRoot()) {
+      return getFileStatusAdapterForRoot(uri);
+    }
+    if (ofsPath.isVolume()) {
+      OzoneVolume volume = objectStore.getVolume(ofsPath.getVolumeName());
+      return getFileStatusAdapterForVolume(volume, uri);
+    }
+    try {
+      OzoneBucket bucket = getBucket(ofsPath, false);
+      OzoneFileStatus status = bucket.getFileStatus(key);
+      LOG.info("*** *** *** 5-1 *** *** *** %L, %l \n");
+//      LOG.trace("bucket.getFileStatus-trace => ", status);
+      LOG.info("bucket.getFileStatus-e =>  " + status.getKeyInfo().getObjectInfo());
+
+      LOG.info("*** *** *** end- 5-1 *** *** *** \n");
+
+
+      return toFileStatusAdapter(status, userName, uri, qualifiedPath,
+          ofsPath.getNonKeyPath());
+    } catch (OMException e) {
+      if (e.getResult() == OMException.ResultCodes.FILE_NOT_FOUND) {
+        LOG.info("*** *** *** 1 *** *** *** ", e);
+        e.printStackTrace();
+        LOG.info("*** *** *** end-1 *** *** *** ");
+
+        throw new FileNotFoundException(key + ": No such file or directory! test-1");
+      } else if (e.getResult() == OMException.ResultCodes.BUCKET_NOT_FOUND) {
+        throw new FileNotFoundException(key + ": Bucket doesn't exist!");
+      }
+      throw e;
+    }
+  }
+
+
   /**
    * Get trash roots for current user or all users.
    *
@@ -647,8 +689,11 @@ public class BasicRootedOzoneClientAdapterImpl
    * @param fs Pointer to the current OFS FileSystem
    * @return
    */
+  // public Collection<FileStatus> getTrashRoots(boolean allUsers,
   public Collection<FileStatus> getTrashRoots(boolean allUsers,
+
       BasicRootedOzoneFileSystem fs) {
+    // List<FileStatus> ret = new ArrayList<>();
     List<FileStatus> ret = new ArrayList<>();
     try {
       Iterator<? extends OzoneVolume> iterVol;
@@ -837,6 +882,62 @@ public class BasicRootedOzoneClientAdapterImpl
       throw e;
     }
   }
+
+//  @Override
+//  public List<FileStatusAdapter> listStatusV2(String pathStr, boolean recursive,
+//      String startPath, long numEntries, URI uri,
+//      Path workingDir, String username) throws IOException {
+
+//    incrementCounter(Statistic.OBJECTS_LIST, 1);
+//    // Remove authority from startPath if it exists
+//    if (startPath.startsWith(uri.toString())) {
+//      try {
+//        startPath = new URI(startPath).getPath();
+//      } catch (URISyntaxException ex) {
+//        throw new IOException(ex);
+//      }
+ //   }
+    // Note: startPath could still have authority at this point if it's
+    //  authority doesn't match uri. This is by design. In this case,
+    //  OFSPath initializer will error out.
+    //  The goal is to refuse processing startPaths from other authorities.
+
+//    OFSPath ofsPath = new OFSPath(pathStr);
+//    if (ofsPath.isRoot()) {
+//      return listStatusRoot(
+//          recursive, startPath, numEntries, uri, workingDir, username);
+//    }
+//    OFSPath ofsStartPath = new OFSPath(startPath);
+//    if (ofsPath.isVolume()) {
+//      String startBucket = ofsStartPath.getBucketName();
+//      return listStatusVolume(ofsPath.getVolumeName(),
+//          recursive, startBucket, numEntries, uri, workingDir, username);
+//    }
+
+//    String keyName = ofsPath.getKeyName();
+    // Internally we need startKey to be passed into bucket.listStatus
+//    String startKey = ofsStartPath.getKeyName();
+//    try {
+ //     OzoneBucket bucket = getBucket(ofsPath, false);
+ //     List<OzoneFileStatus> statuses = bucket
+//          .listStatus(keyName, recursive, startKey, numEntries);
+      // Note: result in statuses above doesn't have volume/bucket path since
+      //  they are from the server.
+//      String ofsPathPrefix = ofsPath.getNonKeyPath();
+
+//      List<FileStatusAdapter> result = new ArrayList<>();
+//      for (OzoneFileStatus status : statuses) {
+//        result.add(toFileStatusAdapter(status, username, uri, workingDir,
+//            ofsPathPrefix));
+//      }
+//      return result;
+//    } catch (OMException e) {
+//      if (e.getResult() == OMException.ResultCodes.FILE_NOT_FOUND) {
+//        throw new FileNotFoundException(e.getMessage());
+//      }
+//      throw e;
+//    }
+//  }
 
   @Override
   public Token<OzoneTokenIdentifier> getDelegationToken(String renewer)

@@ -87,9 +87,9 @@ public class OzoneFsShell extends FsShell {
     } finally {
       shell.close();
     }
-//    LOG.error("****** 3 ****** \n");
-//    LOG.error("test => ", new RuntimeException("Some message..."));
-//    LOG.error("****** end 3 ***** \n");
+    LOG.info("****** 3 ****** \n");
+    LOG.info("test => ", new RuntimeException("Some message..."));
+    LOG.info("****** end 3 ***** \n");
     System.exit(res);
   }
 

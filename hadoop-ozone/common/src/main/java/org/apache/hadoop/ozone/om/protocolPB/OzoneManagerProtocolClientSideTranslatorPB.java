@@ -1655,7 +1655,9 @@ public final class OzoneManagerProtocolClientSideTranslatorPB
     final GetFileStatusResponse resp;
     try {
       resp = handleError(submitRequest(omRequest)).getGetFileStatusResponse();
-      LOG.trace("*** *** 4 ***  getGetFileStatusResponse = \n", resp);
+//      LOG.trace("*** *** 4 ***  getGetFileStatusResponse = \n", resp);
+      LOG.info("*** *** 4 ***  getGetFileStatusResponse = \n" + resp);
+
     } catch (IOException e) {
       throw e;
     }

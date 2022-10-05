@@ -19,6 +19,7 @@ package org.apache.hadoop.fs.ozone;
 
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.FileStatus;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -32,7 +33,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * <p>
  * FileStatus (Hadoop 3.x) --> FileStatusAdapter --> FileStatus (Hadoop 2.x)
  */
-public final class FileStatusAdapter {
+public  class FileStatusAdapter extends FileStatus {
 
   private final long length;
   public final long diskConsumed;
@@ -43,7 +44,7 @@ public final class FileStatusAdapter {
   private final long blocksize;
   private final long modificationTime;
   private final long accessTime;
-  private final short permission;
+  private final short permissionV2;
   private final String owner;
   private final String group;
   private final Path symlink;
@@ -62,7 +63,7 @@ public final class FileStatusAdapter {
     this.blocksize = blocksize;
     this.modificationTime = modificationTime;
     this.accessTime = accessTime;
-    this.permission = permission;
+    this.permissionV2 = permission;
     this.owner = owner;
     this.group = group;
     this.symlink = symlink;
@@ -74,9 +75,13 @@ public final class FileStatusAdapter {
     return path;
   }
 
-  public boolean isDir() {
-    return isdir;
-  }
+ public boolean isDir(String test) {
+   return isdir;
+ }
+
+  // public boolean isDirectory() {
+  //   return isDirectory();
+  // }
 
   public short getBlockReplication() {
     return blockReplication;
@@ -94,8 +99,8 @@ public final class FileStatusAdapter {
     return accessTime;
   }
 
-  public short getPermission() {
-    return permission;
+  public short getPermissionV2() {
+    return this.permissionV2;
   }
 
   public String getOwner() {
