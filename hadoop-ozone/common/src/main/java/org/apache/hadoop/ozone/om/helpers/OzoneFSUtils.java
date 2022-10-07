@@ -25,13 +25,17 @@ import java.nio.file.Paths;
 
 import static org.apache.hadoop.ozone.OzoneConsts.OM_KEY_PREFIX;
 import static org.apache.hadoop.ozone.OzoneConsts.OZONE_URI_DELIMITER;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 /**
  * Utility class for OzoneFileSystem.
  */
 public final class OzoneFSUtils {
 
   private OzoneFSUtils() { }
+
+  private static final Logger LOG =
+  LoggerFactory.getLogger(OzoneFSUtils.class);
 
   /**
    * Returns string representation of path after removing the leading slash.
@@ -79,7 +83,11 @@ public final class OzoneFSUtils {
   }
 
   public static String addTrailingSlashIfNeeded(String key) {
+    LOG.error("key from LOG.err, addTrailingSlashIfNeeded for key: " + key );
+    System.err.println("key from System.err, addTrailingSlashIfNeeded for key: " + key );
+
     if (!key.endsWith(OZONE_URI_DELIMITER)) {
+
       return key + OZONE_URI_DELIMITER;
     } else {
       return key;

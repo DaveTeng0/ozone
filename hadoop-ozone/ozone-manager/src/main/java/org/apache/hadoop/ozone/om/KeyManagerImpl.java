@@ -1269,6 +1269,7 @@ public class KeyManagerImpl implements KeyManager {
       // Check if the key is a directory.
       if (fileKeyInfo == null) {
         String dirKey = OzoneFSUtils.addTrailingSlashIfNeeded(keyName);
+        LOG.error("key is a directory, addTrailingSlashIfNeeded() => dirKey : " + dirKey);
         String dirKeyBytes = metadataManager.getOzoneKey(
                 volumeName, bucketName, dirKey);
         OmKeyInfo dirKeyInfo = metadataManager.getKeyTable(
@@ -1308,8 +1309,8 @@ public class KeyManagerImpl implements KeyManager {
                       " {}, key: {}, with error: No such file exists.",
               volumeName, bucketName, keyName);
     }
-    throw new OMException("Unable to get file status: volume: " +
-            volumeName + " bucket: " + bucketName + " key: " + keyName,
+    throw new OMException(", Unable to get file status-1: volume: " +
+            volumeName + ", bucket: " + bucketName + ", key: " + keyName,
             FILE_NOT_FOUND);
   }
 
@@ -1373,7 +1374,7 @@ public class KeyManagerImpl implements KeyManager {
       return fileStatus;
     }
 
-    throw new OMException("Unable to get file status: volume: " +
+    throw new OMException("Unable to get file status -2 : volume: " +
             volumeName + " bucket: " + bucketName + " key: " + keyName,
             FILE_NOT_FOUND);
   }

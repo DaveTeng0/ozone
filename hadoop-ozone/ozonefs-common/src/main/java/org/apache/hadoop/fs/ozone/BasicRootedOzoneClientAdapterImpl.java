@@ -596,7 +596,16 @@ public class BasicRootedOzoneClientAdapterImpl
     }
   }
 
-  @Override
+//  @Override
+//  @Deprecated
+//  public FileStatusAdapter getFileStatus(String path, URI uri,
+//      Path qualifiedPath, String userName) throws IOException {
+        
+//        return null;
+//      }
+
+
+  
   public FileStatusAdapter getFileStatus(String path, URI uri,
       Path qualifiedPath, String userName) throws IOException {
     incrementCounter(Statistic.OBJECTS_QUERY, 1);
@@ -612,51 +621,15 @@ public class BasicRootedOzoneClientAdapterImpl
     try {
       OzoneBucket bucket = getBucket(ofsPath, false);
       OzoneFileStatus status = bucket.getFileStatus(key);
-      LOG.info("*** *** *** 5-1 *** *** *** %L, %l \n");
+//      LOG.info("*** *** *** 5-1 *** *** ***  \n");
+      System.err.println("*** *** *** start 5-1 *** *** *** \n");
+
 //      LOG.trace("bucket.getFileStatus-trace => ", status);
-      LOG.info("bucket.getFileStatus-e =>  " + status.getKeyInfo().getObjectInfo());
+//      LOG.info("bucket.getFileStatus from LOG.info =>  " + status.getKeyInfo().getObjectInfo());
+      System.err.println("*** *** *** 5-1: BasicOzoeADAPTERImpl bucket.getFileStatus =>  " + status.getKeyInfo().getObjectInfo() + "\n ");
 
-      LOG.info("*** *** *** end- 5-1 *** *** *** \n");
-
-
-      return toFileStatusAdapter(status, userName, uri, qualifiedPath,
-          ofsPath.getNonKeyPath());
-    } catch (OMException e) {
-      if (e.getResult() == OMException.ResultCodes.FILE_NOT_FOUND) {
-        LOG.info("*** *** *** 1 *** *** *** ", e);
-        e.printStackTrace();
-        LOG.info("*** *** *** end-1 *** *** *** ");
-
-        throw new FileNotFoundException(key + ": No such file or directory! test-1");
-      } else if (e.getResult() == OMException.ResultCodes.BUCKET_NOT_FOUND) {
-        throw new FileNotFoundException(key + ": Bucket doesn't exist!");
-      }
-      throw e;
-    }
-  }
-
-  // @Override
-  public FileStatusAdapter getFileStatusV2(String path, URI uri,
-      Path qualifiedPath, String userName, String test) throws IOException {
-    incrementCounter(Statistic.OBJECTS_QUERY, 1);
-    OFSPath ofsPath = new OFSPath(path);
-    String key = ofsPath.getKeyName();
-    if (ofsPath.isRoot()) {
-      return getFileStatusAdapterForRoot(uri);
-    }
-    if (ofsPath.isVolume()) {
-      OzoneVolume volume = objectStore.getVolume(ofsPath.getVolumeName());
-      return getFileStatusAdapterForVolume(volume, uri);
-    }
-    try {
-      OzoneBucket bucket = getBucket(ofsPath, false);
-      OzoneFileStatus status = bucket.getFileStatus(key);
-      LOG.info("*** *** *** 5-1 *** *** *** %L, %l \n");
-//      LOG.trace("bucket.getFileStatus-trace => ", status);
-      LOG.info("bucket.getFileStatus-e =>  " + status.getKeyInfo().getObjectInfo());
-
-      LOG.info("*** *** *** end- 5-1 *** *** *** \n");
-
+//      LOG.info("*** *** *** end- 5-1 *** *** *** \n");
+      System.err.println("*** *** *** end- 5-1 *** *** *** \n\n");
 
       return toFileStatusAdapter(status, userName, uri, qualifiedPath,
           ofsPath.getNonKeyPath());
@@ -689,12 +662,12 @@ public class BasicRootedOzoneClientAdapterImpl
    * @param fs Pointer to the current OFS FileSystem
    * @return
    */
-  // public Collection<FileStatus> getTrashRoots(boolean allUsers,
-  public Collection<FileStatus> getTrashRoots(boolean allUsers,
+  
+  public Collection<FileStatusAdapter> getTrashRoots(boolean allUsers,
 
       BasicRootedOzoneFileSystem fs) {
     // List<FileStatus> ret = new ArrayList<>();
-    List<FileStatus> ret = new ArrayList<>();
+    List<FileStatusAdapter> ret = new ArrayList<>();
     try {
       Iterator<? extends OzoneVolume> iterVol;
       final String username =
@@ -714,8 +687,8 @@ public class BasicRootedOzoneClientAdapterImpl
           Path trashRoot = new Path(bucketPath, FileSystem.TRASH_PREFIX);
           if (allUsers) {
             if (fs.exists(trashRoot)) {
-              for (FileStatus candidate : fs.listStatus(trashRoot)) {
-                if (fs.exists(candidate.getPath()) && candidate.isDirectory()) {
+              for (FileStatusAdapter candidate : fs.listStatusAdapter(trashRoot)) {
+                if (fs.exists(candidate.getPath()) && candidate.isDir()) {
                   ret.add(candidate);
                 }
               }
@@ -723,8 +696,8 @@ public class BasicRootedOzoneClientAdapterImpl
           } else {
             Path userTrash = new Path(trashRoot, username);
             if (fs.exists(userTrash) &&
-                fs.getFileStatus(userTrash).isDirectory()) {
-              ret.add(fs.getFileStatus(userTrash));
+                fs.getFileStatusAdapter(userTrash).isDir()) {
+              ret.add(fs.getFileStatusAdapter(userTrash));
             }
           }
         }
@@ -827,7 +800,6 @@ public class BasicRootedOzoneClientAdapterImpl
    * @return A list of FileStatusAdapter.
    * @throws IOException Bucket exception or FileNotFoundException.
    */
-  @Override
   public List<FileStatusAdapter> listStatus(String pathStr, boolean recursive,
       String startPath, long numEntries, URI uri,
       Path workingDir, String username) throws IOException {
@@ -883,61 +855,6 @@ public class BasicRootedOzoneClientAdapterImpl
     }
   }
 
-//  @Override
-//  public List<FileStatusAdapter> listStatusV2(String pathStr, boolean recursive,
-//      String startPath, long numEntries, URI uri,
-//      Path workingDir, String username) throws IOException {
-
-//    incrementCounter(Statistic.OBJECTS_LIST, 1);
-//    // Remove authority from startPath if it exists
-//    if (startPath.startsWith(uri.toString())) {
-//      try {
-//        startPath = new URI(startPath).getPath();
-//      } catch (URISyntaxException ex) {
-//        throw new IOException(ex);
-//      }
- //   }
-    // Note: startPath could still have authority at this point if it's
-    //  authority doesn't match uri. This is by design. In this case,
-    //  OFSPath initializer will error out.
-    //  The goal is to refuse processing startPaths from other authorities.
-
-//    OFSPath ofsPath = new OFSPath(pathStr);
-//    if (ofsPath.isRoot()) {
-//      return listStatusRoot(
-//          recursive, startPath, numEntries, uri, workingDir, username);
-//    }
-//    OFSPath ofsStartPath = new OFSPath(startPath);
-//    if (ofsPath.isVolume()) {
-//      String startBucket = ofsStartPath.getBucketName();
-//      return listStatusVolume(ofsPath.getVolumeName(),
-//          recursive, startBucket, numEntries, uri, workingDir, username);
-//    }
-
-//    String keyName = ofsPath.getKeyName();
-    // Internally we need startKey to be passed into bucket.listStatus
-//    String startKey = ofsStartPath.getKeyName();
-//    try {
- //     OzoneBucket bucket = getBucket(ofsPath, false);
- //     List<OzoneFileStatus> statuses = bucket
-//          .listStatus(keyName, recursive, startKey, numEntries);
-      // Note: result in statuses above doesn't have volume/bucket path since
-      //  they are from the server.
-//      String ofsPathPrefix = ofsPath.getNonKeyPath();
-
-//      List<FileStatusAdapter> result = new ArrayList<>();
-//      for (OzoneFileStatus status : statuses) {
-//        result.add(toFileStatusAdapter(status, username, uri, workingDir,
-//            ofsPathPrefix));
-//      }
-//      return result;
-//    } catch (OMException e) {
-//      if (e.getResult() == OMException.ResultCodes.FILE_NOT_FOUND) {
-//        throw new FileNotFoundException(e.getMessage());
-//      }
-//      throw e;
-//    }
-//  }
 
   @Override
   public Token<OzoneTokenIdentifier> getDelegationToken(String renewer)
@@ -1054,18 +971,27 @@ public class BasicRootedOzoneClientAdapterImpl
   private FileStatusAdapter toFileStatusAdapter(OzoneFileStatus status,
       String owner, URI defaultUri, Path workingDir, String ofsPathPrefix) {
     OmKeyInfo keyInfo = status.getKeyInfo();
+
+    System.err.println("*** 7-1 *** toFileStatusAdapter() : OzoneFileStatus = " + 
+      status + ". owner: " + owner + ". defaultUri: " + defaultUri + ". workingDir: " + workingDir
+       + ". ofsPathPrefix: " + ofsPathPrefix + ". \n" );
+    System.err.println("*** 7-2 *** toFileStatusAdapter(), get OmKeyInfo = " + keyInfo.getObjectInfo() + ". \n");    
+
     short replication = (short) keyInfo.getReplicationConfig()
         .getRequiredNodes();
 
     long diskConsumed = keyInfo.getReplicatedSize();
 
-    LOG.info("*** *** 7 *** *** \n");
-    LOG.info("replication type = " + keyInfo.getReplicationConfig().getReplicationType() + ", " +
+    System.err.println("*** *** 7 *** *** \n");
+    System.err.println("replication type = " + keyInfo.getReplicationConfig().getReplicationType() + ", " +
             keyInfo.getReplicationConfig().getReplication() + ", @___@ : " + keyInfo.getReplicationConfig() );
 
 
-    LOG.info("keyInfo.getReplicatedSize = " + keyInfo.getReplicatedSize());
-    LOG.info("*** *** end-7 *** ***");
+    System.err.println("keyInfo.getReplicatedSize = " + keyInfo.getReplicatedSize() + 
+      ", keyInfo.getDataSize(): " + keyInfo.getDataSize());
+    System.err.println("*** *** end-7 *** ***");
+
+    
     return new FileStatusAdapter(
         keyInfo.getDataSize(),
             diskConsumed

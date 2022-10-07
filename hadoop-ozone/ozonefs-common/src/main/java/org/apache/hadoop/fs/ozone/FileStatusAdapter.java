@@ -33,7 +33,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * <p>
  * FileStatus (Hadoop 3.x) --> FileStatusAdapter --> FileStatus (Hadoop 2.x)
  */
-public  class FileStatusAdapter extends FileStatus {
+public  class FileStatusAdapter{
 
   private final long length;
   public final long diskConsumed;
@@ -44,7 +44,7 @@ public  class FileStatusAdapter extends FileStatus {
   private final long blocksize;
   private final long modificationTime;
   private final long accessTime;
-  private final short permissionV2;
+  private final short permission;
   private final String owner;
   private final String group;
   private final Path symlink;
@@ -55,19 +55,24 @@ public  class FileStatusAdapter extends FileStatus {
       short blockReplication, long blocksize, long modificationTime,
       long accessTime, short permission, String owner,
       String group, Path symlink, BlockLocation[] locations) {
+    
+    System.err.println("*** *** start 14 *** *** init  FileStatusAdapter with len: " + length);
     this.length = length;
     this.diskConsumed = diskConsumed;
     this.path = path;
-    this.isdir = isdir;
     this.blockReplication = blockReplication;
     this.blocksize = blocksize;
     this.modificationTime = modificationTime;
     this.accessTime = accessTime;
-    this.permissionV2 = permission;
+    this.permission = permission;
+//    if (permission == 777 ){
+      this.isdir = isdir;
+//    }else{
     this.owner = owner;
     this.group = group;
     this.symlink = symlink;
     this.blockLocations = locations.clone();
+    System.err.println("*** *** end 14 *** *** init a FileStatusAdapter... " + this);
   }
 
 
@@ -75,7 +80,7 @@ public  class FileStatusAdapter extends FileStatus {
     return path;
   }
 
- public boolean isDir(String test) {
+ public boolean isDir() {
    return isdir;
  }
 
@@ -99,8 +104,8 @@ public  class FileStatusAdapter extends FileStatus {
     return accessTime;
   }
 
-  public short getPermissionV2() {
-    return this.permissionV2;
+  public short getPermission() {
+    return this.permission;
   }
 
   public String getOwner() {
@@ -115,6 +120,7 @@ public  class FileStatusAdapter extends FileStatus {
     return symlink;
   }
 
+
   public long getLength() {
     return length;
   }
@@ -126,6 +132,29 @@ public  class FileStatusAdapter extends FileStatus {
   @SuppressFBWarnings("EI_EXPOSE_REP")
   public BlockLocation[] getBlockLocations() {
     return blockLocations;
+  }
+
+  
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append(getClass().getSimpleName())
+        .append("{")
+        .append("path=" + path)
+        .append("; isDirectory=" + isdir);
+    if(!isdir){
+      sb.append("; length=" + length)
+              .append("; diskConsumed= " + getDiskConsumed())
+          .append("; blockReplication=" + blockReplication)
+          .append("; blocksize=" + blocksize);
+    }
+    sb.append("; accessTime=" + accessTime)
+        .append("; owner=" + owner)
+        .append("; group=" + group)
+        .append("; permission=" + permission)
+        .append("; isSymlink=" + getSymlink());
+    sb.append("}");
+    return sb.toString();
   }
 
 }
