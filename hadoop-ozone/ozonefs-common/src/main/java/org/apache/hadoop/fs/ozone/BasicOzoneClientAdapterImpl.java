@@ -366,8 +366,12 @@ public class BasicOzoneClientAdapterImpl implements OzoneClientAdapter {
 
     } catch (OMException e) {
       if (e.getResult() == OMException.ResultCodes.FILE_NOT_FOUND) {
+        LOG.info("*** *** *** 2 *** *** *** ", e);
+        e.printStackTrace();
+        LOG.info("*** *** *** end-2 *** *** *** ");
+
         throw new
-            FileNotFoundException(key + ": No such file or directory!");
+            FileNotFoundException(key + ": No such file or directory! test-2");
       }
       throw e;
     }
@@ -522,7 +526,7 @@ public class BasicOzoneClientAdapterImpl implements OzoneClientAdapter {
     short replication = (short) keyInfo.getReplicationConfig()
         .getRequiredNodes();
     return new FileStatusAdapter(
-        keyInfo.getDataSize(),
+        keyInfo.getDataSize(), 0L,
         new Path(OZONE_URI_DELIMITER + keyInfo.getKeyName())
             .makeQualified(defaultUri, workingDir),
         status.isDirectory(),

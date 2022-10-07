@@ -87,12 +87,15 @@ public class DU extends AbstractSpaceUsageSource {
      * @throws UncheckedIOException if shell command exited with error code
      */
     public long getUsed() {
-      try {
-        super.run();
-        return value.get();
-      } catch (IOException e) {
-        throw new UncheckedIOException(e);
-      }
+
+      throw new RuntimeException("DU test...");
+
+//      try {
+//        super.run();
+//        return value.get();
+//      } catch (IOException e) {
+//        throw new UncheckedIOException(e);
+//      }
     }
 
     @Override

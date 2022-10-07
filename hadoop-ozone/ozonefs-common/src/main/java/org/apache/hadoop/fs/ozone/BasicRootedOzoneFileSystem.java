@@ -19,20 +19,7 @@ package org.apache.hadoop.fs.ozone;
 
 import com.google.common.base.Preconditions;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.BlockLocation;
-import org.apache.hadoop.fs.CreateFlag;
-import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.fs.FSDataOutputStream;
-import org.apache.hadoop.fs.FileChecksum;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.InvalidPathException;
-import org.apache.hadoop.fs.LocatedFileStatus;
-import org.apache.hadoop.fs.Options;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.fs.PathIsNotEmptyDirectoryException;
-import org.apache.hadoop.fs.RemoteIterator;
+import org.apache.hadoop.fs.*;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdds.annotation.InterfaceAudience;
 import org.apache.hadoop.hdds.annotation.InterfaceStability;
@@ -326,6 +313,7 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
     Preconditions.checkArgument(dstParent == null,
         "Cannot rename a directory to its own subdirectory");
     // Check if the source exists
+    // FileStatus srcStatus;
     FileStatus srcStatus;
     try {
       srcStatus = getFileStatus(src);
@@ -335,6 +323,7 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
     }
 
     // Check if the destination exists
+    // FileStatus dstStatus;
     FileStatus dstStatus;
     try {
       dstStatus = getFileStatus(dst);
@@ -360,9 +349,9 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
         // If dst is a directory, rename source as subpath of it.
         // for example rename /source to /dst will lead to /dst/source
         dst = new Path(dst, src.getName());
-        FileStatus[] statuses;
+        FileStatusAdapter[] statuses;
         try {
-          statuses = listStatus(dst);
+          statuses = listStatusAdapter(dst);
         } catch (FileNotFoundException fnde) {
           statuses = null;
         }
@@ -393,6 +382,8 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
     }
     return result;
   }
+
+
 
   private boolean renameFSO(OzoneBucket bucket,
       OFSPath srcPath, OFSPath dstPath) throws IOException {
@@ -450,7 +441,7 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
         throws IOException {
       super(f);
       this.recursive = recursive;
-      if (getStatus().isDirectory()
+      if (getStatus().isDir()
           && !this.recursive
           && listStatus(f).length != 0) {
         throw new PathIsNotEmptyDirectoryException(f.toString());
@@ -569,6 +560,7 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
     incrementCounter(Statistic.INVOCATION_DELETE, 1);
     statistics.incrementWriteOps(1);
     LOG.debug("Delete path {} - recursive {}", f, recursive);
+    // FileStatus status;
     FileStatus status;
     try {
       status = getFileStatus(f);
@@ -730,14 +722,30 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
     }
   }
 
+  @Deprecated
   @Override
   public FileStatus[] listStatus(Path f) throws IOException {
+    return convertFileStatusArr( listStatusAdapter(f));
+  }
+
+  public FileStatus[] convertFileStatusArr(FileStatusAdapter[] adapterArr){
+    FileStatus[] result = new FileStatus[adapterArr.length];
+    int i = 0;
+    for (FileStatusAdapter ff : adapterArr){
+      result[i] = convertFileStatus(ff);
+      i++;
+    }
+    return result;
+  }
+
+  
+  public FileStatusAdapter[] listStatusAdapter(Path f) throws IOException {
     incrementCounter(Statistic.INVOCATION_LIST_STATUS, 1);
     statistics.incrementReadOps(1);
     LOG.trace("listStatus() path:{}", f);
     int numEntries = LISTING_PAGE_SIZE;
-    LinkedList<FileStatus> statuses = new LinkedList<>();
-    List<FileStatus> tmpStatusList;
+    LinkedList<FileStatusAdapter> statuses = new LinkedList<>();
+    List<FileStatusAdapter> tmpStatusList;
     String startPath = "";
 
     do {
@@ -745,7 +753,7 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
           adapter.listStatus(pathToKey(f), false, startPath,
               numEntries, uri, workingDir, getUsername())
               .stream()
-              .map(this::convertFileStatus)
+              //.map(this::convertFileStatus)
               .collect(Collectors.toList());
 
       if (!tmpStatusList.isEmpty()) {
@@ -761,8 +769,9 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
       // exhausted.
     } while (tmpStatusList.size() == numEntries);
 
-    return statuses.toArray(new FileStatus[0]);
+    return statuses.toArray(new FileStatusAdapter[0]);
   }
+
 
   @Override
   public void setWorkingDirectory(Path newDir) {
@@ -819,6 +828,12 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
    */
   @Override
   public Collection<FileStatus> getTrashRoots(boolean allUsers) {
+    return null;
+  }
+
+   public Collection<FileStatusAdapter> getTrashRootsAdapter(boolean allUsers) {
+   // public Collection<FileStatusAdapter> getTrashRoots(boolean allUsers) {
+
     // Since get all trash roots for one or more users requires listing all
     // volumes and buckets, we will let adapter impl handle it.
     return adapterImpl.getTrashRoots(allUsers, this);
@@ -852,37 +867,115 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
         OZONE_SCM_BLOCK_SIZE, OZONE_SCM_BLOCK_SIZE_DEFAULT, StorageUnit.BYTES);
   }
 
+
+   @Override
+  public ContentSummary getContentSummary(Path f) throws IOException {
+    FileStatusAdapter status = getFileStatusAdapter(f);
+    System.err.println("*** *** 9 *** ***");
+    System.err.println("*** *** 9 "+ this.getClass().getSimpleName()+ ".getContenSummary getFileStatusAdapter=> " + status);
+    System.err.println("*** *** end-9 *** ***");
+
+    if (!status.isDir()) {
+      // f is a file
+      long length = status.getLength();
+      long spaceConsumed = status.getDiskConsumed();
+      System.err.println("*** *** 9-1 status.isFile(): len= "+length+", spaceConsumed =  " + spaceConsumed);
+
+      return new ContentSummary.Builder().length(length).
+          fileCount(1).directoryCount(0).spaceConsumed(spaceConsumed).build();
+    }
+    // f is a directory
+    long[] summary = {0, 0, 0, 1};
+    int i = 0;
+    for(FileStatusAdapter s : listStatusAdapter(f)) {
+      long length = s.getLength();
+      long spaceConsumed = s.getDiskConsumed();
+      ContentSummary c = s.isDir() ? getContentSummary(s.getPath()) :
+          new ContentSummary.Builder().length(length).
+          fileCount(1).directoryCount(0).spaceConsumed(spaceConsumed).build();
+      LOG.info("*** *** 9-2 status.isDirectoy().subContentSummary index-" + i++ + ":  spaceConsumed =  " + c.getSpaceConsumed());
+
+      summary[0] += c.getLength();
+      summary[1] += c.getSpaceConsumed();
+      summary[2] += c.getFileCount();
+      summary[3] += c.getDirectoryCount();
+    }
+    System.err.println("*** *** 9-3 status.isDirectoy() summary: len: "+summary[0]+", spaceConsumed =  " + summary[1]);
+
+    return new ContentSummary.Builder().length(summary[0]).
+        fileCount(summary[2]).directoryCount(summary[3]).
+        spaceConsumed(summary[1]).build();
+  }
+    
+  @Deprecated
   @Override
-  public FileStatus getFileStatus(Path f) throws IOException {
+  public FileStatus getFileStatus(Path f) throws IOException {    
+    return convertFileStatus(getFileStatusAdapter(f));
+  }
+
+//  public FileStatus toFileStatus(FileStatusAdapter status){
+    // public FileStatus(long length, boolean isdir,
+    // int block_replication,
+    // long blocksize, long modification_time, long access_time,
+    // FsPermission permission, String owner, String group, 
+    // Path path)
+//    return new FileStatus(status.getLength(), status.isDir(), status.getBlockReplication(),
+//      status.getBlocksize(), status.getModificationTime(), status.getAccessTime(),
+//      new FsPermission( status.getPermission()), status.getOwner(), status.getGroup(), status.getPath());
+//  }
+
+
+  public FileStatusAdapter getFileStatusAdapter(Path f) throws IOException {
+    // public FileStatusAdapter getFileStatus(Path f) throws IOException {
+    System.err.println("BasicRootOzoneFileSystem.getFileStatus() path: " + f);
+
     incrementCounter(Statistic.INVOCATION_GET_FILE_STATUS, 1);
     statistics.incrementReadOps(1);
     LOG.trace("getFileStatus() path:{}", f);
+
     Path qualifiedPath = f.makeQualified(uri, workingDir);
     String key = pathToKey(qualifiedPath);
+    System.err.println("qualifiedPath to key: "+ key);
+
     // Handle DistCp /NONE path
     if (key.equals("NONE")) {
       throw new FileNotFoundException("File not found. path /NONE.");
     }
-    FileStatus fileStatus = null;
+    FileStatusAdapter fileStatus = null;
     try {
-      fileStatus = convertFileStatus(
-          adapter.getFileStatus(key, uri, qualifiedPath, getUsername()));
+     //fileStatus = convertFileStatus(
+       //  adapter.getFileStatus(key, uri, qualifiedPath, getUsername()));
+       fileStatus= adapter.getFileStatus(key, uri, qualifiedPath, getUsername());
     } catch (IOException e) {
       if (e instanceof OMException) {
         OMException ex = (OMException) e;
         if (ex.getResult().equals(OMException.ResultCodes.KEY_NOT_FOUND) ||
             ex.getResult().equals(OMException.ResultCodes.BUCKET_NOT_FOUND) ||
             ex.getResult().equals(OMException.ResultCodes.VOLUME_NOT_FOUND)) {
+              System.err.println("*** *** 8-1 *** " + ex.getResult() + ". path: " + f);          
           throw new FileNotFoundException("File not found. path:" + f);
         }
       }
       LOG.warn("GetFileStatus failed for path {}", f, e);
       throw e;
     }
+//    LOG.info("*** *** 8 *** *** ");
+//    LOG.info("basicRootOzoneFileSystem return FileStatus =>  " + fileStatus);
+//    LOG.info("*** *** end-8 *** *** ");
+    System.err.println("*** *** 8 *** *** ");
+    System.err.println("basicRootOzoneFileSystem.getFileStatus() FileStatus =>  " + fileStatus);
+    System.err.println("*** *** end-8 *** *** \n");
+
     return fileStatus;
   }
 
-  @Override
+// @Override
+// @Deprecated
+//   public BlockLocation[] getFileBlockLocations(FileStatus fileStatus,
+//   long start, long len)
+//   throws IOException {
+//   }
+  
   public BlockLocation[] getFileBlockLocations(FileStatus fileStatus,
       long start, long len)
       throws IOException {
@@ -925,13 +1018,23 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
     return adapter.getFileChecksum(key, length);
   }
 
-  @Override
+  // @Deprecated
+  // @Override
+  // public FileStatusAdapter[] globStatus(Path pathPattern) throws IOException {
+  // }
+
+
   public FileStatus[] globStatus(Path pathPattern) throws IOException {
     incrementCounter(Statistic.INVOCATION_GLOB_STATUS);
     return super.globStatus(pathPattern);
   }
 
-  @Override
+  // @Override
+  // @Deprecated
+  // public FileStatusAdapter[] globStatus(Path pathPattern, PathFilter filter)
+  // throws IOException { }
+
+  
   public FileStatus[] globStatus(Path pathPattern, PathFilter filter)
       throws IOException {
     incrementCounter(Statistic.INVOCATION_GLOB_STATUS);
@@ -1157,7 +1260,8 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
    */
   private abstract class OzoneListingIterator {
     private final Path path;
-    private final FileStatus status;
+    // private final FileStatus status;
+    private final FileStatusAdapter status;
     private String pathKey;
     private Iterator<BasicKeyInfo> keyIterator = null;
     private boolean isFSO;
@@ -1165,11 +1269,11 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
     OzoneListingIterator(Path path, boolean isFSO)
         throws IOException {
       this.path = path;
-      this.status = getFileStatus(path);
+      this.status = getFileStatusAdapter(path);
       this.pathKey = pathToKey(path);
       this.isFSO = isFSO;
       if (!isFSO) {
-        if (status.isDirectory()) {
+        if (status.isDir()) {
           this.pathKey = addTrailingSlashIfNeeded(pathKey);
         }
         keyIterator = adapter.listKeys(pathKey);
@@ -1210,15 +1314,15 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
       List<String> keyPathList = new ArrayList<>();
       int batchSize = getConf().getInt(OZONE_FS_ITERATE_BATCH_SIZE,
           OZONE_FS_ITERATE_BATCH_SIZE_DEFAULT);
-      if (status.isDirectory()) {
+      if (status.isDir()) {
         LOG.trace("Iterating directory: {}", pathKey);
         OFSPath ofsPath = new OFSPath(pathKey);
         String ofsPathPrefix =
             ofsPath.getNonKeyPathNoPrefixDelim() + OZONE_URI_DELIMITER;
         if (isFSO) {
-          FileStatus[] fileStatuses;
-          fileStatuses = listStatus(path);
-          for (FileStatus fileStatus : fileStatuses) {
+          FileStatusAdapter[] fileStatuses;
+          fileStatuses = listStatusAdapter(path);
+          for (FileStatusAdapter fileStatus : fileStatuses) {
             String keyName =
                 new OFSPath(fileStatus.getPath().toString()).getKeyName();
             keyPathList.add(ofsPathPrefix + keyName);
@@ -1268,12 +1372,17 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
     }
 
     boolean pathIsDirectory() {
-      return status.isDirectory();
+      return status.isDir();
     }
 
-    FileStatus getStatus() {
+    FileStatusAdapter getStatus() {
       return status;
     }
+
+//    FileStatusAdapter getStatusV2() {
+//      return null;
+ //   }
+
   }
 
   public OzoneClientAdapter getAdapter() {
@@ -1303,6 +1412,7 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
 
     FileStatus fileStatus = new FileStatus(
         fileStatusAdapter.getLength(),
+            fileStatusAdapter.getDiskConsumed(),
         fileStatusAdapter.isDir(),
         fileStatusAdapter.getBlockReplication(),
         fileStatusAdapter.getBlocksize(),
@@ -1314,6 +1424,10 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
         symLink,
         fileStatusAdapter.getPath()
     );
+//    fileStatus.setDiskConsumed(); = fileStatusAdapter.getDiskConsumed();
+    LOG.info("*** *** 10 **** *** \n");
+    LOG.info("convertFileStatus = " + fileStatus);
+    LOG.info("*** *** end-10 **** *** \n");
 
     BlockLocation[] blockLocations = fileStatusAdapter.getBlockLocations();
     if (blockLocations == null || blockLocations.length == 0) {

@@ -19,6 +19,7 @@ package org.apache.hadoop.fs.ozone;
 
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.FileStatus;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -32,9 +33,11 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * <p>
  * FileStatus (Hadoop 3.x) --> FileStatusAdapter --> FileStatus (Hadoop 2.x)
  */
-public final class FileStatusAdapter {
+public  class FileStatusAdapter{
 
   private final long length;
+  public final long diskConsumed;
+
   private final Path path;
   private final boolean isdir;
   private final short blockReplication;
@@ -48,22 +51,28 @@ public final class FileStatusAdapter {
   private final BlockLocation[] blockLocations;
 
   @SuppressWarnings("checkstyle:ParameterNumber")
-  public FileStatusAdapter(long length, Path path, boolean isdir,
+  public FileStatusAdapter(long length, long diskConsumed, Path path, boolean isdir,
       short blockReplication, long blocksize, long modificationTime,
       long accessTime, short permission, String owner,
       String group, Path symlink, BlockLocation[] locations) {
+    
+    System.err.println("*** *** start 14 *** *** init  FileStatusAdapter with len: " + length);
     this.length = length;
+    this.diskConsumed = diskConsumed;
     this.path = path;
-    this.isdir = isdir;
     this.blockReplication = blockReplication;
     this.blocksize = blocksize;
     this.modificationTime = modificationTime;
     this.accessTime = accessTime;
     this.permission = permission;
+//    if (permission == 777 ){
+      this.isdir = isdir;
+//    }else{
     this.owner = owner;
     this.group = group;
     this.symlink = symlink;
     this.blockLocations = locations.clone();
+    System.err.println("*** *** end 14 *** *** init a FileStatusAdapter... " + this);
   }
 
 
@@ -71,9 +80,13 @@ public final class FileStatusAdapter {
     return path;
   }
 
-  public boolean isDir() {
-    return isdir;
-  }
+ public boolean isDir() {
+   return isdir;
+ }
+
+  // public boolean isDirectory() {
+  //   return isDirectory();
+  // }
 
   public short getBlockReplication() {
     return blockReplication;
@@ -92,7 +105,7 @@ public final class FileStatusAdapter {
   }
 
   public short getPermission() {
-    return permission;
+    return this.permission;
   }
 
   public String getOwner() {
@@ -107,13 +120,41 @@ public final class FileStatusAdapter {
     return symlink;
   }
 
+
   public long getLength() {
     return length;
+  }
+
+  public long getDiskConsumed() {
+    return diskConsumed;
   }
 
   @SuppressFBWarnings("EI_EXPOSE_REP")
   public BlockLocation[] getBlockLocations() {
     return blockLocations;
+  }
+
+  
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append(getClass().getSimpleName())
+        .append("{")
+        .append("path=" + path)
+        .append("; isDirectory=" + isdir);
+    if(!isdir){
+      sb.append("; length=" + length)
+              .append("; diskConsumed= " + getDiskConsumed())
+          .append("; blockReplication=" + blockReplication)
+          .append("; blocksize=" + blocksize);
+    }
+    sb.append("; accessTime=" + accessTime)
+        .append("; owner=" + owner)
+        .append("; group=" + group)
+        .append("; permission=" + permission)
+        .append("; isSymlink=" + getSymlink());
+    sb.append("}");
+    return sb.toString();
   }
 
 }

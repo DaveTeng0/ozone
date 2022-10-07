@@ -25,6 +25,8 @@ import org.apache.hadoop.hdds.annotation.InterfaceAudience;
 import org.apache.hadoop.hdds.conf.OzoneConfiguration;
 import org.apache.hadoop.hdds.tracing.TracingUtil;
 import org.apache.hadoop.util.ToolRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** Provide command line access to a Ozone FileSystem. */
 @InterfaceAudience.Private
@@ -65,6 +67,7 @@ public class OzoneFsShell extends FsShell {
   protected String getUsagePrefix() {
     return ozoneUsagePrefix;
   }
+  static final Logger LOG = LoggerFactory.getLogger(OzoneFsShell.class);
 
   /**
    * Main entry point to execute fs commands.
@@ -84,6 +87,9 @@ public class OzoneFsShell extends FsShell {
     } finally {
       shell.close();
     }
+    LOG.info("****** 3 ****** \n");
+    LOG.info("test => ", new RuntimeException("Some message..."));
+    LOG.info("****** end 3 ***** \n");
     System.exit(res);
   }
 

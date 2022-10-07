@@ -659,6 +659,7 @@ public final class OmKeyInfo extends WithParentObjectId {
         ", bucket='" + bucketName + '\'' +
         ", key='" + keyName + '\'' +
         ", dataSize='" + dataSize + '\'' +
+//            ", diskConsumed= " + disk
         ", creationTime='" + creationTime + '\'' +
         ", objectID='" + objectID + '\'' +
         ", parentID='" + parentObjectID + '\'' +

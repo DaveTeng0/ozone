@@ -36,6 +36,7 @@
       </resource>
     </resources>
     <plugins>
+    
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
@@ -57,6 +58,7 @@
           </arguments>
         </configuration>
       </plugin>
+      
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
@@ -87,6 +89,7 @@
       2. to install dependencies with yarn install
       3. building the frontend application
       -->
+      <?ignore
       <plugin>
         <groupId>com.github.eirslett</groupId>
         <artifactId>frontend-maven-plugin</artifactId>
@@ -173,6 +176,7 @@
           </execution>
         </executions>
       </plugin>
+      ?>
     </plugins>
   </build>
   <dependencies>
