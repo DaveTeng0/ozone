@@ -35,6 +35,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 public final class FileStatusAdapter {
 
   private final long length;
+  private final long diskConsumed;
   private final Path path;
   private final boolean isdir;
   private final short blockReplication;
@@ -48,11 +49,12 @@ public final class FileStatusAdapter {
   private final BlockLocation[] blockLocations;
 
   @SuppressWarnings("checkstyle:ParameterNumber")
-  public FileStatusAdapter(long length, Path path, boolean isdir,
+  public FileStatusAdapter(long length, long diskConsumed, Path path, boolean isdir,
       short blockReplication, long blocksize, long modificationTime,
       long accessTime, short permission, String owner,
       String group, Path symlink, BlockLocation[] locations) {
     this.length = length;
+    this.diskConsumed = diskConsumed;
     this.path = path;
     this.isdir = isdir;
     this.blockReplication = blockReplication;
@@ -73,6 +75,10 @@ public final class FileStatusAdapter {
 
   public boolean isDir() {
     return isdir;
+  }
+
+  public boolean isFile() {
+    return !isdir;
   }
 
   public short getBlockReplication() {
@@ -111,9 +117,35 @@ public final class FileStatusAdapter {
     return length;
   }
 
+  public long getDiskConsumed() {
+    return diskConsumed;
+  }
   @SuppressFBWarnings("EI_EXPOSE_REP")
   public BlockLocation[] getBlockLocations() {
     return blockLocations;
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append(getClass().getSimpleName())
+        .append("{")
+        .append("path=" + path)
+        .append("; isDirectory=" + isdir);
+    if(isFile()){
+      sb.append("; length=" + length)
+              .append("; diskConsumed= " + getDiskConsumed())
+          .append("; blockReplication=" + blockReplication)
+          .append("; blocksize=" + blocksize);
+    }
+    sb.append("; accessTime=" + accessTime)
+        .append("; owner=" + owner)
+        .append("; group=" + group)
+        .append("; permission=" + permission)
+        .append("; isSymlink=" + getSymlink())
+        .append("}");
+    
+    return sb.toString();
   }
 
 }
