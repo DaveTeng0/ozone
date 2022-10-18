@@ -242,84 +242,84 @@ jobs:
           name: dependency
           path: target/dependency
         continue-on-error: true
-  acceptance:
-    needs:
-      - build-info
-      - build
-    runs-on: ubuntu-20.04
-    timeout-minutes: 150
-    if: needs.build-info.outputs.needs-compose-tests == 'true'
-    strategy:
-      matrix:
-        suite:
-          - secure
-          - unsecure
-          - compat
-          - HA
-          - MR
-          - misc
-      fail-fast: false
-    steps:
-      - name: Checkout project
-        uses: actions/checkout@v3
-      - name: Download compiled Ozone binaries
-        uses: actions/download-artifact@v3
-        with:
-          name: ozone-bin
-      - name: Untar binaries
-        run: |
-          mkdir -p hadoop-ozone/dist/target
-          tar xzvf ozone*.tar.gz -C hadoop-ozone/dist/target
-          sudo chmod -R a+rwX hadoop-ozone/dist/target
-      - name: Execute tests
-        run: |
-          pushd hadoop-ozone/dist/target/ozone-*
-          sudo mkdir .aws && sudo chmod 777 .aws && sudo chown 1000 .aws
-          popd
-          ./hadoop-ozone/dev-support/checks/acceptance.sh
-        env:
-          KEEP_IMAGE: false
-          OZONE_ACCEPTANCE_SUITE: ${{ matrix.suite }}
-          OZONE_WITH_COVERAGE: true
-          OZONE_VOLUME_OWNER: 1000
-      - name: Archive build results
-        uses: actions/upload-artifact@v3
-        if: always()
-        with:
-          name: acceptance-${{ matrix.suite }}
-          path: target/acceptance
-        continue-on-error: true
-  kubernetes:
-    needs:
-      - build-info
-      - build
-    runs-on: ubuntu-20.04
-    timeout-minutes: 60
-    if: needs.build-info.outputs.needs-kubernetes-tests == 'true'
-    steps:
-      - name: Checkout project
-        uses: actions/checkout@v3
-      - name: Download compiled Ozone binaries
-        uses: actions/download-artifact@v3
-        with:
-          name: ozone-bin
-      - name: Untar binaries
-        run: |
-          mkdir -p hadoop-ozone/dist/target
-          tar xzvf ozone*.tar.gz -C hadoop-ozone/dist/target
-      - name: Execute tests
-        run: |
-          pushd hadoop-ozone/dist/target/ozone-*
-          sudo mkdir .aws && sudo chmod 777 .aws && sudo chown 1000 .aws
-          popd
-          ./hadoop-ozone/dev-support/checks/kubernetes.sh
-      - name: Archive build results
-        uses: actions/upload-artifact@v3
-        if: always()
-        with:
-          name: kubernetes
-          path: target/kubernetes
-        continue-on-error: true
+#  acceptance:
+#    needs:
+#      - build-info
+#      - build
+#    runs-on: ubuntu-20.04
+#    timeout-minutes: 150
+#    if: needs.build-info.outputs.needs-compose-tests == 'true'
+#    strategy:
+#      matrix:
+#        suite:
+#          - secure
+#          - unsecure
+#          - compat
+#          - HA
+#          - MR
+#          - misc
+#      fail-fast: false
+#    steps:
+#      - name: Checkout project
+#        uses: actions/checkout@v3
+#      - name: Download compiled Ozone binaries
+#        uses: actions/download-artifact@v3
+#        with:
+#          name: ozone-bin
+#      - name: Untar binaries
+#        run: |
+#          mkdir -p hadoop-ozone/dist/target
+#          tar xzvf ozone*.tar.gz -C hadoop-ozone/dist/target
+#          sudo chmod -R a+rwX hadoop-ozone/dist/target
+#      - name: Execute tests
+#        run: |
+#          pushd hadoop-ozone/dist/target/ozone-*
+#          sudo mkdir .aws && sudo chmod 777 .aws && sudo chown 1000 .aws
+#          popd
+#          ./hadoop-ozone/dev-support/checks/acceptance.sh
+#        env:
+#          KEEP_IMAGE: false
+#          OZONE_ACCEPTANCE_SUITE: ${{ matrix.suite }}
+#          OZONE_WITH_COVERAGE: true
+#          OZONE_VOLUME_OWNER: 1000
+#      - name: Archive build results
+#        uses: actions/upload-artifact@v3
+#        if: always()
+#        with:
+#          name: acceptance-${{ matrix.suite }}
+#          path: target/acceptance
+#        continue-on-error: true
+#  kubernetes:
+#    needs:
+#      - build-info
+#      - build
+#    runs-on: ubuntu-20.04
+#    timeout-minutes: 60
+#    if: needs.build-info.outputs.needs-kubernetes-tests == 'true'
+#    steps:
+#      - name: Checkout project
+#        uses: actions/checkout@v3
+#      - name: Download compiled Ozone binaries
+#        uses: actions/download-artifact@v3
+#        with:
+#          name: ozone-bin
+#      - name: Untar binaries
+#        run: |
+#          mkdir -p hadoop-ozone/dist/target
+#          tar xzvf ozone*.tar.gz -C hadoop-ozone/dist/target
+#      - name: Execute tests
+#        run: |
+#          pushd hadoop-ozone/dist/target/ozone-*
+#          sudo mkdir .aws && sudo chmod 777 .aws && sudo chown 1000 .aws
+#          popd
+#          ./hadoop-ozone/dev-support/checks/kubernetes.sh
+#      - name: Archive build results
+#        uses: actions/upload-artifact@v3
+#        if: always()
+#        with:
+#          name: kubernetes
+#          path: target/kubernetes
+#        continue-on-error: true
   integration:
     needs:
       - build-info

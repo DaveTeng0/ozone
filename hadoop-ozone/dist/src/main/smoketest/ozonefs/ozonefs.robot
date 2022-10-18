@@ -70,16 +70,16 @@ Check disk usage after create a file which uses EC replication type
                    Execute               ozone sh volume create /vol1
                    Execute               ozone sh bucket create /vol1/bucket2 --type EC --replication rs-3-2-1024k
                    Execute               ozone fs -put NOTICE.txt /vol1/bucket2/PUTFILE.txt
-    ${expectedFileLength} = sizeof(NOTICE.txt)     
-    dataStripeSize   =  3 * 1024
-    fullStripes       = ${expectedFileLength}  / dataStripeSize 
-    partialFirstChunk =
-    replicationOverhead = 
-    ${expectedDiskUsage} = ${expectedFileLength}     + replicationOverhead         
-    ${result} =    Execute               ozone fs -du /vol1/bucket2 | jq -r '.[].name'
-                   Should contain        ${result}         PUTFILE.txt
-                   Should contain        ${result}         ${expectedFileLength}
-                   Should contain        ${result}         ${expectedDiskUsage}
+                   ${expectedFileLength} =    Execute      sizeof(NOTICE.txt)     
+                   ${dataStripeSize}        =    BuiltIn.Set Variable   3 * 1024
+                   ${fullStripes}           =    BuiltIn.Set Variable   ${expectedFileLength}/${dataStripeSize} 
+                   ${partialFirstChunk}     =    Evaluate   1024 < ${expectedFileLength} % ${dataStripeSize}
+                   ${replicationOverhead}   =    Evaluate   ${fullStripes} * 2 * 1024 + ${partialFirstChunk} * 2
+                   ${expectedDiskUsage}     =    Evaluate   ${expectedFileLength} + replicationOverhead         
+                   ${result} =    Execute               ozone fs -du /vol1/bucket2 | jq -r '.[].name'
+                            Should contain        ${result}         PUTFILE.txt
+                            Should contain        ${result}         ${expectedFileLength}
+                            Should contain        ${result}         ${expectedDiskUsage}
 
 
 List

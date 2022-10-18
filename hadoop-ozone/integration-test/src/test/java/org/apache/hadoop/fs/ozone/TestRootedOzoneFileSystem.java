@@ -99,7 +99,10 @@ import java.util.stream.Collectors;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_TRASH_CHECKPOINT_INTERVAL_KEY;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY;
 import static org.apache.hadoop.fs.FileSystem.TRASH_PREFIX;
-import static org.apache.hadoop.fs.ozone.Constants.LISTING_PAGE_SIZE;
+ import static org.apache.hadoop.fs.ozone.Constants.LISTING_PAGE_SIZE;
+//import org.apache.hadoop.fs.ozone.*;
+//import org.apache.hadoop.fs.ozone.BasicRootedOzoneClientAdapterImpl;
+
 import static org.apache.hadoop.ozone.OzoneAcl.AclScope.ACCESS;
 import static org.apache.hadoop.ozone.OzoneConfigKeys.OZONE_FS_ITERATE_BATCH_SIZE;
 import static org.apache.hadoop.ozone.OzoneConsts.OZONE_URI_DELIMITER;
@@ -110,6 +113,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import org.apache.commons.lang3.RandomUtils;
+import org.apache.hadoop.ozone.client.io.OzoneOutputStream;
+import java.util.HashMap;
+import org.apache.hadoop.fs.ContentSummary;
 
 /**
  * Ozone file system tests that are not covered by contract tests.
@@ -314,6 +321,66 @@ public class TestRootedOzoneFileSystem {
     fs.delete(grandparent, true);
   }
 
+
+
+
+
+
+
+  // 123
+  @Test
+  public void testCreateAndCheckECTypeFileDiskUsage() throws Exception {
+    // Path grandparent = new Path(bucketPath,
+    //     "testCreateDoesNotAddParentDirKeys");
+    // Path parent = new Path(grandparent, "parent");
+    // Path child = new Path(parent, "child");
+    // ContractTestUtils.touch(fs, child);
+
+    // OzoneKeyDetails key = getKey(child, false);
+    // System.err.println("*** *** *** test 1 *** *** " +);
+    Path filePath = new Path("test.txt");
+    BucketArgs.Builder builder = BucketArgs.newBuilder();
+    builder.setStorageType(StorageType.DISK);
+    builder.setBucketLayout(BucketLayout.LEGACY);
+    builder.setDefaultReplicationConfig(
+        new DefaultReplicationConfig(ReplicationType.EC,
+            new ECReplicationConfig("RS-3-2-1024")));
+    BucketArgs omBucketArgs = builder.build();
+    String vol = "vol1";
+    String buck = "bucket1";
+    final OzoneBucket bucket101 = TestDataUtil
+        .createVolumeAndBucket(cluster, vol, buck, BucketLayout.LEGACY,
+            omBucketArgs);
+    Assert.assertEquals(ReplicationType.EC.name(),
+        bucket101.getReplicationConfig().getReplicationType().name());
+    // Bucket has default EC and client has default RATIS.
+    // In this case, it should inherit from bucket
+    // try (OzoneFSOutputStream file = adapter
+    //     .createFile(vol + "/" + buck + "/ratis", (short) 3, true, false)) {
+    //   file.write(new byte[1024]);
+    // }
+
+    int objectSizeInBytes = 10;
+    byte[] objContent = RandomUtils.nextBytes(objectSizeInBytes);
+    try (OzoneOutputStream out = cluster.getClient().getProxy().
+                        createKey(volumeName, bucketName, "test.txt", objectSizeInBytes, null, new HashMap())) {
+        out.write(objContent);
+    }
+
+    // fs.getContentSummary(item.path);
+    ContentSummary contentSummary = fs.getContentSummary(filePath);
+    long length = contentSummary.getLength();
+    long spaceConsumed = contentSummary.getSpaceConsumed();
+    int expectDiskUsage = 10 * 3;
+    Assert.assertEquals(expectDiskUsage, spaceConsumed);
+  }
+
+
+  @Test
+  public void testCreateAndCheckRatisTypeFileDiskUsage() throws Exception {
+    
+  }
+
   @Test
   public void testDeleteCreatesFakeParentDir() throws Exception {
     // TODO: Request for comment.
@@ -496,6 +563,7 @@ public class TestRootedOzoneFileSystem {
    * Tests listStatusIterator operation on root directory with different
    * numbers of numDir.
    */
+  int LISTING_PAGE_SIZE = 1024;
   @Test
   public void testListStatusIteratorOnPageSize() throws Exception {
     int[] pageSize = {
