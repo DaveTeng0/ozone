@@ -40,11 +40,11 @@
    <module>ozonefs-common</module>
    <module>ozonefs</module>
    <module>datanode</module>
-   <!-- <module>s3gateway</module> -->
+   <module>s3gateway</module>
    <module>dist</module>
    <module>csi</module>
-<!--    <module>fault-injection-test</module>-->
-<!--    <module>insight</module>-->
+   <module>fault-injection-test</module>
+   <module>insight</module>
   </modules>
 
   <repositories>
