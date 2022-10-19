@@ -38,11 +38,12 @@ import org.junit.Test;
 
 import static org.apache.hadoop.ozone.OzoneConsts.OZONE_URI_DELIMITER;
 import static org.apache.hadoop.ozone.om.OMConfigKeys.OZONE_OM_ADDRESS_KEY;
-
+import org.junit.Ignore;
 /**
  * Tests OFS behavior when filesystem paths are enabled and parent directory is
  * missing for some reason.
  */
+@Ignore
 public class TestOzoneFileSystemMissingParent {
 
   private static OzoneConfiguration conf;

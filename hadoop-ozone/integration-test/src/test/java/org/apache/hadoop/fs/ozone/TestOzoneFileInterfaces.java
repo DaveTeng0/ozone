@@ -77,13 +77,14 @@ import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-
+import org.junit.Ignore;
 /**
  * Test OzoneFileSystem Interfaces.
  *
  * This test will test the various interfaces i.e.
  * create, read, write, getFileStatus
  */
+@Ignore
 @RunWith(Parameterized.class)
 public class TestOzoneFileInterfaces {
 

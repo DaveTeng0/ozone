@@ -37,10 +37,11 @@ import org.junit.Assert;
 
 import java.io.IOException;
 import java.net.URI;
-
+import org.junit.Ignore;
 /**
  * Test Ozone Prefix Parser.
  */
+@Ignore
 public class TestOzoneFileSystemPrefixParser {
 
   private static MiniOzoneCluster cluster = null;

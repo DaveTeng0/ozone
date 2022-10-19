@@ -50,12 +50,13 @@ import java.util.Collection;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
-
+import org.junit.Ignore;
 /**
  * Ozone file system tests that are not covered by contract tests,
  * - prefix layout.
  *
  */
+@Ignore
 @RunWith(Parameterized.class)
 public class TestOzoneFileSystemWithFSO extends TestOzoneFileSystem {
 

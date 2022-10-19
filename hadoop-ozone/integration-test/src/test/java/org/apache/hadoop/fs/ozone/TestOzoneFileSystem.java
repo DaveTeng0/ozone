@@ -99,10 +99,11 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-
+import org.junit.Ignore;
 /**
  * Ozone file system tests that are not covered by contract tests.
  */
+@Ignore
 @RunWith(Parameterized.class)
 public class TestOzoneFileSystem {
 

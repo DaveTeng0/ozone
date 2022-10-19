@@ -103,6 +103,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
 
+import org.apache.hadoop.net.NetUtils;
+
 /**
  * MiniOzoneCluster creates a complete in-process Ozone cluster suitable for
  * running tests.  The cluster consists of a OzoneManager,
@@ -576,6 +578,8 @@ public class MiniOzoneClusterImpl implements MiniOzoneCluster {
 
     @Override
     public MiniOzoneCluster build() throws IOException {
+//      NetUtils.addStaticResolution("0.0.0.0", "localhost");
+
       DefaultMetricsSystem.setMiniClusterMode(true);
       initializeConfiguration();
       StorageContainerManager scm = null;

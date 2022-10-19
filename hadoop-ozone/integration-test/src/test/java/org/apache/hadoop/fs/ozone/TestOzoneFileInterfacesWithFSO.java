@@ -25,13 +25,14 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.io.IOException;
-
+import org.junit.Ignore;
 /**
  * Test OzoneFileSystem Interfaces - prefix layout.
  *
  * This test will test the various interfaces i.e.
  * create, read, write, getFileStatus
  */
+@Ignore
 @RunWith(Parameterized.class)
 public class TestOzoneFileInterfacesWithFSO extends TestOzoneFileInterfaces {
 

@@ -56,10 +56,11 @@ import org.junit.Test;
 import org.junit.rules.Timeout;
 
 import static org.apache.hadoop.hdds.StringUtils.string2Bytes;
-
+import org.junit.Ignore;
 /**
  * Test OzoneFSInputStream by reading through multiple interfaces.
  */
+@Ignore
 public class TestOzoneFSInputStream {
 
   /**

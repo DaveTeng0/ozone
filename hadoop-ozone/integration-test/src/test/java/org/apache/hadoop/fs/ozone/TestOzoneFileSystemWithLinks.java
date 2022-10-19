@@ -57,10 +57,11 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 
-
+import org.junit.Ignore;
 /**
  * Ozone file system tests for Link Buckets.
  */
+@Ignore
 public class TestOzoneFileSystemWithLinks {
 
   private static final float TRASH_INTERVAL = 0.05f; // 3 seconds

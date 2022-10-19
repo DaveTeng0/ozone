@@ -51,12 +51,13 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.Collection;
-
+import org.junit.Ignore;
 /**
  * Ozone file system tests to validate default bucket layout configuration
  * and behaviour.
  * TODO: Refactor this and TestOzoneFileSystem to reduce duplication.
  */
+@Ignore
 @RunWith(Parameterized.class)
 public class TestOzoneFSBucketLayout {
 

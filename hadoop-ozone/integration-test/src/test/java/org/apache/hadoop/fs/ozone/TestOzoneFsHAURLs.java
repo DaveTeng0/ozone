@@ -56,10 +56,11 @@ import org.junit.Rule;
 import org.junit.rules.Timeout;
 import static org.apache.hadoop.hdds.HddsUtils.getHostName;
 import static org.apache.hadoop.hdds.HddsUtils.getHostPort;
-
+import org.junit.Ignore;
 /**
  * Test client-side URI handling with Ozone Manager HA.
  */
+@Ignore
 public class TestOzoneFsHAURLs {
 
   /**

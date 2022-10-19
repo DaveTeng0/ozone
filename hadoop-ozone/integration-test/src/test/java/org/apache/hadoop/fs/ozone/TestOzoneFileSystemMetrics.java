@@ -41,10 +41,11 @@ import org.junit.rules.Timeout;
 import java.io.IOException;
 
 import static org.apache.hadoop.hdds.StringUtils.string2Bytes;
-
+import org.junit.Ignore;
 /**
  * Test OM Metrics for OzoneFileSystem operations.
  */
+@Ignore
 public class TestOzoneFileSystemMetrics {
   /**
    * Set a timeout for each test.
