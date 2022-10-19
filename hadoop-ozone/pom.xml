@@ -30,19 +30,19 @@
     <jooq.version>3.11.10</jooq.version>
   </properties>
   <modules>
-<!--    <module>interface-client</module>-->
-<!--    <module>interface-storage</module>-->
-<!--    <module>common</module>-->
-<!--    <module>client</module>-->
-<!--    <module>ozone-manager</module>-->
-<!--    <module>tools</module>-->
+   <module>interface-client</module>
+   <module>interface-storage</module>
+   <module>common</module>
+   <module>client</module>
+   <module>ozone-manager</module>
+   <module>tools</module>
     <module>integration-test</module>
-<!--    <module>ozonefs-common</module>-->
-<!--    <module>ozonefs</module>-->
-<!--    <module>datanode</module>-->
-<!--    <module>s3gateway</module>-->
-<!--    <module>dist</module>-->
-<!--    <module>csi</module>-->
+   <module>ozonefs-common</module>
+   <module>ozonefs</module>
+   <module>datanode</module>
+   <!-- <module>s3gateway</module> -->
+   <module>dist</module>
+   <module>csi</module>
 <!--    <module>fault-injection-test</module>-->
 <!--    <module>insight</module>-->
   </modules>
