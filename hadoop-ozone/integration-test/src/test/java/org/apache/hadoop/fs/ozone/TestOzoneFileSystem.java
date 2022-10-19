@@ -19,6 +19,13 @@
 package org.apache.hadoop.fs.ozone;
 
 import org.junit.Ignore;
+import org.apache.hadoop.ozone.client.BucketArgs;
+import org.apache.hadoop.hdds.protocol.StorageType;
+import org.apache.hadoop.hdds.client.DefaultReplicationConfig;
+import org.apache.hadoop.fs.ContentSummary;
+
+
+
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
@@ -346,7 +353,7 @@ public class TestOzoneFileSystem {
 
 
     // fs.getContentSummary(item.path);
-    ContentSummary contentSummary = fs.getContentSummary(filePath);
+    ContentSummary contentSummary = fs.getContentSummary(file1);
     long length = contentSummary.getLength();
     long spaceConsumed = contentSummary.getSpaceConsumed();
     int expectDiskUsage = 10 * 3;
