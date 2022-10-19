@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.fs.ozone;
 
+import org.junit.Ignore;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
@@ -100,10 +101,12 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.Ignore;
+import org.apache.commons.lang3.RandomUtils;
+
 /**
  * Ozone file system tests that are not covered by contract tests.
  */
-@Ignore
+
 @RunWith(Parameterized.class)
 public class TestOzoneFileSystem {
 
@@ -312,6 +315,44 @@ public class TestOzoneFileSystem {
       // ignore as its expected
     }
   }
+
+
+  @Test
+  public void testCreateAndCheckECTypeFileDiskUsage() throws Exception {
+    // System.err.println("*** *** *** test 1 *** *** " +);
+    // Path filePath = new Path("test1.txt");
+    BucketArgs.Builder builder = BucketArgs.newBuilder();
+    builder.setStorageType(StorageType.DISK);
+    builder.setBucketLayout(BucketLayout.LEGACY);
+    builder.setDefaultReplicationConfig(
+        new DefaultReplicationConfig(ReplicationType.EC,
+            new ECReplicationConfig("RS-3-2-1024")));
+    BucketArgs omBucketArgs = builder.build();
+    String vol = "vol1";
+    String buck = "bucket1";
+    final OzoneBucket bucket101 = TestDataUtil
+        .createVolumeAndBucket(cluster, vol, buck, BucketLayout.LEGACY,
+            omBucketArgs);
+    // Assert.assertEquals(ReplicationType.EC.name(),
+    //     bucket101.getReplicationConfig().getReplicationType().name());
+
+    int objectSizeInBytes = 10;
+    byte[] objContent = RandomUtils.nextBytes(objectSizeInBytes);
+    Path file1 = new Path("test1.txt");
+    try (FSDataOutputStream outputStream = fs.create(file1, false)) {
+      assertNotNull("Should be able to create file", outputStream);
+      outputStream.write(objContent);
+    }
+
+
+    // fs.getContentSummary(item.path);
+    ContentSummary contentSummary = fs.getContentSummary(filePath);
+    long length = contentSummary.getLength();
+    long spaceConsumed = contentSummary.getSpaceConsumed();
+    int expectDiskUsage = 10 * 3;
+    Assert.assertEquals(expectDiskUsage, spaceConsumed);
+  }
+
 
   /**
    * Make the given file and all non-existent parents into

@@ -123,6 +123,7 @@ import org.apache.hadoop.net.NetUtils;
  * Ozone file system tests that are not covered by contract tests.
  * TODO: Refactor this and TestOzoneFileSystem to reduce duplication.
  */
+@Ignore
 @RunWith(Parameterized.class)
 public class TestRootedOzoneFileSystem {
 // {
@@ -338,6 +339,7 @@ public class TestRootedOzoneFileSystem {
 
   // 123
   @Test
+  @Ignore
   public void testCreateAndCheckECTypeFileDiskUsage() throws Exception {
     // Path grandparent = new Path(bucketPath,
     //     "testCreateDoesNotAddParentDirKeys");
