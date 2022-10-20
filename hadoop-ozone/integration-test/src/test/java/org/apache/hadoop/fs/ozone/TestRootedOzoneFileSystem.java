@@ -34,12 +34,10 @@ import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.fs.TrashPolicy;
 import org.apache.hadoop.fs.contract.ContractTestUtils;
 import org.apache.hadoop.fs.permission.FsPermission;
-import org.apache.hadoop.hdds.client.DefaultReplicationConfig;
-import org.apache.hadoop.hdds.client.ECReplicationConfig;
-import org.apache.hadoop.hdds.client.ReplicationFactor;
-import org.apache.hadoop.hdds.client.ReplicationType;
+import org.apache.hadoop.hdds.client.*;
 import org.apache.hadoop.hdds.conf.OzoneConfiguration;
 import org.apache.hadoop.hdds.protocol.StorageType;
+import org.apache.hadoop.hdds.protocol.proto.HddsProtos;
 import org.apache.hadoop.ozone.MiniOzoneCluster;
 import org.apache.hadoop.ozone.OFSPath;
 import org.apache.hadoop.ozone.OzoneAcl;
@@ -58,6 +56,7 @@ import org.apache.hadoop.ozone.om.OMMetrics;
 import org.apache.hadoop.ozone.om.TrashPolicyOzone;
 import org.apache.hadoop.ozone.om.exceptions.OMException;
 import org.apache.hadoop.ozone.om.helpers.BucketLayout;
+import org.apache.hadoop.ozone.om.helpers.QuotaUtil;
 import org.apache.hadoop.ozone.security.acl.IAccessAuthorizer.ACLIdentityType;
 import org.apache.hadoop.ozone.security.acl.IAccessAuthorizer.ACLType;
 import org.apache.hadoop.ozone.security.acl.OzoneAclConfig;
@@ -103,6 +102,7 @@ import static org.apache.hadoop.fs.FileSystem.TRASH_PREFIX;
 //import org.apache.hadoop.fs.ozone.*;
 //import org.apache.hadoop.fs.ozone.BasicRootedOzoneClientAdapterImpl;
 
+import static org.apache.hadoop.hdds.client.ECReplicationConfig.EcCodec.RS;
 import static org.apache.hadoop.ozone.OzoneAcl.AclScope.ACCESS;
 import static org.apache.hadoop.ozone.OzoneConfigKeys.OZONE_FS_ITERATE_BATCH_SIZE;
 import static org.apache.hadoop.ozone.OzoneConsts.OZONE_URI_DELIMITER;
@@ -123,7 +123,7 @@ import org.apache.hadoop.net.NetUtils;
  * Ozone file system tests that are not covered by contract tests.
  * TODO: Refactor this and TestOzoneFileSystem to reduce duplication.
  */
-@Ignore
+
 @RunWith(Parameterized.class)
 public class TestRootedOzoneFileSystem {
 // {
@@ -228,7 +228,7 @@ public class TestRootedOzoneFileSystem {
   public static void initClusterAndEnv() throws IOException,
       InterruptedException, TimeoutException {
         // NetUtils.addStaticResolution("0.0.0.0", "localhost");
-        LOG.info("*** *** *** initClusterAndEnv *** *** ***");
+        LOG.debug("*** *** *** initClusterAndEnv *** *** ***");
         
     conf = new OzoneConfiguration();
     conf.setFloat(OMConfigKeys.OZONE_FS_TRASH_INTERVAL_KEY, TRASH_INTERVAL);
@@ -279,7 +279,7 @@ public class TestRootedOzoneFileSystem {
         (PrivilegedExceptionAction<RootedOzoneFileSystem>)()
             -> (RootedOzoneFileSystem) FileSystem.get(conf));
 
-    LOG.info("*** *** *** initClusterAndEnv end...*** *** ***");
+    LOG.debug("*** *** *** initClusterAndEnv end...*** *** ***");
 
   }
 
@@ -337,19 +337,11 @@ public class TestRootedOzoneFileSystem {
 
 
 
-  // 123
+  // 456
   @Test
-  @Ignore
-  public void testCreateAndCheckECTypeFileDiskUsage() throws Exception {
-    // Path grandparent = new Path(bucketPath,
-    //     "testCreateDoesNotAddParentDirKeys");
-    // Path parent = new Path(grandparent, "parent");
-    // Path child = new Path(parent, "child");
-    // ContractTestUtils.touch(fs, child);
+  // @Ignore
+  public void testCreateAndCheckECFileDiskUsage() throws Exception {
 
-    // OzoneKeyDetails key = getKey(child, false);
-    // System.err.println("*** *** *** test 1 *** *** " +);
-    Path filePath = new Path("test.txt");
     BucketArgs.Builder builder = BucketArgs.newBuilder();
     builder.setStorageType(StorageType.DISK);
     builder.setBucketLayout(BucketLayout.LEGACY);
@@ -373,23 +365,56 @@ public class TestRootedOzoneFileSystem {
 
     int objectSizeInBytes = 10;
     byte[] objContent = RandomUtils.nextBytes(objectSizeInBytes);
-    try (OzoneOutputStream out = cluster.getClient().getProxy().
-                        createKey(volumeName, bucketName, "test.txt", objectSizeInBytes, null, new HashMap())) {
-        out.write(objContent);
-    }
+    String key1 = "key1";
+     try (FSDataOutputStream stream =
+       ofs.create(new Path(key1))) {
+       stream.write(objContent);
+     }
 
-    // fs.getContentSummary(item.path);
-    ContentSummary contentSummary = fs.getContentSummary(filePath);
+    Path filePath = new Path(key1);
+    ContentSummary contentSummary = ofs.getContentSummary(filePath);
+
     long length = contentSummary.getLength();
     long spaceConsumed = contentSummary.getSpaceConsumed();
-    int expectDiskUsage = 10 * 3;
+    ReplicationConfig rconfig = new ECReplicationConfig(3, 2, RS, 1024);
+    long expectDiskUsage = QuotaUtil.getReplicatedSize(length, rconfig);
     Assert.assertEquals(expectDiskUsage, spaceConsumed);
   }
 
 
   @Test
-  public void testCreateAndCheckRatisTypeFileDiskUsage() throws Exception {
-    
+  public void testCreateAndCheckRatisFileDiskUsage() throws Exception {
+    BucketArgs.Builder builder = BucketArgs.newBuilder();
+    builder.setStorageType(StorageType.DISK);
+    builder.setBucketLayout(BucketLayout.LEGACY);
+    builder.setDefaultReplicationConfig(
+            new DefaultReplicationConfig(RatisReplicationConfig.getInstance(HddsProtos.ReplicationFactor.THREE)));
+    BucketArgs omBucketArgs = builder.build();
+    String vol = "vol2";
+    String buck = "bucket2";
+    final OzoneBucket bucket101 = TestDataUtil
+            .createVolumeAndBucket(cluster, vol, buck, BucketLayout.LEGACY,
+                    omBucketArgs);
+    Assert.assertEquals(ReplicationType.RATIS.name(),
+            bucket101.getReplicationConfig().getReplicationType().name());
+
+    int objectSizeInBytes = 10;
+    byte[] objContent = RandomUtils.nextBytes(objectSizeInBytes);
+    String key1 = "key2";
+    try (FSDataOutputStream stream =
+                 ofs.create(new Path(key1))) {
+      stream.write(objContent);
+    }
+
+    Path filePath = new Path(key1);
+    ContentSummary contentSummary = ofs.getContentSummary(filePath);
+
+    long length = contentSummary.getLength();
+    long spaceConsumed = contentSummary.getSpaceConsumed();
+    ReplicationConfig rconfig = RatisReplicationConfig.getInstance(HddsProtos.ReplicationFactor.THREE);
+    long expectDiskUsage = QuotaUtil.getReplicatedSize(length, rconfig);
+    Assert.assertEquals(expectDiskUsage, spaceConsumed);
+
   }
 
   // @Test
@@ -1990,35 +2015,49 @@ public class TestRootedOzoneFileSystem {
   //       ReplicationType.RATIS.name());
   // }
 
-  // @Test
-  // public void testBucketDefaultsShouldBeInheritedToFileForEC()
-  //     throws Exception {
-  //   BucketArgs.Builder builder = BucketArgs.newBuilder();
-  //   builder.setStorageType(StorageType.DISK);
-  //   builder.setBucketLayout(BucketLayout.LEGACY);
-  //   builder.setDefaultReplicationConfig(
-  //       new DefaultReplicationConfig(ReplicationType.EC,
-  //           new ECReplicationConfig("RS-3-2-1024")));
-  //   BucketArgs omBucketArgs = builder.build();
-  //   String vol = UUID.randomUUID().toString();
-  //   String buck = UUID.randomUUID().toString();
-  //   final OzoneBucket bucket101 = TestDataUtil
-  //       .createVolumeAndBucket(cluster, vol, buck, BucketLayout.LEGACY,
-  //           omBucketArgs);
-  //   Assert.assertEquals(ReplicationType.EC.name(),
-  //       bucket101.getReplicationConfig().getReplicationType().name());
-  //   // Bucket has default EC and client has default RATIS.
-  //   // In this case, it should inherit from bucket
-  //   try (OzoneFSOutputStream file = adapter
-  //       .createFile(vol + "/" + buck + "/test", (short) 3, true, false)) {
-  //     file.write(new byte[1024]);
-  //   }
-  //   OFSPath ofsPath = new OFSPath(vol + "/" + buck + "/test");
-  //   final OzoneBucket bucket = adapter.getBucket(ofsPath, false);
-  //   final OzoneKeyDetails key = bucket.getKey(ofsPath.getKeyName());
-  //   Assert.assertEquals(ReplicationType.EC.name(),
-  //       key.getReplicationConfig().getReplicationType().name());
-  // }
+  @Test // 456
+  public void testBucketDefaultsShouldBeInheritedToFileForEC()
+      throws Exception {
+    BucketArgs.Builder builder = BucketArgs.newBuilder();
+    builder.setStorageType(StorageType.DISK);
+    builder.setBucketLayout(BucketLayout.LEGACY);
+    builder.setDefaultReplicationConfig(
+        new DefaultReplicationConfig(ReplicationType.EC,
+            new ECReplicationConfig("RS-3-2-1024")));
+    BucketArgs omBucketArgs = builder.build();
+    String vol = UUID.randomUUID().toString();
+    String buck = UUID.randomUUID().toString();
+    final OzoneBucket bucket101 = TestDataUtil
+        .createVolumeAndBucket(cluster, vol, buck, BucketLayout.LEGACY,
+            omBucketArgs);
+    Assert.assertEquals(ReplicationType.EC.name(),
+        bucket101.getReplicationConfig().getReplicationType().name());
+    // Bucket has default EC and client has default RATIS.
+    // In this case, it should inherit from bucket
+    try (OzoneFSOutputStream file = adapter
+        .createFile(vol + "/" + buck + "/test", (short) 3, true, false)) {
+      file.write(new byte[1024]);
+    }
+    OFSPath ofsPath = new OFSPath(vol + "/" + buck + "/test");
+    final OzoneBucket bucket = adapter.getBucket(ofsPath, false);
+    final OzoneKeyDetails key = bucket.getKey(ofsPath.getKeyName());
+    Assert.assertEquals(ReplicationType.EC.name(),
+        key.getReplicationConfig().getReplicationType().name());
+
+
+        // Assert.assertEquals("*** ***","*** *** *** OzoneKeyDetails : " + key.getReplicationConfig());
+        Path filePath = new Path("/test");
+        // Path filePath = new Path("test_111.txt");
+        // ContentSummary contentSummary = fs.getContentSummary(filePath);
+
+        ContentSummary contentSummary = ofs.getContentSummary(filePath);
+    
+        long length = contentSummary.getLength();
+        long spaceConsumed = contentSummary.getSpaceConsumed();
+        int expectDiskUsage = 10 * 4;
+        Assert.assertEquals(expectDiskUsage, spaceConsumed);
+    
+  }
 
   // @Test
   // public void testGetFileStatus() throws Exception {

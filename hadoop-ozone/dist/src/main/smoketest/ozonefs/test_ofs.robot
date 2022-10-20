@@ -62,6 +62,51 @@ Check disk usage after create a file which uses EC replication type
                                     Should contain        ${result}         ${expectedDiskUsage}
 
 
+
+
+
+#Check disk usage after create a file which uses RATIS replication type
+#                ${vol} =    BuiltIn.Set Variable    /vol1
+#               ${bucket} =  BuiltIn.Set Variable    /bucket1
+#                            Execute And Ignore Error               ozone sh volume create ${vol}
+#                            Execute And Ignore Error               ozone sh bucket create ${vol}${bucket} --replication 3 --type RATIS
+#                            Execute And Ignore Error               ozone fs -put NOTICE.txt ${vol}${bucket}/PUTFILE1.txt
+##                            Execute               ozone sh volume create ${vol}
+##                            Execute               ozone sh bucket create ${vol}${bucket} --replication 3 --type RATIS
+##                            Execute               ozone fs -put NOTICE.txt ${vol}${bucket}/PUTFILE1.txt
+#     ${expectedFileLength} =    Execute               stat -c %s NOTICE.txt
+#                                Log To Console        fileLength=${expectedFileLength}
+#     ${expectedDiskUsage} =     Get Disk Usage of File with RATIS Replication    ${expectedFileLength}    3
+#     ${result} =                Execute               ozone fs -du ofs://om${vol}${bucket}
+#                                Should contain        ${result}         PUTFILE1.txt
+#                                Log To Console        reuslt=${result}
+#                                Should contain        ${result}         ${expectedFileLength}
+#                                Should contain        ${result}         ${expectedDiskUsage}
+
+
+
+#Check disk usage after create a file which uses EC replication type
+#                   ${vol} =    BuiltIn.Set Variable    /vol2
+#                   ${bucket} =    BuiltIn.Set Variable    /bucket2
+#
+#                   Execute And Ignore Error               ozone sh volume create ${vol}
+#                   Execute And Ignore Error               ozone sh bucket create ${vol}${bucket} --type EC --replication rs-3-2-1024k
+##                  Execute                ozone sh volume create ${vol}
+##                  Execute                ozone sh bucket create ${vol}${bucket} --type EC --replication rs-3-2-1024k
+#
+#                   Execute And Ignore Error               ozone fs -put NOTICE.txt ${vol}${bucket}/PUTFILE2.txt
+#                   ${expectedFileLength} =    Execute      stat -c %s NOTICE.txt
+#                   Log To Console        fileLength=${expectedFileLength}
+#                   ${expectedDiskUsage} =     Get Disk Usage of File with EC RS Replication    ${expectedFileLength}    3    2    1024
+#                   Log To Console     du=${expectedDiskUsage}
+#                   ${result} =    Execute               ozone fs -du ofs://om${vol}${bucket}
+#                            Should contain        ${result}         PUTFILE2.txt
+#                            Log To Console        reuslt=${result}
+#                            Should contain        ${result}         ${expectedFileLength}
+#                            Should contain        ${result}         ${expectedDiskUsage}
+
+
+
 *** Keywords ***
 
 Setup localdir1
