@@ -1205,7 +1205,7 @@ public class TestRootedOzoneFileSystem {
             sb1.toString() + sb2.toString() +
                     sb3.toString() + sb4.toString());
 
-    Assert.assertEquals(fileStatusesOver.length,
+    Assert.assertEquals(fileStatusesOver.length * 10,
         fileStatusesLimit1.length + fileStatusesLimit2.length);
 
     // Cleanup
