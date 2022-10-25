@@ -79,6 +79,8 @@ import static org.apache.hadoop.ozone.OzoneConsts.OZONE_OFS_URI_SCHEME;
 import static org.apache.hadoop.ozone.om.exceptions.OMException.ResultCodes.BUCKET_NOT_EMPTY;
 import static org.apache.hadoop.ozone.om.exceptions.OMException.ResultCodes.VOLUME_NOT_EMPTY;
 
+import org.apache.hadoop.fs.FsStatus;
+
 /**
  * The minimal Rooted Ozone Filesystem implementation.
  * <p>
@@ -165,6 +167,7 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
       throw new IOException(msg, ue);
     }
   }
+
 
   protected OzoneClientAdapter createAdapter(ConfigurationSource conf,
       String omHost, int omPort) throws IOException {
@@ -1339,6 +1342,25 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
     }
     return new LocatedFileStatus(fileStatus, blockLocations);
   }
+
+  @Override
+  public FsStatus getStatus(Path f) throws IOException {
+
+    ContentSummary summary = getContentSummary(f);
+    long quota = summary.getQuota();
+    long spaceQuota = summary.getSpaceQuota();
+    System.err.println("*** *** oct 24 - contentSummary: quota = " + quota + ", spaceQuota = " + spaceQuota);
+
+    long capacity = spaceQuota;
+    long used = summary.getSpaceConsumed();
+    // Recon
+
+
+
+    FsStatus fs = new FsStatus(capacity, used, capacity - used);
+    return fs;
+  }
+
 
   @Override
   public ContentSummary getContentSummary(Path f) throws IOException {
