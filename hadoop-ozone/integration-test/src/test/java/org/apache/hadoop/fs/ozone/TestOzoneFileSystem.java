@@ -114,6 +114,7 @@ import org.apache.commons.lang3.RandomUtils;
  * Ozone file system tests that are not covered by contract tests.
  */
 
+@Ignore
 @RunWith(Parameterized.class)
 public class TestOzoneFileSystem {
 

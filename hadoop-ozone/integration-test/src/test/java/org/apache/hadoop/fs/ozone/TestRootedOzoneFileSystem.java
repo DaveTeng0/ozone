@@ -340,7 +340,7 @@ public class TestRootedOzoneFileSystem {
 
   // 456
   @Test
-  // @Ignore
+   @Ignore
   public void testCreateAndCheckECFileDiskUsage() throws Exception {
 
     BucketArgs.Builder builder = BucketArgs.newBuilder();
@@ -383,6 +383,7 @@ public class TestRootedOzoneFileSystem {
   }
 
 
+  @Ignore
   @Test
   public void testCreateAndCheckRatisFileDiskUsage() throws Exception {
     BucketArgs.Builder builder = BucketArgs.newBuilder();
@@ -1295,12 +1296,13 @@ public class TestRootedOzoneFileSystem {
        idx4 ++;
      }
 
+     Assert.assertEquals("coffee", sb1.toString() + sb2.toString() + sb3.toString() + sb4.toString());
+
      // Note: at the time of writing this test, OmMetadataManagerImpl#listVolumes
      //  excludes startVolume (startPath) from the result. Might change.
      Assert.assertEquals(fileStatusesOver.length,
          fileStatusesLimit1.length + fileStatusesLimit2.length);
 
-     Assert.assertEquals("coffee", sb1.toString() + sb2.toString() + sb3.toString() + sb4.toString());
 
      // Cleanup
      for (Path path : paths) {
@@ -2047,6 +2049,7 @@ public class TestRootedOzoneFileSystem {
   //       ReplicationType.RATIS.name());
   // }
 
+  @Ignore
   @Test // 456
   public void testBucketDefaultsShouldBeInheritedToFileForEC()
       throws Exception {
