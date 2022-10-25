@@ -1153,10 +1153,11 @@ public class TestRootedOzoneFileSystem {
     // Default volume "s3v" is created during startup.
     Assert.assertEquals(5 + 1, fileStatusesOver.length);
     StringBuilder sb1 = new StringBuilder();
-    int idx1 =0 ;
+    int idx1 = 0;
     for (FileStatus ff : fileStatusesOver) {
-      sb1.append("StatusesOver8[").append(idx1).append("] = ").append(ff.getPath()).append("\n");
-      idx1 ++;
+      sb1.append("StatusesOver8[").append(idx1).append("] = ").
+              append(ff.getPath()).append("\n");
+      idx1++;
     }
 
 
@@ -1172,10 +1173,11 @@ public class TestRootedOzoneFileSystem {
     // the specified limit
     Assert.assertEquals(3, fileStatusesLimit1.length);
     StringBuilder sb2 = new StringBuilder();
-    int idx2 =0 ;
+    int idx2 = 0;
     for (FileStatus ff : fileStatusesLimit1) {
-      sb2.append("Limit1[").append(idx2).append("] = ").append(ff.getPath()).append("\n");
-      idx2 ++;
+      sb2.append("Limit1[").append(idx2).append("] = ").
+              append(ff.getPath()).append("\n");
+      idx2++;
     }
 
 
@@ -1183,7 +1185,8 @@ public class TestRootedOzoneFileSystem {
     // Get the last entry in the list as startPath
     String nextStartPath =
         fileStatusesLimit1[fileStatusesLimit1.length - 1].getPath().toString();
-    StringBuilder sb3 = new StringBuilder().append("***   nextStartPath = ").append(nextStartPath).append("\n");
+    StringBuilder sb3 = new StringBuilder().append("***   nextStartPath = ").
+            append(nextStartPath).append("\n");
 
 
     FileStatus[] fileStatusesLimit2 = customListStatus(new Path("/"),
@@ -1191,13 +1194,16 @@ public class TestRootedOzoneFileSystem {
     // Note: at the time of writing this test, OmMetadataManagerImpl#listVolumes
     //  excludes startVolume (startPath) from the result. Might change.
     StringBuilder sb4 = new StringBuilder();
-    int idx4 =0 ;
+    int idx4 = 0;
     for (FileStatus ff : fileStatusesLimit2) {
-      sb4.append("Limit2[").append(idx4).append("] = ").append(ff.getPath()).append("\n");
-      idx4 ++;
+      sb4.append("Limit2[").append(idx4).append("] = ").
+              append(ff.getPath()).append("\n");
+      idx4++;
     }
 
-    Assert.assertEquals("coffee", sb1.toString() + sb2.toString() + sb3.toString() + sb4.toString());
+    Assert.assertEquals("coffee",
+            sb1.toString() + sb2.toString() +
+                    sb3.toString() + sb4.toString());
 
     Assert.assertEquals(fileStatusesOver.length,
         fileStatusesLimit1.length + fileStatusesLimit2.length);
