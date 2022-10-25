@@ -1152,6 +1152,13 @@ public class TestRootedOzoneFileSystem {
     // There are only 5 volumes
     // Default volume "s3v" is created during startup.
     Assert.assertEquals(5 + 1, fileStatusesOver.length);
+    StringBuilder sb1 = new StringBuilder();
+    int idx1 =0 ;
+    for (FileStatus ff : fileStatusesOver) {
+      sb1.append("StatusesOver8[").append(idx1).append("] = ").append(ff.getPath()).append("\n");
+      idx1 ++;
+    }
+
 
     // numEntries = 5
     FileStatus[] fileStatusesExact = customListStatus(new Path("/"),
@@ -1164,14 +1171,34 @@ public class TestRootedOzoneFileSystem {
     // Should only return 3 volumes even though there are more than that due to
     // the specified limit
     Assert.assertEquals(3, fileStatusesLimit1.length);
+    StringBuilder sb2 = new StringBuilder();
+    int idx2 =0 ;
+    for (FileStatus ff : fileStatusesLimit1) {
+      sb2.append("Limit1[").append(idx2).append("] = ").append(ff.getPath()).append("\n");
+      idx2 ++;
+    }
+
+
 
     // Get the last entry in the list as startPath
     String nextStartPath =
         fileStatusesLimit1[fileStatusesLimit1.length - 1].getPath().toString();
+    StringBuilder sb3 = new StringBuilder().append("***   nextStartPath = ").append(nextStartPath).append("\n");
+
+
     FileStatus[] fileStatusesLimit2 = customListStatus(new Path("/"),
         false, nextStartPath, 3);
     // Note: at the time of writing this test, OmMetadataManagerImpl#listVolumes
     //  excludes startVolume (startPath) from the result. Might change.
+    StringBuilder sb4 = new StringBuilder();
+    int idx4 =0 ;
+    for (FileStatus ff : fileStatusesLimit2) {
+      sb4.append("Limit2[").append(idx4).append("] = ").append(ff.getPath()).append("\n");
+      idx4 ++;
+    }
+
+    Assert.assertEquals("coffee", sb1.toString() + sb2.toString() + sb3.toString() + sb4.toString());
+
     Assert.assertEquals(fileStatusesOver.length,
         fileStatusesLimit1.length + fileStatusesLimit2.length);
 
