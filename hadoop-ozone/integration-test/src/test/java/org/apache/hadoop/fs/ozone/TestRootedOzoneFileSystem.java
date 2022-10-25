@@ -1255,7 +1255,7 @@ public class TestRootedOzoneFileSystem {
      StringBuilder sb1 = new StringBuilder();
      int idx1 =0 ;
      for (FileStatus ff : fileStatusesOver) {
-       sb1.append("original[").append(idx1).append("] = ").append(ff.getPath()).append("\n");
+       sb1.append("StatusesOver8[").append(idx1).append("] = ").append(ff.getPath()).append("\n");
        idx1 ++;
      }
      // There are only 5 volumes
@@ -1284,7 +1284,6 @@ public class TestRootedOzoneFileSystem {
      // Get the last entry in the list as startPath
      String nextStartPath =
          fileStatusesLimit1[fileStatusesLimit1.length - 1].getPath().toString();
-     System.err.print("*** *** *** abba! nextStartPath = " + nextStartPath);
      StringBuilder sb3 = new StringBuilder().append("***   nextStartPath = ").append(nextStartPath).append("\n");
 
      FileStatus[] fileStatusesLimit2 = customListStatus(new Path("/"),
@@ -1292,7 +1291,7 @@ public class TestRootedOzoneFileSystem {
      StringBuilder sb4 = new StringBuilder();
      int idx4 =0 ;
      for (FileStatus ff : fileStatusesLimit2) {
-       sb4.append("Limit1[").append(idx4).append("] = ").append(ff.getPath()).append("\n");
+       sb4.append("Limit2[").append(idx4).append("] = ").append(ff.getPath()).append("\n");
        idx4 ++;
      }
 
