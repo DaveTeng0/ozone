@@ -1133,6 +1133,7 @@ public class TestRootedOzoneFileSystem {
   }
 
   @Test
+  @Ignore
   public void testListStatusRootAndVolumeContinuation() throws IOException {
     // TODO: Request for comment.
     //  If possible, improve this to test when FS Path is enabled.
