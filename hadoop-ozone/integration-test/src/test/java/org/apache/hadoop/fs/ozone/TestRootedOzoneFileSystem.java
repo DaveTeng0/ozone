@@ -1150,9 +1150,7 @@ public class TestRootedOzoneFileSystem {
     // numEntries > 5
     FileStatus[] fileStatusesOver = customListStatus(new Path("/"),
         false, "", 8);
-    // There are only 5 volumes
-    // Default volume "s3v" is created during startup.
-    Assert.assertEquals(5 + 1, fileStatusesOver.length);
+
     StringBuilder sb1 = new StringBuilder();
     int idx1 = 0;
     for (FileStatus ff : fileStatusesOver) {
@@ -1161,10 +1159,25 @@ public class TestRootedOzoneFileSystem {
       idx1++;
     }
 
+    // There are only 5 volumes
+    // Default volume "s3v" is created during startup.
+    Assert.assertEquals(5 + 1, fileStatusesOver.length);
+    Assert.assertEquals("hello", sb1.toString());
+
 
     // numEntries = 5
     FileStatus[] fileStatusesExact = customListStatus(new Path("/"),
         false, "", 5);
+
+    StringBuilder sbExact = new StringBuilder();
+    int idxExact = 0;
+    for (FileStatus ff : fileStatusesExact) {
+      sbExact.append("sbExact[").append(idxExact).append("] = ").
+              append(ff.getPath()).append("\n");
+      idxExact++;
+    }
+
+    Assert.assertEquals("hello java", sbExact.toString());
     Assert.assertEquals(5, fileStatusesExact.length);
 
     // numEntries < 5
