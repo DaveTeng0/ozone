@@ -60,7 +60,7 @@ Check disk usage after create a file which uses RATIS replication type
                ${bucket} =      Generate Random String  8  [LOWER]
                                 Execute                 ozone sh volume create /${vol}
                                 Execute                 ozone sh bucket create /${vol}/${bucket} --type RATIS --replication 3 
-                                Execute                 ozone fs -put NOTICE.txt /${vol}/${bucket}/PUTFILE1.txt
+                                Execute                 ozone fs -put NOTICE.txt ofs://om/${vol}/${bucket}/PUTFILE1.txt
      ${expectedFileLength} =    Execute                 stat -c %s NOTICE.txt
      ${expectedDiskUsage} =     Get Disk Usage of File with RATIS Replication    ${expectedFileLength}    3
      ${result} =                Execute                 ozone fs -du /${vol}/${bucket}
@@ -75,7 +75,7 @@ Check disk usage after create a file which uses EC replication type
                 ${bucket} =    Generate Random String   8  [LOWER]
                                Execute                  ozone sh volume create /${vol}
                                Execute                  ozone sh bucket create /${vol}/${bucket} --type EC --replication rs-3-2-1024k
-                               Execute                  ozone fs -put NOTICE.txt /${vol}/${bucket}/PUTFILE2.txt
+                               Execute                  ozone fs -put NOTICE.txt ofs://om/${vol}/${bucket}/PUTFILE2.txt
     ${expectedFileLength} =    Execute                  stat -c %s NOTICE.txt
      ${expectedDiskUsage} =    Get Disk Usage of File with EC RS Replication    ${expectedFileLength}    3    2    1024
                 ${result} =    Execute                  ozone fs -du /${vol}/${bucket}
