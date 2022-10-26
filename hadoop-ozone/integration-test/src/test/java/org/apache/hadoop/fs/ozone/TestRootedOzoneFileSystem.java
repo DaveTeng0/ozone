@@ -1201,6 +1201,7 @@ public class TestRootedOzoneFileSystem {
       idx4++;
     }
 
+    Assert.assertEquals(99, 99);
     Assert.assertEquals("coffee",
             sb1.toString() + sb2.toString() +
                     sb3.toString() + sb4.toString());
