@@ -188,7 +188,7 @@ Get Disk Usage of File with EC RS Replication
     ${fullStripes} =                 Evaluate   ${fileLength}/${dataStripeSize}
     ${fullStripes} =                 Convert To Integer   ${fullStripes}                        
     # rounds to ones digit
-    ${fullStripes} =                 Convert to Number    ${fullStripes} 0
+    ${fullStripes} =                 Convert to Number    ${fullStripes}  0
     ${partialFirstChunk} =           Evaluate   ${fileLength} % ${dataStripeSize}                            
     ${ecChunkSize} =                 Convert To Integer   ${ecChunkSize}
     ${partialFirstChunk} =           Convert To Integer   ${partialFirstChunk}
