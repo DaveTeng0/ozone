@@ -77,7 +77,12 @@ Check disk usage after create a file which uses EC replication type
                        Log To Console           hello!vol=${vol},bucket=${bucket}
                                Execute                  ozone sh bucket create /${vol}/${bucket} --type EC --replication rs-3-2-1024k
                    Log To Console           hello!after_create_bucket=${bucket}
-                               Execute                  ozone fs -put NOTICE.txt ofs://om/${vol}/${bucket}/PUTFILE2.txt
+                 ${command_test} =       ozone fs -put NOTICE.txt ofs://om/${vol}/${bucket}/PUTFILE2.txt
+
+
+    ${rc}                           ${output} =                 Run And Return Rc And Output           ${command_test}
+    Log To Console              ****ozone_sh_put_output=${output}
+    Log To Console              ****ozone_sh_put_rc=${rc}
 
                    Log To Console           hello!after_put_file_NOTICE
     ${expectedFileLength} =    Execute                  stat -c %s NOTICE.txt
