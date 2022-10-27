@@ -59,7 +59,7 @@ Check disk usage after create a file which uses RATIS replication type
                   ${vol} =      Generate Random String  8  [LOWER]
                ${bucket} =      Generate Random String  8  [LOWER]
                                 Execute                 ozone sh volume create /${vol}
-                                Execute                 ozone sh bucket create /${vol}/${bucket} --type RATIS --replication 3 
+                                Execute                 ozone sh bucket create /${vol}/${bucket}
                                 Execute                 ozone fs -put NOTICE.txt ofs://om/${vol}/${bucket}/PUTFILE1.txt
      ${expectedFileLength} =    Execute                 stat -c %s NOTICE.txt
      ${expectedDiskUsage} =     Get Disk Usage of File with RATIS Replication    ${expectedFileLength}    3
