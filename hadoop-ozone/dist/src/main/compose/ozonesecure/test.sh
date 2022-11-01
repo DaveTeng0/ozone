@@ -31,11 +31,11 @@ start_docker_env 5
 
 execute_command_in_container kms hadoop key create ${OZONE_BUCKET_KEY_NAME}
 
-#execute_robot_test scm kinit.robot
+execute_robot_test scm kinit.robot
 
-#execute_robot_test scm basic
+execute_robot_test scm basic
 
-#execute_robot_test scm security
+execute_robot_test scm security
 
 execute_robot_test scm -v SCHEME:ofs -v BUCKET_TYPE:bucket -N ozonefs-ofs-bucket ozonefs/ozonefs.robot
 execute_robot_test scm -v SCHEME:o3fs -v BUCKET_TYPE:link -N ozonefs-o3fs-link ozonefs/ozonefs.robot
