@@ -703,6 +703,8 @@ public class BasicRootedOzoneClientAdapterImpl
       boolean recursive, String startPath, long numEntries,
       URI uri, Path workingDir, String username) throws IOException {
 
+    System.err.println("*** *** nov-2 -2, this is listStatusRoot, startPath = " + startPath);
+
     OFSPath ofsStartPath = new OFSPath(startPath);
     // list volumes
     Iterator<? extends OzoneVolume> iter = objectStore.listVolumesByUser(
@@ -711,6 +713,7 @@ public class BasicRootedOzoneClientAdapterImpl
     while (iter.hasNext() && res.size() < numEntries) {
       OzoneVolume volume = iter.next();
       res.add(getFileStatusAdapterForVolume(volume, uri));
+      System.err.println("*** *** Nov 2- 3, res.add(" + res.get(res.size()-1));
       if (recursive) {
         String pathStrNextVolume = volume.getName();
         res.addAll(listStatus(pathStrNextVolume, recursive, startPath,
@@ -819,6 +822,8 @@ public class BasicRootedOzoneClientAdapterImpl
         result.add(toFileStatusAdapter(status, username, uri, workingDir,
             ofsPathPrefix));
       }
+
+      System.err.println("*** *** nov 2 - 1, " + result.size());
       return result;
     } catch (OMException e) {
       if (e.getResult() == OMException.ResultCodes.FILE_NOT_FOUND) {
