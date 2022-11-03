@@ -26,10 +26,12 @@ import org.apache.hadoop.fs.contract.AbstractFSContract;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 
 /**
  * Ozone contract tests covering deletes.
  */
+@Ignore
 public class ITestRootedOzoneContractDelete extends AbstractContractDeleteTest {
 
   @BeforeClass

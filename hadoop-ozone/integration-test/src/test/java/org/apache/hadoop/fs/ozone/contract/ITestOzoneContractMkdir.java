@@ -26,12 +26,14 @@ import org.apache.hadoop.fs.contract.AbstractContractMkdirTest;
 import org.apache.hadoop.fs.contract.AbstractFSContract;
 
 import org.junit.AfterClass;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 /**
  * Test dir operations on Ozone.
  */
+@Ignore
 @RunWith(Parameterized.class)
 public class ITestOzoneContractMkdir extends AbstractContractMkdirTest {
 

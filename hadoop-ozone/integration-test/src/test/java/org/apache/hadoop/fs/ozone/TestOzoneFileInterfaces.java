@@ -85,6 +85,7 @@ import org.junit.runners.Parameterized.Parameters;
  * create, read, write, getFileStatus
  */
 @RunWith(Parameterized.class)
+@Ignore
 public class TestOzoneFileInterfaces {
 
   /**

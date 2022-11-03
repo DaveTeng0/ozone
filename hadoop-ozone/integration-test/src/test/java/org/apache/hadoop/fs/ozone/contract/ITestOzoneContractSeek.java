@@ -26,10 +26,12 @@ import org.apache.hadoop.fs.contract.AbstractFSContract;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 
 /**
  * Ozone contract tests covering file seek.
  */
+@Ignore
 public class ITestOzoneContractSeek extends AbstractContractSeekTest {
 
   @BeforeClass

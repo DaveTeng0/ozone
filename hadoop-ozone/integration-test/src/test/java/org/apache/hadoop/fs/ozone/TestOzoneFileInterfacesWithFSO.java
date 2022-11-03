@@ -32,6 +32,7 @@ import java.io.IOException;
  * This test will test the various interfaces i.e.
  * create, read, write, getFileStatus
  */
+@Ignore
 @RunWith(Parameterized.class)
 public class TestOzoneFileInterfacesWithFSO extends TestOzoneFileInterfaces {
 

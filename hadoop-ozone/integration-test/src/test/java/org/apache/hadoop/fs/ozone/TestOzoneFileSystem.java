@@ -59,11 +59,7 @@ import org.apache.ozone.test.GenericTestUtils;
 import org.apache.ozone.test.LambdaTestUtils;
 import org.apache.ozone.test.TestClock;
 import org.apache.ozone.test.tag.Flaky;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -103,6 +99,7 @@ import static org.junit.Assert.fail;
 /**
  * Ozone file system tests that are not covered by contract tests.
  */
+@Ignore
 @RunWith(Parameterized.class)
 public class TestOzoneFileSystem {
 

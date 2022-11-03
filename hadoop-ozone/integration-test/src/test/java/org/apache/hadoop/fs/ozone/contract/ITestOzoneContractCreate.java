@@ -26,12 +26,14 @@ import org.apache.hadoop.fs.contract.AbstractContractCreateTest;
 import org.apache.hadoop.fs.contract.AbstractFSContract;
 
 import org.junit.AfterClass;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 /**
  * Ozone contract tests creating files.
  */
+@Ignore
 @RunWith(Parameterized.class)
 public class ITestOzoneContractCreate extends AbstractContractCreateTest {
 

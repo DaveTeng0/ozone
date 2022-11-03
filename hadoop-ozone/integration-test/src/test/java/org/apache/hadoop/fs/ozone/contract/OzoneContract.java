@@ -38,10 +38,12 @@ import org.apache.hadoop.ozone.om.OMConfigKeys;
 
 import org.apache.hadoop.ozone.om.helpers.BucketLayout;
 import org.junit.Assert;
+import org.junit.Ignore;
 
 /**
  * The contract of Ozone: only enabled if the test bucket is provided.
  */
+@Ignore
 class OzoneContract extends AbstractFSContract {
 
   private static MiniOzoneCluster cluster;

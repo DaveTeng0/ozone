@@ -26,10 +26,7 @@ import org.apache.hadoop.ozone.client.ObjectStore;
 import org.apache.hadoop.ozone.client.OzoneBucket;
 import org.apache.hadoop.ozone.om.exceptions.OMException;
 import org.apache.hadoop.ozone.om.helpers.BucketLayout;
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
-import org.junit.Test;
-import org.junit.Assert;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -58,6 +55,7 @@ import java.util.Collection;
  * TODO: Refactor this and TestOzoneFileSystem to reduce duplication.
  */
 @RunWith(Parameterized.class)
+@Ignore
 public class TestOzoneFSBucketLayout {
 
   private static String defaultBucketLayout;

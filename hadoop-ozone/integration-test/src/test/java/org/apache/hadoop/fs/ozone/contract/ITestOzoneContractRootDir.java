@@ -26,12 +26,14 @@ import org.apache.hadoop.fs.contract.AbstractContractRootDirectoryTest;
 import org.apache.hadoop.fs.contract.AbstractFSContract;
 
 import org.junit.AfterClass;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 /**
  * Ozone contract test for ROOT directory operations.
  */
+@Ignore
 @RunWith(Parameterized.class)
 public class ITestOzoneContractRootDir extends
     AbstractContractRootDirectoryTest {

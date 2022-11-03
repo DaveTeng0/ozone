@@ -22,12 +22,14 @@ import org.apache.hadoop.fs.contract.AbstractContractUnbufferTest;
 import org.apache.hadoop.fs.contract.AbstractFSContract;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 
 import java.io.IOException;
 
 /**
  * Ozone contract tests for {@link org.apache.hadoop.fs.CanUnbuffer#unbuffer}.
  */
+@Ignore
 public class ITestOzoneContractUnbuffer extends AbstractContractUnbufferTest {
 
   @BeforeClass

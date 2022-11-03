@@ -38,13 +38,7 @@ import org.apache.hadoop.ozone.om.OMConfigKeys;
 import org.apache.hadoop.ozone.om.exceptions.OMException;
 import org.apache.hadoop.ozone.om.helpers.BucketLayout;
 import org.apache.hadoop.ozone.om.helpers.OmMultipartInfo;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.Timeout;
 
 import java.io.FileNotFoundException;
@@ -66,6 +60,7 @@ import static org.junit.Assert.fail;
 /**
  * Class tests create with object store and getFileStatus.
  */
+@Ignore
 public class TestOzoneFSWithObjectStoreCreate {
 
   @Rule

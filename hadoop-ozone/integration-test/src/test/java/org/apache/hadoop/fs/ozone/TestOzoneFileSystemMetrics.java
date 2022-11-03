@@ -31,11 +31,7 @@ import org.apache.hadoop.ozone.client.OzoneBucket;
 import org.apache.hadoop.ozone.client.io.OzoneOutputStream;
 import org.apache.hadoop.ozone.om.OMConfigKeys;
 import org.apache.hadoop.ozone.om.helpers.BucketLayout;
-import org.junit.Rule;
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
-import org.junit.Test;
-import org.junit.Assert;
+import org.junit.*;
 import org.junit.rules.Timeout;
 
 import java.io.IOException;
@@ -45,6 +41,7 @@ import static org.apache.hadoop.hdds.StringUtils.string2Bytes;
 /**
  * Test OM Metrics for OzoneFileSystem operations.
  */
+@Ignore
 public class TestOzoneFileSystemMetrics {
   /**
    * Set a timeout for each test.

@@ -25,6 +25,7 @@ import org.apache.hadoop.tools.contract.AbstractContractDistCpTest;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 
 import static org.apache.hadoop.fs.contract.ContractTestUtils.cleanup;
 
@@ -39,6 +40,7 @@ import static org.apache.hadoop.fs.contract.ContractTestUtils.cleanup;
  * unrelated failures occurring  while trying to handle directories with names
  * containing '[' and ']' characters.
  */
+@Ignore
 public class ITestOzoneContractDistCpWithFSO
     extends AbstractContractDistCpTest {
 

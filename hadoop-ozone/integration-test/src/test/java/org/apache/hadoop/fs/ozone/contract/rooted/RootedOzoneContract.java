@@ -35,10 +35,12 @@ import org.apache.hadoop.ozone.OzoneConsts;
 import org.apache.hadoop.ozone.om.OMConfigKeys;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 
 /**
  * The contract of Rooted Ozone FileSystem (OFS).
  */
+@Ignore
 class RootedOzoneContract extends AbstractFSContract {
 
   private static MiniOzoneCluster cluster;

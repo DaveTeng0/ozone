@@ -33,6 +33,7 @@ import org.apache.hadoop.ozone.MiniOzoneCluster;
 import org.apache.hadoop.ozone.OzoneConsts;
 import org.apache.hadoop.ozone.client.io.OzoneOutputStream;
 import org.apache.ozone.test.GenericTestUtils;
+import org.junit.Ignore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,6 +53,7 @@ import static org.apache.hadoop.test.MetricsAsserts.getMetrics;
  * Class used to test {@link SCMContainerManagerMetrics}.
  */
 @Timeout(300)
+@Ignore
 public class TestSCMContainerManagerMetrics {
 
   private MiniOzoneCluster cluster;

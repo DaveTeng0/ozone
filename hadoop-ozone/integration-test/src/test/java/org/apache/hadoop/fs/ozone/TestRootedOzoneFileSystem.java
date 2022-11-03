@@ -138,8 +138,8 @@ public class TestRootedOzoneFileSystem {
 //        new Object[]{true, true, true},
 //        new Object[]{true, true, false},
 //        new Object[]{true, false, false},
-        new Object[]{false, true, false},
-        new Object[]{false, false, false}
+//        new Object[]{false, true, false},
+        new Object[]{false, false, false}, null
     );
   }
 
@@ -162,15 +162,14 @@ public class TestRootedOzoneFileSystem {
 
   @Parameterized.AfterParam
   public static void teardownParam() throws IOException{
-    fs.delete(new Path("user"), false);
-//    fs.delete(new Path("/user"), false);
-
-
-    Path volume = new Path("/" + "user");
-    ofs.delete(volume, true);
-
-    ClientProtocol proxy = objectStore.getClientProxy();
-    proxy.deleteVolume("user");
+//    fs.delete(new Path("user"), false);
+////    fs.delete(new Path("/user"), false);
+//
+//    Path volume = new Path("/" + "user");
+//    ofs.delete(volume, true);
+//
+//    ClientProtocol proxy = objectStore.getClientProxy();
+//    proxy.deleteVolume("user");
 
 
     // Tear down the cluster after EACH set of parameters
@@ -1151,7 +1150,7 @@ public class TestRootedOzoneFileSystem {
   }
 
   @Test
-//  @Ignore
+  @Ignore
   public void testListStatusRootAndVolumeContinuation() throws IOException {
     GenericTestUtils.setLogLevel(LOG, Level.DEBUG);
     LOG.debug("*** *** this is test genericTestUtil...");

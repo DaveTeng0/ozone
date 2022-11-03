@@ -26,12 +26,14 @@ import org.apache.hadoop.fs.contract.AbstractContractDeleteTest;
 import org.apache.hadoop.fs.contract.AbstractFSContract;
 
 import org.junit.AfterClass;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 /**
  * Ozone contract tests covering deletes.
  */
+@Ignore
 @RunWith(Parameterized.class)
 public class ITestOzoneContractDelete extends AbstractContractDeleteTest {
 

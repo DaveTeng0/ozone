@@ -59,6 +59,7 @@ import static org.junit.Assert.fail;
  * Directory deletion service test cases using rooted ozone filesystem
  * ofs://volume/bucket/path.
  */
+@Ignore
 @Timeout(300)
 public class TestRootedDDSWithFSO {
 

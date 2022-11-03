@@ -25,6 +25,7 @@ import org.apache.hadoop.tools.contract.AbstractContractDistCpTest;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 
 import static org.apache.hadoop.fs.contract.ContractTestUtils.cleanup;
 
@@ -34,6 +35,7 @@ import static org.apache.hadoop.fs.contract.ContractTestUtils.cleanup;
  * Uses the block output stream, buffered to disk. This is the
  * recommended output mechanism for DistCP due to its scalability.
  */
+@Ignore
 public class ITestOzoneContractDistCp extends AbstractContractDistCpTest {
 
   @BeforeClass

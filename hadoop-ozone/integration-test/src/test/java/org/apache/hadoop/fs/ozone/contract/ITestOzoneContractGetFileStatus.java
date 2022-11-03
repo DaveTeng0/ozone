@@ -26,6 +26,7 @@ import org.apache.hadoop.fs.contract.AbstractContractGetFileStatusTest;
 import org.apache.hadoop.fs.contract.AbstractFSContract;
 
 import org.junit.AfterClass;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.slf4j.Logger;
@@ -34,6 +35,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Ozone contract tests covering getFileStatus.
  */
+@Ignore
 @RunWith(Parameterized.class)
 public class ITestOzoneContractGetFileStatus
     extends AbstractContractGetFileStatusTest {

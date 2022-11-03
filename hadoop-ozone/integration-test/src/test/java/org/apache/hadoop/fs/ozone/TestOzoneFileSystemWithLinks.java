@@ -31,6 +31,7 @@ import org.apache.hadoop.ozone.om.OMConfigKeys;
 import org.apache.hadoop.ozone.om.exceptions.OMException;
 import org.apache.hadoop.ozone.om.helpers.BucketLayout;
 import org.apache.hadoop.ozone.om.protocol.OzoneManagerProtocol;
+import org.junit.*;
 import org.junit.rules.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,16 +52,11 @@ import org.apache.hadoop.fs.Trash;
 
 import static org.junit.Assert.fail;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-
 
 /**
  * Ozone file system tests for Link Buckets.
  */
+@Ignore
 public class TestOzoneFileSystemWithLinks {
 
   private static final float TRASH_INTERVAL = 0.05f; // 3 seconds

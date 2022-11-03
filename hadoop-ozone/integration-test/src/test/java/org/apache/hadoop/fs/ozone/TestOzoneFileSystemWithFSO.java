@@ -56,6 +56,7 @@ import static org.junit.Assert.fail;
  * - prefix layout.
  *
  */
+@Ignore
 @RunWith(Parameterized.class)
 public class TestOzoneFileSystemWithFSO extends TestOzoneFileSystem {
 

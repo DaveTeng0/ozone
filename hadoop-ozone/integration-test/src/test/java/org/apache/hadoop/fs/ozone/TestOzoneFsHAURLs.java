@@ -40,11 +40,7 @@ import org.apache.ozone.test.GenericTestUtils;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.ratis.util.LifeCycle;
 import org.hamcrest.core.StringContains;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +48,6 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.UUID;
 
-import org.junit.Rule;
 import org.junit.rules.Timeout;
 import static org.apache.hadoop.hdds.HddsUtils.getHostName;
 import static org.apache.hadoop.hdds.HddsUtils.getHostPort;
@@ -60,6 +55,7 @@ import static org.apache.hadoop.hdds.HddsUtils.getHostPort;
 /**
  * Test client-side URI handling with Ozone Manager HA.
  */
+@Ignore
 public class TestOzoneFsHAURLs {
 
   /**

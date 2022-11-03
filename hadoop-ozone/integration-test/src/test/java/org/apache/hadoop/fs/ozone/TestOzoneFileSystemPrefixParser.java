@@ -30,10 +30,7 @@ import org.apache.hadoop.ozone.TestDataUtil;
 import org.apache.hadoop.ozone.debug.PrefixParser;
 import org.apache.hadoop.ozone.om.OMStorage;
 import org.apache.hadoop.ozone.om.helpers.BucketLayout;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.Assert;
+import org.junit.*;
 
 import java.io.IOException;
 import java.net.URI;
@@ -41,6 +38,7 @@ import java.net.URI;
 /**
  * Test Ozone Prefix Parser.
  */
+@Ignore
 public class TestOzoneFileSystemPrefixParser {
 
   private static MiniOzoneCluster cluster = null;

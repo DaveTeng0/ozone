@@ -18,6 +18,8 @@
 package org.apache.hadoop.fs.ozone.contract;
 
 
+import org.junit.Ignore;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -25,6 +27,7 @@ import java.util.List;
 /**
  * Utility class for Ozone-contract tests.
  */
+@Ignore
 public final class ITestOzoneContractUtils {
 
   private ITestOzoneContractUtils() { }

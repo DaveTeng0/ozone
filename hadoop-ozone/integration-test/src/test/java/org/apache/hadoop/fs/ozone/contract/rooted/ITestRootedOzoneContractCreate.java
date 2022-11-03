@@ -26,10 +26,12 @@ import org.apache.hadoop.fs.contract.AbstractFSContract;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 
 /**
  * Ozone contract tests creating files.
  */
+@Ignore
 public class ITestRootedOzoneContractCreate extends AbstractContractCreateTest {
 
   @BeforeClass
