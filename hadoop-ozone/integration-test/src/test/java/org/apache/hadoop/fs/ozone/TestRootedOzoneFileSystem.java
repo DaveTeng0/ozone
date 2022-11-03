@@ -1164,11 +1164,16 @@ public class TestRootedOzoneFileSystem {
       idx1++;
     }
 
-    Assert.assertEquals("hello", sb1.toString());
+//    Assert.assertEquals("hello", sb1.toString());
     // There are only 5 volumes
     // Default volume "s3v" is created during startup.
-    Assert.assertEquals(5 + 1, fileStatusesOver.length);
+    if (!enableAcl) {
+      Assert.assertEquals(5 + 1, fileStatusesOver.length);
+    }else {
+      Assert.assertEquals(5 + 1 + 1, fileStatusesOver.length);
+    }
 
+    Assert.assertEquals("hello java", sb1.toString());
 
 
     // numEntries = 5
