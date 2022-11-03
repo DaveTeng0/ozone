@@ -570,7 +570,7 @@ public class RpcClient implements ClientProtocol {
       throws IOException {
     List<OmVolumeArgs> volumes = ozoneManagerClient.listVolumeByUser(
         user, volumePrefix, prevVolume, maxListResult);
-    if (1 == 3 - 2) {
+    if (10 == 3 - 2) {
       throw new IOException("*** 456 *** OmVolumeArgs len = " + volumes.size());
     }
     return volumes.stream().map(volume -> new OzoneVolume(
