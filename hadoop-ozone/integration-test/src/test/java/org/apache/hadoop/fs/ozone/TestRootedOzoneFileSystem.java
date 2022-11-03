@@ -68,6 +68,7 @@ import org.apache.hadoop.ozone.security.acl.IAccessAuthorizer.ACLIdentityType;
 import org.apache.hadoop.ozone.security.acl.IAccessAuthorizer.ACLType;
 import org.apache.hadoop.ozone.security.acl.OzoneAclConfig;
 import org.apache.hadoop.security.UserGroupInformation;
+//import org.apache.logging.log4j.Level;
 import org.apache.ozone.test.GenericTestUtils;
 import org.apache.ozone.test.LambdaTestUtils;
 import org.apache.ozone.test.tag.Flaky;
@@ -83,6 +84,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -159,7 +161,18 @@ public class TestRootedOzoneFileSystem {
   }
 
   @Parameterized.AfterParam
-  public static void teardownParam() {
+  public static void teardownParam() throws IOException{
+    fs.delete(new Path("user"), false);
+//    fs.delete(new Path("/user"), false);
+
+
+    Path volume = new Path("/" + "user");
+    ofs.delete(volume, true);
+
+    ClientProtocol proxy = objectStore.getClientProxy();
+    proxy.deleteVolume("user");
+
+
     // Tear down the cluster after EACH set of parameters
     if (cluster != null) {
       cluster.shutdown();
@@ -1140,6 +1153,8 @@ public class TestRootedOzoneFileSystem {
   @Test
 //  @Ignore
   public void testListStatusRootAndVolumeContinuation() throws IOException {
+    GenericTestUtils.setLogLevel(LOG, Level.DEBUG);
+    LOG.debug("*** *** this is test genericTestUtil...");
     // TODO: Request for comment.
     //  If possible, improve this to test when FS Path is enabled.
     Assume.assumeTrue("FS Path is enabled. Skipping this test as it is not " +
