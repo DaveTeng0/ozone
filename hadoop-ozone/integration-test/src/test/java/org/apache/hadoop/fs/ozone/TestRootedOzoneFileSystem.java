@@ -642,6 +642,7 @@ public class TestRootedOzoneFileSystem {
    * OFS: Test mkdir on volume, bucket and dir that doesn't exist.
    */
   @Test
+  @Ignore
   public void testMkdirOnNonExistentVolumeBucketDir() throws Exception {
     // TODO: Request for comment.
     //  If possible, improve this to test when FS Path is enabled.
@@ -691,6 +692,7 @@ public class TestRootedOzoneFileSystem {
    * OFS: Test mkdir on a volume and bucket that doesn't exist.
    */
   @Test
+  @Ignore
   public void testMkdirNonExistentVolumeBucket() throws Exception {
     String volumeNameLocal = getRandomNonExistVolumeName();
     String bucketNameLocal = "bucket-" + RandomStringUtils.randomNumeric(5);
@@ -981,6 +983,7 @@ public class TestRootedOzoneFileSystem {
    * OFS: Test non-recursive listStatus on root and volume.
    */
   @Test
+  @Ignore //456
   public void testListStatusRootAndVolumeNonRecursive() throws Exception {
     // Get owner and group of the user running this test
     final UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
@@ -1088,6 +1091,7 @@ public class TestRootedOzoneFileSystem {
    * OFS: Test recursive listStatus on root and volume.
    */
   @Test
+  @Ignore //456
   public void testListStatusRootAndVolumeRecursive() throws IOException {
     Path bucketPath1 = createRandomVolumeBucketWithDirs();
     Path bucketPath2 = createRandomVolumeBucketWithDirs();
@@ -1335,6 +1339,7 @@ public class TestRootedOzoneFileSystem {
   }
 
   @Test
+  @Ignore
   public void testDeleteEmptyVolume() throws IOException {
     // Create volume
     String volumeStr1 = getRandomNonExistVolumeName();
@@ -1351,6 +1356,7 @@ public class TestRootedOzoneFileSystem {
   }
 
   @Test
+  @Ignore
   public void testDeleteVolumeAndBucket() throws IOException {
     // Create volume and bucket
     String volumeStr2 = getRandomNonExistVolumeName();
@@ -1373,6 +1379,7 @@ public class TestRootedOzoneFileSystem {
   }
 
   @Test
+  @Ignore
   public void testDeleteVolumeBucketAndKey() throws IOException {
     // Create test volume, bucket and key
     String volumeStr3 = getRandomNonExistVolumeName();
@@ -1402,6 +1409,7 @@ public class TestRootedOzoneFileSystem {
   }
 
   @Test
+  @Ignore
   public void testDeleteBucketLink() throws Exception {
     // Create test volume, bucket, directory
     String volumeStr1 = getRandomNonExistVolumeName();
@@ -1483,6 +1491,7 @@ public class TestRootedOzoneFileSystem {
    * Test getTrashRoots() in OFS. Different from the existing test for o3fs.
    */
   @Test
+  @Ignore
   public void testGetTrashRoots() throws IOException {
     String username = UserGroupInformation.getCurrentUser().getShortUserName();
     OzoneVolume volume1 = objectStore.getVolume(volumeName);
@@ -1998,6 +2007,7 @@ public class TestRootedOzoneFileSystem {
   }
 
   @Test
+  @Ignore
   public void testGetFileStatus() throws Exception {
     String volumeNameLocal = getRandomNonExistVolumeName();
     String bucketNameLocal = RandomStringUtils.randomNumeric(5);
