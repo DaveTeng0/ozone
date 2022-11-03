@@ -329,13 +329,13 @@ jobs:
     strategy:
       matrix:
         profile:
-          - client
+#          - client
           - filesystem
-          - hdds
-          - om
-          - ozone
-          - scm
-          - flaky
+#          - hdds
+#          - om
+#          - ozone
+#          - scm
+#          - flaky
       fail-fast: false
     steps:
       - name: Checkout project
