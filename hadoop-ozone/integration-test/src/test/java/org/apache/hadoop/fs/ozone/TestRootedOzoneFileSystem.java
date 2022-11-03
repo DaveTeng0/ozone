@@ -724,6 +724,7 @@ public class TestRootedOzoneFileSystem {
    * OFS: Test mkdir on a volume that doesn't exist.
    */
   @Test
+  @Ignore
   public void testMkdirNonExistentVolume() throws Exception {
     String volumeNameLocal = getRandomNonExistVolumeName();
     Path newVolume = new Path("/" + volumeNameLocal);
