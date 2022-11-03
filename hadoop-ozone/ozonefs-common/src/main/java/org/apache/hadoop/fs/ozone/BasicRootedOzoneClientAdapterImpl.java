@@ -703,7 +703,8 @@ public class BasicRootedOzoneClientAdapterImpl
       boolean recursive, String startPath, long numEntries,
       URI uri, Path workingDir, String username) throws IOException {
 
-    System.err.println("*** *** nov-2 -2, this is listStatusRoot, startPath = " + startPath);
+    System.out.println("*** *** nov-2 -2, this is listStatusRoot, startPath = " + startPath);
+    LOG.info("*** *** nov-2 -2, this is listStatusRoot, startPath = " + startPath);
 
     OFSPath ofsStartPath = new OFSPath(startPath);
     // list volumes
@@ -796,11 +797,13 @@ public class BasicRootedOzoneClientAdapterImpl
 
     OFSPath ofsPath = new OFSPath(pathStr);
     if (ofsPath.isRoot()) {
+      System.err.println("*** 456 *** Nov-2-2, ofsPath.isRoot");
       return listStatusRoot(
           recursive, startPath, numEntries, uri, workingDir, username);
     }
     OFSPath ofsStartPath = new OFSPath(startPath);
     if (ofsPath.isVolume()) {
+      System.err.println("*** 456 *** Nov-2-3, ofsPath.isVolume");
       String startBucket = ofsStartPath.getBucketName();
       return listStatusVolume(ofsPath.getVolumeName(),
           recursive, startBucket, numEntries, uri, workingDir, username);
@@ -813,6 +816,7 @@ public class BasicRootedOzoneClientAdapterImpl
       OzoneBucket bucket = getBucket(ofsPath, false);
       List<OzoneFileStatus> statuses = bucket
           .listStatus(keyName, recursive, startKey, numEntries);
+      System.err.println("*** 456 *** Nov-2-4, ofsPath.isKey");
       // Note: result in statuses above doesn't have volume/bucket path since
       //  they are from the server.
       String ofsPathPrefix = ofsPath.getNonKeyPath();
