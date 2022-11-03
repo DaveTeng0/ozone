@@ -80,6 +80,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.hadoop.fs.FileSystem.LOG;
 import static org.apache.hadoop.ozone.OzoneConsts.OZONE_URI_DELIMITER;
 import static org.apache.hadoop.ozone.om.exceptions.OMException.ResultCodes
     .BUCKET_ALREADY_EXISTS;
@@ -797,13 +798,15 @@ public class BasicRootedOzoneClientAdapterImpl
 
     OFSPath ofsPath = new OFSPath(pathStr);
     if (ofsPath.isRoot()) {
-      System.err.println("*** 456 *** Nov-2-2, ofsPath.isRoot");
+      System.err.println("from sys.err, *** 456 *** Nov-2-2, ofsPath.isRoot");
+      LOG.info("from log4j, *** 456 *** Nov-2-2, ofsPath.isRoot");
       return listStatusRoot(
           recursive, startPath, numEntries, uri, workingDir, username);
     }
     OFSPath ofsStartPath = new OFSPath(startPath);
     if (ofsPath.isVolume()) {
-      System.err.println("*** 456 *** Nov-2-3, ofsPath.isVolume");
+      System.err.println("from sys.err, *** 456 *** Nov-2-3, ofsPath.isVolume");
+      LOG.info("from log4j, *** 456 *** Nov-2-3, ofsPath.isVolume");
       String startBucket = ofsStartPath.getBucketName();
       return listStatusVolume(ofsPath.getVolumeName(),
           recursive, startBucket, numEntries, uri, workingDir, username);

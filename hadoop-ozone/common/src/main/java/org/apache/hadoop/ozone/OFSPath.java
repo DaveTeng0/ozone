@@ -34,6 +34,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.StringTokenizer;
 
+import static org.apache.hadoop.fs.FileSystem.LOG;
 import static org.apache.hadoop.fs.FileSystem.TRASH_PREFIX;
 import static org.apache.hadoop.ozone.OzoneConsts.OZONE_OFS_URI_SCHEME;
 import static org.apache.hadoop.ozone.OzoneConsts.OZONE_URI_DELIMITER;
@@ -88,11 +89,15 @@ public class OFSPath {
     if (scheme != null && !scheme.equalsIgnoreCase(OZONE_OFS_URI_SCHEME)) {
       throw new ParseException("Can't parse schemes other than ofs.");
     }
+
+    LOG.info("*** *** initOFSPath, URI = " + uri.toString() + ", scheme = " + scheme);
     // authority could be empty
     authority = uri.getAuthority() == null ? "" : uri.getAuthority();
     final String pathStr = uri.getPath();
+    LOG.info("*** *** initOFSPath - 2, pathStr = " + pathStr);
     StringTokenizer token = new StringTokenizer(pathStr, OZONE_URI_DELIMITER);
     int numToken = token.countTokens();
+    LOG.info("*** *** initOFSPath - 2, pathStr = " + pathStr);
 
     if (numToken > 0) {
       String firstToken = token.nextToken();
