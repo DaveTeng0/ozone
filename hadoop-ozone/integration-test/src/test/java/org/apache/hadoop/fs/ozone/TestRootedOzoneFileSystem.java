@@ -1156,21 +1156,23 @@ public class TestRootedOzoneFileSystem {
     FileStatus[] fileStatusesOver = customListStatus(new Path("/"),
         false, "", 8);
 
-    StringBuilder sb1 = new StringBuilder();
-    int idx1 = 0;
-    for (FileStatus ff : fileStatusesOver) {
-      sb1.append("StatusesOver8[").append(idx1).append("] = ").
-              append(ff.getPath()).append("\n");
-      idx1++;
-    }
+                                      Path root = new Path("/" + volumeName + "/" + bucketName);
+                                      FileStatus[] fileStatuses_v2 = ofs.listStatus(root);
+                                      StringBuilder sb1 = new StringBuilder();
+                                      int idx1 = 0;
+                                      for (FileStatus ff : fileStatusesOver) {
+                                        sb1.append("StatusesOver8[").append(idx1).append("] = ").
+                                                append(ff.getPath()).append("\n");
+                                        idx1++;
+                                      }
 
 //    Assert.assertEquals("hello", sb1.toString());
     // There are only 5 volumes
     // Default volume "s3v" is created during startup.
     if (!enableAcl) {
-      Assert.assertEquals(5 + 1, fileStatusesOver.length);
-    }else {
       Assert.assertEquals(5 + 1 + 1, fileStatusesOver.length);
+    }else {
+      Assert.assertEquals(5 + 1, fileStatusesOver.length);
     }
 
     Assert.assertEquals("hello java", sb1.toString());
