@@ -362,6 +362,7 @@ public class TestRootedOzoneFileSystem {
   }
 
   @Test
+  @Ignore
   public void testListStatus() throws Exception {
     Path parent = new Path(bucketPath, "testListStatus");
     Path file1 = new Path(parent, "key1");
@@ -404,6 +405,7 @@ public class TestRootedOzoneFileSystem {
    * Tests listStatusIterator operation on a directory.
    */
   @Test
+  @Ignore
   public void testListStatusIteratorWithDir() throws Exception {
     Path parent = new Path(bucketPath, "testListStatus");
     Path file1 = new Path(parent, "key1");
@@ -459,6 +461,7 @@ public class TestRootedOzoneFileSystem {
    * Test listStatusIterator operation in a bucket.
    */
   @Test
+  @Ignore
   public void testListStatusIteratorInBucket() throws Exception {
     Path root = new Path("/" + volumeName + "/" + bucketName);
     Path dir1 = new Path(root, "dir1");
@@ -493,6 +496,7 @@ public class TestRootedOzoneFileSystem {
   }
 
   @Test
+  @Ignore
   public void testListStatusIteratorWithPathNotFound() throws Exception {
     Path root = new Path("/test");
     try {
@@ -509,6 +513,7 @@ public class TestRootedOzoneFileSystem {
    * numbers of numDir.
    */
   @Test
+  @Ignore
   public void testListStatusIteratorOnPageSize() throws Exception {
     int[] pageSize = {
         1, LISTING_PAGE_SIZE, LISTING_PAGE_SIZE + 1,
@@ -569,6 +574,7 @@ public class TestRootedOzoneFileSystem {
    * Tests listStatusIterator on a path with subdirs.
    */
   @Test
+  @Ignore
   public void testListStatusIteratorOnSubDirs() throws Exception {
     // Create the following key structure
     //      /dir1/dir11/dir111
@@ -752,6 +758,7 @@ public class TestRootedOzoneFileSystem {
    * OFS: Test getFileStatus on root.
    */
   @Test
+  @Ignore
   public void testGetFileStatusRoot() throws Exception {
     Path root = new Path("/");
     FileStatus fileStatus = fs.getFileStatus(root);
@@ -766,6 +773,7 @@ public class TestRootedOzoneFileSystem {
    * Test listStatus operation in a bucket.
    */
   @Test
+  @Ignore
   public void testListStatusInBucket() throws Exception {
     Path root = new Path("/" + volumeName + "/" + bucketName);
     Path dir1 = new Path(root, "dir1");
@@ -800,6 +808,7 @@ public class TestRootedOzoneFileSystem {
    * Tests listStatus operation on root directory.
    */
   @Test
+  @Ignore
   public void testListStatusOnLargeDirectory() throws Exception {
     Path root = new Path("/" + volumeName + "/" + bucketName);
     Set<String> paths = new TreeSet<>();
@@ -832,6 +841,7 @@ public class TestRootedOzoneFileSystem {
    * Tests listStatus on a path with subdirs.
    */
   @Test
+  @Ignore
   public void testListStatusOnSubDirs() throws Exception {
     // Create the following key structure
     //      /dir1/dir11/dir111
@@ -873,6 +883,7 @@ public class TestRootedOzoneFileSystem {
   }
 
   @Test
+  @Ignore
   public void testNonExplicitlyCreatedPathExistsAfterItsLeafsWereRemoved()
       throws Exception {
     Path source = new Path(bucketPath, "source");
@@ -905,6 +916,7 @@ public class TestRootedOzoneFileSystem {
    * OFS: Try to rename a key to a different bucket. The attempt should fail.
    */
   @Test
+  @Ignore
   public void testRenameToDifferentBucket() throws IOException {
     Path source = new Path(bucketPath, "source");
     Path interimPath = new Path(source, "interimPath");
@@ -1253,6 +1265,7 @@ public class TestRootedOzoneFileSystem {
    * OFS: Test /tmp mount behavior.
    */
   @Test
+  @Ignore
   public void testTempMount() throws IOException {
     // Prep
     // Use ClientProtocol to pass in volume ACL, ObjectStore won't do it
@@ -1470,6 +1483,7 @@ public class TestRootedOzoneFileSystem {
   }
 
   @Test
+  @Ignore
   public void testFailToDeleteRoot() throws IOException {
     // rm root should always fail for OFS
     Assert.assertFalse(fs.delete(new Path("/"), false));
@@ -1608,6 +1622,7 @@ public class TestRootedOzoneFileSystem {
    * fs.rename(src, dst, options).
    */
   @Test
+  @Ignore
   @Flaky({"HDDS-5819", "HDDS-6451"})
   public void testRenameToTrashEnabled() throws IOException {
     // Create a file
@@ -1637,6 +1652,7 @@ public class TestRootedOzoneFileSystem {
   }
 
   @Test
+  @Ignore
   public void testFileDelete() throws Exception {
     Path grandparent = new Path(bucketPath, "testBatchDelete");
     Path parent = new Path(grandparent, "parent");
@@ -1791,6 +1807,7 @@ public class TestRootedOzoneFileSystem {
   }
 
   @Test
+  @Ignore
   public void testCreateWithInvalidPaths() throws Exception {
     // Test for path with ..
     Path parent = new Path("../../../../../d1/d2/");
@@ -1813,6 +1830,7 @@ public class TestRootedOzoneFileSystem {
 
 
   @Test
+  @Ignore
   public void testRenameFile() throws Exception {
     final String dir = "/dir" + new Random().nextInt(1000);
     Path dirPath = new Path(getBucketPath() + dir);
@@ -1839,6 +1857,7 @@ public class TestRootedOzoneFileSystem {
    * Rename file to an existed directory.
    */
   @Test
+  @Ignore
   public void testRenameFileToDir() throws Exception {
     final String dir = "/dir" + new Random().nextInt(1000);
     Path dirPath = new Path(getBucketPath() + dir);
@@ -1863,6 +1882,7 @@ public class TestRootedOzoneFileSystem {
    * Expected result : /root_dir/file1.
    */
   @Test
+  @Ignore
   public void testRenameToParentDir() throws Exception {
     final String root = "/root_dir";
     final String dir1 = root + "/dir1";
@@ -1900,6 +1920,7 @@ public class TestRootedOzoneFileSystem {
    *  Cannot rename a directory to its own subdirectory.
    */
   @Test
+  @Ignore
   public void testRenameDirToItsOwnSubDir() throws Exception {
     final String root = "/root";
     final String dir1 = root + "/dir1";
@@ -1930,6 +1951,7 @@ public class TestRootedOzoneFileSystem {
    * Fails if the (a) parent of dst does not exist or (b) parent is a file.
    */
   @Test
+  @Ignore
   public void testRenameDestinationParentDoesntExist() throws Exception {
     final String root = "/root_dir";
     final String dir1 = root + "/dir1";
@@ -1961,6 +1983,7 @@ public class TestRootedOzoneFileSystem {
   }
 
   @Test
+  @Ignore
   public void testBucketDefaultsShouldNotBeInheritedToFileForNonEC()
       throws Exception {
     BucketArgs.Builder builder = BucketArgs.newBuilder();
@@ -1992,6 +2015,7 @@ public class TestRootedOzoneFileSystem {
   }
 
   @Test
+  @Ignore
   public void testBucketDefaultsShouldBeInheritedToFileForEC()
       throws Exception {
     BucketArgs.Builder builder = BucketArgs.newBuilder();
@@ -2035,6 +2059,7 @@ public class TestRootedOzoneFileSystem {
   }
 
   @Test
+  @Ignore
   public void testUnbuffer() throws IOException {
     String testKeyName = "testKey2";
     Path path = new Path(bucketPath, testKeyName);
@@ -2051,6 +2076,7 @@ public class TestRootedOzoneFileSystem {
 
 
   @Test //456
+  @Ignore
   public void testCreateAndCheckECFileDiskUsage() throws Exception {
     // create EC bucket
     BucketArgs.Builder builder = BucketArgs.newBuilder();
@@ -2102,6 +2128,7 @@ public class TestRootedOzoneFileSystem {
 
 
   @Test //456
+  @Ignore
   public void testCreateAndCheckRatisFileDiskUsage() throws Exception {
     // create RATIS bucket
 //    BucketArgs.Builder builder = BucketArgs.newBuilder();
