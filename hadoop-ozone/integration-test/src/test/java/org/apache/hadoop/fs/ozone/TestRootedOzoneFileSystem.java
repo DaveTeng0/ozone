@@ -1983,7 +1983,7 @@ public class TestRootedOzoneFileSystem {
   }
 
   @Test
-  @Ignore
+//  @Ignore
   public void testBucketDefaultsShouldNotBeInheritedToFileForNonEC()
       throws Exception {
     BucketArgs.Builder builder = BucketArgs.newBuilder();
