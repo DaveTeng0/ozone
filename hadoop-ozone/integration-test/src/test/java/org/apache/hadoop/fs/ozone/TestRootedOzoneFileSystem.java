@@ -284,7 +284,7 @@ public class TestRootedOzoneFileSystem {
   }
 
   @Test
-  @Ignore
+//  @Ignore
   public void testOzoneFsServiceLoader() throws IOException {
     OzoneConfiguration confTestLoader = new OzoneConfiguration();
     // fs.ofs.impl should be loaded from META-INF, no need to explicitly set it
@@ -294,7 +294,7 @@ public class TestRootedOzoneFileSystem {
   }
 
   @Test
-  @Ignore
+//  @Ignore
   public void testCreateDoesNotAddParentDirKeys() throws Exception {
     Path grandparent = new Path(bucketPath,
         "testCreateDoesNotAddParentDirKeys");
@@ -326,7 +326,7 @@ public class TestRootedOzoneFileSystem {
   }
 
   @Test
-  @Ignore
+//  @Ignore
   public void testDeleteCreatesFakeParentDir() throws Exception {
     // TODO: Request for comment.
     //  If possible, improve this to test when FS Path is enabled.
@@ -362,7 +362,7 @@ public class TestRootedOzoneFileSystem {
   }
 
   @Test
-  @Ignore
+//  @Ignore
   public void testListStatus() throws Exception {
     Path parent = new Path(bucketPath, "testListStatus");
     Path file1 = new Path(parent, "key1");
@@ -405,7 +405,7 @@ public class TestRootedOzoneFileSystem {
    * Tests listStatusIterator operation on a directory.
    */
   @Test
-  @Ignore
+//  @Ignore
   public void testListStatusIteratorWithDir() throws Exception {
     Path parent = new Path(bucketPath, "testListStatus");
     Path file1 = new Path(parent, "key1");
@@ -461,7 +461,7 @@ public class TestRootedOzoneFileSystem {
    * Test listStatusIterator operation in a bucket.
    */
   @Test
-  @Ignore
+//  @Ignore
   public void testListStatusIteratorInBucket() throws Exception {
     Path root = new Path("/" + volumeName + "/" + bucketName);
     Path dir1 = new Path(root, "dir1");
@@ -496,7 +496,7 @@ public class TestRootedOzoneFileSystem {
   }
 
   @Test
-  @Ignore
+//  @Ignore
   public void testListStatusIteratorWithPathNotFound() throws Exception {
     Path root = new Path("/test");
     try {
@@ -513,7 +513,7 @@ public class TestRootedOzoneFileSystem {
    * numbers of numDir.
    */
   @Test
-  @Ignore
+//  @Ignore
   public void testListStatusIteratorOnPageSize() throws Exception {
     int[] pageSize = {
         1, LISTING_PAGE_SIZE, LISTING_PAGE_SIZE + 1,
@@ -574,7 +574,7 @@ public class TestRootedOzoneFileSystem {
    * Tests listStatusIterator on a path with subdirs.
    */
   @Test
-  @Ignore
+//  @Ignore
   public void testListStatusIteratorOnSubDirs() throws Exception {
     // Create the following key structure
     //      /dir1/dir11/dir111
@@ -653,7 +653,7 @@ public class TestRootedOzoneFileSystem {
    * OFS: Test mkdir on volume, bucket and dir that doesn't exist.
    */
   @Test
-  @Ignore
+//  @Ignore
   public void testMkdirOnNonExistentVolumeBucketDir() throws Exception {
     // TODO: Request for comment.
     //  If possible, improve this to test when FS Path is enabled.
@@ -703,7 +703,7 @@ public class TestRootedOzoneFileSystem {
    * OFS: Test mkdir on a volume and bucket that doesn't exist.
    */
   @Test
-  @Ignore
+//  @Ignore
   public void testMkdirNonExistentVolumeBucket() throws Exception {
     String volumeNameLocal = getRandomNonExistVolumeName();
     String bucketNameLocal = "bucket-" + RandomStringUtils.randomNumeric(5);
@@ -735,7 +735,7 @@ public class TestRootedOzoneFileSystem {
    * OFS: Test mkdir on a volume that doesn't exist.
    */
   @Test
-  @Ignore
+//  @Ignore
   public void testMkdirNonExistentVolume() throws Exception {
     String volumeNameLocal = getRandomNonExistVolumeName();
     Path newVolume = new Path("/" + volumeNameLocal);
@@ -758,7 +758,7 @@ public class TestRootedOzoneFileSystem {
    * OFS: Test getFileStatus on root.
    */
   @Test
-  @Ignore
+//  @Ignore
   public void testGetFileStatusRoot() throws Exception {
     Path root = new Path("/");
     FileStatus fileStatus = fs.getFileStatus(root);
@@ -773,7 +773,7 @@ public class TestRootedOzoneFileSystem {
    * Test listStatus operation in a bucket.
    */
   @Test
-  @Ignore
+//  @Ignore
   public void testListStatusInBucket() throws Exception {
     Path root = new Path("/" + volumeName + "/" + bucketName);
     Path dir1 = new Path(root, "dir1");
@@ -808,7 +808,7 @@ public class TestRootedOzoneFileSystem {
    * Tests listStatus operation on root directory.
    */
   @Test
-  @Ignore
+//  @Ignore
   public void testListStatusOnLargeDirectory() throws Exception {
     Path root = new Path("/" + volumeName + "/" + bucketName);
     Set<String> paths = new TreeSet<>();
@@ -841,7 +841,7 @@ public class TestRootedOzoneFileSystem {
    * Tests listStatus on a path with subdirs.
    */
   @Test
-  @Ignore
+//  @Ignore
   public void testListStatusOnSubDirs() throws Exception {
     // Create the following key structure
     //      /dir1/dir11/dir111
@@ -883,7 +883,7 @@ public class TestRootedOzoneFileSystem {
   }
 
   @Test
-  @Ignore
+//  @Ignore
   public void testNonExplicitlyCreatedPathExistsAfterItsLeafsWereRemoved()
       throws Exception {
     Path source = new Path(bucketPath, "source");
@@ -916,7 +916,7 @@ public class TestRootedOzoneFileSystem {
    * OFS: Try to rename a key to a different bucket. The attempt should fail.
    */
   @Test
-  @Ignore
+//  @Ignore
   public void testRenameToDifferentBucket() throws IOException {
     Path source = new Path(bucketPath, "source");
     Path interimPath = new Path(source, "interimPath");
@@ -1001,7 +1001,7 @@ public class TestRootedOzoneFileSystem {
    * OFS: Test non-recursive listStatus on root and volume.
    */
   @Test
-  @Ignore //456
+//  @Ignore //456
   public void testListStatusRootAndVolumeNonRecursive() throws Exception {
     // Get owner and group of the user running this test
     final UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
@@ -1109,7 +1109,7 @@ public class TestRootedOzoneFileSystem {
    * OFS: Test recursive listStatus on root and volume.
    */
   @Test
-  @Ignore //456
+//  @Ignore //456
   public void testListStatusRootAndVolumeRecursive() throws IOException {
     Path bucketPath1 = createRandomVolumeBucketWithDirs();
     Path bucketPath2 = createRandomVolumeBucketWithDirs();
@@ -1265,7 +1265,7 @@ public class TestRootedOzoneFileSystem {
    * OFS: Test /tmp mount behavior.
    */
   @Test
-  @Ignore
+//  @Ignore
   public void testTempMount() throws IOException {
     // Prep
     // Use ClientProtocol to pass in volume ACL, ObjectStore won't do it
@@ -1367,7 +1367,7 @@ public class TestRootedOzoneFileSystem {
   }
 
   @Test
-  @Ignore
+//  @Ignore
   public void testDeleteEmptyVolume() throws IOException {
     // Create volume
     String volumeStr1 = getRandomNonExistVolumeName();
@@ -1384,7 +1384,7 @@ public class TestRootedOzoneFileSystem {
   }
 
   @Test
-  @Ignore
+//  @Ignore
   public void testDeleteVolumeAndBucket() throws IOException {
     // Create volume and bucket
     String volumeStr2 = getRandomNonExistVolumeName();
@@ -1407,7 +1407,7 @@ public class TestRootedOzoneFileSystem {
   }
 
   @Test
-  @Ignore
+//  @Ignore
   public void testDeleteVolumeBucketAndKey() throws IOException {
     // Create test volume, bucket and key
     String volumeStr3 = getRandomNonExistVolumeName();
@@ -1437,7 +1437,7 @@ public class TestRootedOzoneFileSystem {
   }
 
   @Test
-  @Ignore
+//  @Ignore
   public void testDeleteBucketLink() throws Exception {
     // Create test volume, bucket, directory
     String volumeStr1 = getRandomNonExistVolumeName();
@@ -1483,7 +1483,7 @@ public class TestRootedOzoneFileSystem {
   }
 
   @Test
-  @Ignore
+//  @Ignore
   public void testFailToDeleteRoot() throws IOException {
     // rm root should always fail for OFS
     Assert.assertFalse(fs.delete(new Path("/"), false));
@@ -1622,7 +1622,7 @@ public class TestRootedOzoneFileSystem {
    * fs.rename(src, dst, options).
    */
   @Test
-  @Ignore
+//  @Ignore
   @Flaky({"HDDS-5819", "HDDS-6451"})
   public void testRenameToTrashEnabled() throws IOException {
     // Create a file
@@ -1652,7 +1652,7 @@ public class TestRootedOzoneFileSystem {
   }
 
   @Test
-  @Ignore
+//  @Ignore
   public void testFileDelete() throws Exception {
     Path grandparent = new Path(bucketPath, "testBatchDelete");
     Path parent = new Path(grandparent, "parent");
@@ -1807,7 +1807,7 @@ public class TestRootedOzoneFileSystem {
   }
 
   @Test
-  @Ignore
+//  @Ignore
   public void testCreateWithInvalidPaths() throws Exception {
     // Test for path with ..
     Path parent = new Path("../../../../../d1/d2/");
@@ -1830,7 +1830,7 @@ public class TestRootedOzoneFileSystem {
 
 
   @Test
-  @Ignore
+//  @Ignore
   public void testRenameFile() throws Exception {
     final String dir = "/dir" + new Random().nextInt(1000);
     Path dirPath = new Path(getBucketPath() + dir);
@@ -1857,7 +1857,7 @@ public class TestRootedOzoneFileSystem {
    * Rename file to an existed directory.
    */
   @Test
-  @Ignore
+//  @Ignore
   public void testRenameFileToDir() throws Exception {
     final String dir = "/dir" + new Random().nextInt(1000);
     Path dirPath = new Path(getBucketPath() + dir);
@@ -1882,7 +1882,7 @@ public class TestRootedOzoneFileSystem {
    * Expected result : /root_dir/file1.
    */
   @Test
-  @Ignore
+//  @Ignore
   public void testRenameToParentDir() throws Exception {
     final String root = "/root_dir";
     final String dir1 = root + "/dir1";
@@ -1920,7 +1920,7 @@ public class TestRootedOzoneFileSystem {
    *  Cannot rename a directory to its own subdirectory.
    */
   @Test
-  @Ignore
+//  @Ignore
   public void testRenameDirToItsOwnSubDir() throws Exception {
     final String root = "/root";
     final String dir1 = root + "/dir1";
@@ -1951,7 +1951,7 @@ public class TestRootedOzoneFileSystem {
    * Fails if the (a) parent of dst does not exist or (b) parent is a file.
    */
   @Test
-  @Ignore
+//  @Ignore
   public void testRenameDestinationParentDoesntExist() throws Exception {
     final String root = "/root_dir";
     final String dir1 = root + "/dir1";
@@ -2046,7 +2046,7 @@ public class TestRootedOzoneFileSystem {
   }
 
   @Test
-  @Ignore
+//  @Ignore
   public void testGetFileStatus() throws Exception {
     String volumeNameLocal = getRandomNonExistVolumeName();
     String bucketNameLocal = RandomStringUtils.randomNumeric(5);
@@ -2059,7 +2059,7 @@ public class TestRootedOzoneFileSystem {
   }
 
   @Test
-  @Ignore
+//  @Ignore
   public void testUnbuffer() throws IOException {
     String testKeyName = "testKey2";
     Path path = new Path(bucketPath, testKeyName);
