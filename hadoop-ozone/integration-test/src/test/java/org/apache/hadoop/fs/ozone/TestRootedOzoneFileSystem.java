@@ -1520,7 +1520,7 @@ public class TestRootedOzoneFileSystem {
    * Test getTrashRoots() in OFS. Different from the existing test for o3fs.
    */
   @Test
-//  @Ignore
+  @Ignore
   public void testGetTrashRoots() throws IOException {
     String username = UserGroupInformation.getCurrentUser().getShortUserName();
     OzoneVolume volume1 = objectStore.getVolume(volumeName);
