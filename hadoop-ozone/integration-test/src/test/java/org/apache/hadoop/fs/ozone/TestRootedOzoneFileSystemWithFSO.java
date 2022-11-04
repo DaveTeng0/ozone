@@ -41,7 +41,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests to verify ofs with prefix enabled cases.
  */
-@Ignore
+//@Ignore
 @RunWith(Parameterized.class)
 public class TestRootedOzoneFileSystemWithFSO
     extends TestRootedOzoneFileSystem {
