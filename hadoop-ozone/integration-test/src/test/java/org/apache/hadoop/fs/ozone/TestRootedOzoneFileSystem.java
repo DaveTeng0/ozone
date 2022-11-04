@@ -294,6 +294,7 @@ public class TestRootedOzoneFileSystem {
   }
 
   @Test
+  @Ignore
   public void testOzoneFsServiceLoader() throws IOException {
     OzoneConfiguration confTestLoader = new OzoneConfiguration();
     // fs.ofs.impl should be loaded from META-INF, no need to explicitly set it
@@ -303,6 +304,7 @@ public class TestRootedOzoneFileSystem {
   }
 
   @Test
+  @Ignore
   public void testCreateDoesNotAddParentDirKeys() throws Exception {
     Path grandparent = new Path(bucketPath,
         "testCreateDoesNotAddParentDirKeys");
@@ -334,6 +336,7 @@ public class TestRootedOzoneFileSystem {
   }
 
   @Test
+  @Ignore
   public void testDeleteCreatesFakeParentDir() throws Exception {
     // TODO: Request for comment.
     //  If possible, improve this to test when FS Path is enabled.
