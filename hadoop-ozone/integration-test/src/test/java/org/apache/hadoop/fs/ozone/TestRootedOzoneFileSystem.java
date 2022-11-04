@@ -1696,7 +1696,7 @@ public class TestRootedOzoneFileSystem {
    * 3.Create a second Key in different bucket and verify deletion.
    * @throws Exception
    */
-  @Ignore
+//  @Ignore
   @Test
   public void testTrash() throws Exception {
     String testKeyName = "keyToBeDeleted";
