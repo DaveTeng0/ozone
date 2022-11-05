@@ -1982,16 +1982,16 @@ public class TestRootedOzoneFileSystem {
 
   @Test
   public void testCreateAndCheckECFileDiskUsage() throws Exception {
-    String vol = "vol1";
-    String bucket = "bucket1";
-    String key = "key1";
-    Path volPathTest = new Path(OZONE_URI_DELIMITER, vol);
-    Path bucketPathTest = new Path(volPathTest, bucket);
-    fs.mkdirs(bucketPathTest);
+//    String vol = "vol1";
+//    String bucket = "bucket1";
+    String key = "eckeytest";
+    Path volPathTest = new Path(OZONE_URI_DELIMITER, volumeName);
+    Path bucketPathTest = new Path(volPathTest, bucketName);
+//    fs.mkdirs(bucketPathTest);
 
     // write some test data into bucket
-    try (OzoneOutputStream outputStream = objectStore.getVolume(vol).
-            getBucket(bucket).createKey(key, 1,
+    try (OzoneOutputStream outputStream = objectStore.getVolume(volumeName).
+            getBucket(bucketName).createKey(key, 1,
                     new ECReplicationConfig("RS-3-2-1024"),
                     new HashMap<>())) {
       outputStream.write(RandomUtils.nextBytes(1));
@@ -2004,22 +2004,23 @@ public class TestRootedOzoneFileSystem {
     long expectDiskUsage = QuotaUtil.getReplicatedSize(length,
             new ECReplicationConfig(3, 2, RS, 1024));
     Assert.assertEquals(expectDiskUsage, spaceConsumed);
+    ofs.delete(filePath, true);
   }
 
 
   @Test
   public void testCreateAndCheckRatisFileDiskUsage() throws Exception {
-    String vol = "vol2";
-    String bucket = "bucket2";
-    String key = "key2";
-    Path volPathTest = new Path(OZONE_URI_DELIMITER, vol);
-    Path bucketPathTest = new Path(volPathTest, bucket);
+//    String vol = "vol2";
+//    String bucket = "bucket2";
+    String key = "ratiskeytest";
+    Path volPathTest = new Path(OZONE_URI_DELIMITER, volumeName);
+    Path bucketPathTest = new Path(volPathTest, bucketName);
     Path filePathTest = new Path(bucketPathTest, key);
-    fs.mkdirs(bucketPathTest);
+//    fs.mkdirs(bucketPathTest);
 
     // write some test data into bucket
-    try (OzoneOutputStream outputStream = objectStore.getVolume(vol).
-            getBucket(bucket).createKey(key, 1,
+    try (OzoneOutputStream outputStream = objectStore.getVolume(volumeName).
+            getBucket(bucketName).createKey(key, 1,
                     RatisReplicationConfig.getInstance(
                             HddsProtos.ReplicationFactor.THREE),
                     new HashMap<>())) {
@@ -2033,6 +2034,7 @@ public class TestRootedOzoneFileSystem {
             RatisReplicationConfig.getInstance(
                     HddsProtos.ReplicationFactor.THREE));
     Assert.assertEquals(expectDiskUsage, spaceConsumed);
+    ofs.delete(filePathTest, true);
   }
 
 
