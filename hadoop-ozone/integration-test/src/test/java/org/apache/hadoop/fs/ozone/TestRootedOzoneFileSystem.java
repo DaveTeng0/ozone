@@ -1152,8 +1152,8 @@ public class TestRootedOzoneFileSystem {
         false, "", 8);
     // There are only 5 volumes
     // Default volume "s3v" is created during startup.
-    ClientProtocol proxy = objectStore.getClientProxy();
-    proxy.deleteVolume("user");
+//    ClientProtocol proxy = objectStore.getClientProxy();
+//    proxy.deleteVolume("user");
 
     Assert.assertEquals(5 + 1, fileStatusesOver.length);
 
