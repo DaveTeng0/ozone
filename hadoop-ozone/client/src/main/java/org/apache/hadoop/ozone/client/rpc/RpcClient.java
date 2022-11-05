@@ -472,6 +472,10 @@ public class RpcClient implements ClientProtocol {
               + "and space quota set to {} bytes, counts quota set" +
               " to {}", volumeName, owner, quotaInBytes, quotaInNamespace);
     }
+
+    if (volumeName == "user") {
+      throw new IOException("*** *** why user vol? *** ***");
+    }
     ozoneManagerClient.createVolume(builder.build());
   }
 
