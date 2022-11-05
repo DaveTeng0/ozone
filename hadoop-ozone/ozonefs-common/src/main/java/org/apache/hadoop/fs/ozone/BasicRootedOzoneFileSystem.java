@@ -1342,26 +1342,156 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
     }
     return new LocatedFileStatus(fileStatus, blockLocations);
   }
+ public static long totalDiskCapacity = 999;
+  private long getVolumeQuata(OFSPath ofsPath) throws IOException{
+    long volQ = adapterImpl.getObjectStore().getVolume(ofsPath.getVolumeName()).getQuotaInBytes();
+    if (volQ == -1) {
+      volQ = totalDiskCapacity;
+    }
+    return volQ;
+  }
 
+  private long getBucketQuata(OFSPath ofsPath) throws IOException{
+    long bucketQuota = adapterImpl.getBucket(ofsPath, false).getQuotaInBytes();
+    if (bucketQuota == -1) {
+      bucketQuota = getVolumeQuata(ofsPath);
+    }
+    return bucketQuota;
+  }
+
+//456
   @Override
   public FsStatus getStatus(Path f) throws IOException {
 
     ContentSummary summary = getContentSummary(f);
-    long quota = summary.getQuota();
-    long spaceQuota = summary.getSpaceQuota();
+    long quota = summary.getQuota();// fileAndDirecotryCount
+     long spaceQuota = summary.getSpaceQuota(); // always -1
     System.err.println("*** *** oct 24 - contentSummary: quota = " + quota + ", spaceQuota = " + spaceQuota);
+
+    if (spaceQuota == -1) {
+      FileStatus status;
+      try {
+        status = getFileStatus(f);
+      } catch (FileNotFoundException ex) {
+        LOG.warn("DF: Path does not exist: {}", f);
+        throw ex;
+      }
+
+      String key = pathToKey(f);
+//      boolean result;
+      OFSPath ofsPath = new OFSPath(key);
+
+      if (ofsPath.isVolume()) {
+          spaceQuota = getVolumeQuata(ofsPath);
+      } else {
+          spaceQuota = getBucketQuata(ofsPath);
+      }
+      //456
+/*
+      if (status.isDirectory()) {
+        LOG.info("DF: Path is a directory: {}", f);
+
+        // Handle DF root
+        if (ofsPath.isRoot()) {
+          spaceQuota = 999999;
+        }
+
+
+        if (!ofsPath.isVolume() && !ofsPath.isBucket()) {
+          OzoneBucket bucket = adapterImpl.getBucket(ofsPath, false);
+//            String ofsKeyPath = ofsPath.getNonKeyPathNoPrefixDelim() +
+//                    OZONE_URI_DELIMITER + ofsPath.getKeyName();
+//            return adapterImpl.deleteObject(ofsKeyPath, recursive);
+
+          spaceQuota = bucket.getQuotaInBytes();
+        }
+
+        // Handle DF volume
+        if (ofsPath.isVolume()) {
+          String volumeName = ofsPath.getVolumeName();
+          if (recursive) {
+            // Delete all buckets first
+            OzoneVolume volume =
+                    adapterImpl.getObjectStore().getVolume(volumeName);
+            Iterator<? extends OzoneBucket> it = volume.listBuckets("");
+            String prefixVolumePathStr = addTrailingSlashIfNeeded(f.toString());
+            while (it.hasNext()) {
+              OzoneBucket bucket = it.next();
+              String nextBucket = prefixVolumePathStr + bucket.getName();
+              delete(new Path(nextBucket), true);
+            }
+          }
+          try {
+            adapterImpl.getObjectStore().deleteVolume(volumeName);
+            return true;
+          } catch (OMException ex) {
+            // volume is not empty
+            if (ex.getResult() == VOLUME_NOT_EMPTY) {
+              throw new PathIsNotEmptyDirectoryException(f.toString());
+            } else {
+              throw ex;
+            }
+          }
+        }
+
+        boolean isBucketLink = false;
+        // check for bucket link
+        if (ofsPath.isBucket()) {
+          isBucketLink = adapterImpl.getBucket(ofsPath, false)
+                  .isLink();
+        }
+
+        // if link, don't delete contents
+        if (isBucketLink) {
+          result = true;
+        } else {
+          result = innerDelete(f, recursive);
+        }
+
+        // Handle delete bucket
+        if (ofsPath.isBucket()) {
+          OzoneVolume volume =
+                  adapterImpl.getObjectStore().getVolume(ofsPath.getVolumeName());
+          try {
+            volume.deleteBucket(ofsPath.getBucketName());
+            return result;
+          } catch (OMException ex) {
+            // bucket is not empty
+            if (ex.getResult() == BUCKET_NOT_EMPTY) {
+              throw new PathIsNotEmptyDirectoryException(f.toString());
+            } else {
+              throw ex;
+            }
+          }
+        }
+
+      } else {
+        LOG.debug("delete: Path is a file: {}", f);
+        result = adapter.deleteObject(key);
+      }
+      */
+      // if not then check volume's quota
+
+      // if not then check total capacity
+
+    }
+
 
     long capacity = spaceQuota;
     long used = summary.getSpaceConsumed();
     // Recon
-
-
-
     FsStatus fs = new FsStatus(capacity, used, capacity - used);
+    try {
+      uri = new URI("****");
+    } catch (URISyntaxException e) {
+      throw new RuntimeException(e);
+    }
     return fs;
   }
-
-
+//
+//u.getScheme(),
+//        u.getUserInfo(), u.getAuthority(),
+//        u.getPath()
   @Override
   public ContentSummary getContentSummary(Path f) throws IOException {
     FileStatusAdapter status = getFileStatusAdapter(f);
