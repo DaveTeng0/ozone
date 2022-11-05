@@ -2076,7 +2076,7 @@ public class TestRootedOzoneFileSystem {
 
 
   @Test //456
-  @Ignore
+  // @Ignore
   public void testCreateAndCheckECFileDiskUsage() throws Exception {
     // create EC bucket
     BucketArgs.Builder builder = BucketArgs.newBuilder();
@@ -2100,9 +2100,9 @@ public class TestRootedOzoneFileSystem {
 //                    fs.
     byte[] objContent = RandomUtils.nextBytes(1);
 
-    Path volPath = new Path(OZONE_URI_DELIMITER, volumeName);
-    Path bucketPath = new Path(volPath, bucketName);
-    fs.mkdirs(bucketPath);
+    Path volPathTest = new Path(OZONE_URI_DELIMITER, volumeName);
+    Path bucketPathTest = new Path(volPathTest, bucketName);
+    fs.mkdirs(bucketPathTest);
     try (OzoneOutputStream outputStream = objectStore.getVolume(volumeName).getBucket(bucketName).
             createKey(keyName, 1, new ECReplicationConfig("RS-3-2-1024"), new HashMap<>())) {
       outputStream.write(objContent);
@@ -2117,8 +2117,8 @@ public class TestRootedOzoneFileSystem {
 //      stream.write(objContent);
 //    }
 //    // make sure the disk usage matches the expected value
-    Path filePath = new Path(bucketPath, keyName);
-    ContentSummary contentSummary = ofs.getContentSummary(filePath);
+    Path filePathTest = new Path(bucketPathTest, keyName);
+    ContentSummary contentSummary = ofs.getContentSummary(filePathTest);
     long length = contentSummary.getLength();
     long spaceConsumed = contentSummary.getSpaceConsumed();
     ReplicationConfig rconfig = new ECReplicationConfig(3, 2, RS, 1024);
@@ -2128,7 +2128,7 @@ public class TestRootedOzoneFileSystem {
 
 
   @Test //456
-  @Ignore
+  // @Ignore
   public void testCreateAndCheckRatisFileDiskUsage() throws Exception {
     // create RATIS bucket
 //    BucketArgs.Builder builder = BucketArgs.newBuilder();
@@ -2148,9 +2148,9 @@ public class TestRootedOzoneFileSystem {
 //            bucket101.getReplicationConfig().getReplicationType().name());
     // write some test data into bucket
     byte[] objContent = RandomUtils.nextBytes(1);
-    Path volPath = new Path(OZONE_URI_DELIMITER, vol);
-    Path bucketPath = new Path(volPath, buck);
-    fs.mkdirs(bucketPath);
+    Path volPathTest2 = new Path(OZONE_URI_DELIMITER, vol);
+    Path bucketPathTest2 = new Path(volPathTest2, buck);
+    fs.mkdirs(bucketPathTest2);
     try (OzoneOutputStream outputStream = objectStore.getVolume(vol).getBucket(buck).
             createKey(key, 1, RatisReplicationConfig
                     .getInstance(HddsProtos.ReplicationFactor.THREE), new HashMap<>())) {
@@ -2162,8 +2162,8 @@ public class TestRootedOzoneFileSystem {
 //      stream.write(objContent);
 //    }
     // make sure the disk usage matches the expected value
-    Path filePath = new Path(bucketPath, key);
-    ContentSummary contentSummary = ofs.getContentSummary(filePath);
+    Path filePathTest = new Path(bucketPathTest2, key);
+    ContentSummary contentSummary = ofs.getContentSummary(filePathTest);
     long length = contentSummary.getLength();
     long spaceConsumed = contentSummary.getSpaceConsumed();
     ReplicationConfig rconfig = RatisReplicationConfig
