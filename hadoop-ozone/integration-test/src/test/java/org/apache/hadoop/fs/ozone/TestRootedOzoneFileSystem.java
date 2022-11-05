@@ -128,7 +128,7 @@ public class TestRootedOzoneFileSystem {
 //        new Object[]{true, true, true},
 //        new Object[]{true, true, false},
 //        new Object[]{true, false, false},
-        // new Object[]{false, true, false},
+        new Object[]{false, true, false},
         new Object[]{false, false, false}
     );
   }
