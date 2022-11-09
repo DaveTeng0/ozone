@@ -124,14 +124,17 @@ public abstract class BucketHandler {
     for (OmKeyLocationInfo location: keyLocations) {
       BlockID block = location.getBlockID();
       ContainerID containerId = new ContainerID(block.getContainerID());
-      try {
+      //try {
+        /* 
         int replicationFactor =
             containerManager.getContainerReplicas(containerId).size();
         long blockSize = location.getLength() * replicationFactor;
-        du += blockSize;
-      } catch (ContainerNotFoundException cnfe) {
-        LOG.warn("Cannot find container {}", block.getContainerID(), cnfe);
-      }
+        */
+
+        du += keyInfo.getReplicatedSize();
+      //} catch (ContainerNotFoundException cnfe) {
+        //LOG.warn("Cannot find container {}", block.getContainerID(), cnfe);
+      //}
     }
     return du;
   }
