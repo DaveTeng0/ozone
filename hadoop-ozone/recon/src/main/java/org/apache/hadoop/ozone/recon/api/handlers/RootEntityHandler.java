@@ -28,6 +28,8 @@ import org.apache.hadoop.ozone.recon.api.types.QuotaUsageResponse;
 import org.apache.hadoop.ozone.recon.api.types.FileSizeDistributionResponse;
 import org.apache.hadoop.ozone.recon.recovery.ReconOMMetadataManager;
 import org.apache.hadoop.ozone.recon.spi.ReconNamespaceSummaryManager;
+import org.apache.hadoop.hdds.scm.container.placement.metrics.SCMNodeStat;
+
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -132,20 +134,10 @@ public class RootEntityHandler extends EntityHandler {
     long quotaInBytes = 0L;
     long quotaUsedInBytes = 0L;
 
-    for (OmVolumeArgs volume: volumes) {
-      final long quota = volume.getQuotaInBytes();
-      assert (quota >= -1L);
-      if (quota == -1L) {
-        // If one volume has unlimited quota, the "root" quota is unlimited.
-        quotaInBytes = -1L;
-        break;
-      }
-      quotaInBytes += quota;
-    }
-    for (OmBucketInfo bucket: buckets) {
-      long bucketObjectId = bucket.getObjectID();
-      quotaUsedInBytes += getTotalSize(bucketObjectId);
-    }
+    SCMNodeStat stats = getReconSCM().getScmNodeManager().getStats();
+    quotaInBytes = stats.getCapacity().get();
+    quotaUsedInBytes = stats.getScmUsed().get();
+
 
     quotaUsageResponse.setQuota(quotaInBytes);
     quotaUsageResponse.setQuotaUsed(quotaUsedInBytes);
