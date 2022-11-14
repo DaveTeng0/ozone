@@ -34,6 +34,8 @@ import org.apache.hadoop.hdds.scm.container.placement.metrics.SCMNodeStat;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.hadoop.hdds.scm.node.NodeManager;
+
 
 /**
  * Class for handling root entity type.
@@ -134,7 +136,12 @@ public class RootEntityHandler extends EntityHandler {
     long quotaInBytes = 0L;
     long quotaUsedInBytes = 0L;
 
-    SCMNodeStat stats = getReconSCM().getScmNodeManager().getStats();
+//    SCMNodeStat stats = getReconSCM().getScmNodeManager().getStats();
+    OzoneStorageContainerManager ozoneStorageContainerManager = getReconSCM();
+    NodeManager nodeManager = ozoneStorageContainerManager.getScmNodeManager();
+    SCMNodeStat stats = nodeManager.getStats();
+
+
     quotaInBytes = stats.getCapacity().get();
     quotaUsedInBytes = stats.getScmUsed().get();
 
