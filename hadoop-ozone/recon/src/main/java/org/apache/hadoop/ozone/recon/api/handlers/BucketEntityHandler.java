@@ -132,9 +132,51 @@ public class BucketEntityHandler extends EntityHandler {
             .getBucketTable().getSkipCache(bucketKey);
     long bucketObjectId = bucketInfo.getObjectID();
     long quotaInBytes = bucketInfo.getQuotaInBytes();
-    long quotaUsedInBytes = getTotalSize(bucketObjectId);
+    // long quotaUsedInBytes = getTotalSize(bucketObjectId);
+
+
+    // duResponse.setPath(getNormalizedPath());
+    // long bucketObjectId = getBucketHandler().getBucketObjectId(getNames());
+    NSSummary bucketNSSummary =
+            getReconNamespaceSummaryManager().getNSSummary(bucketObjectId);
+
+    List<DUResponse.DiskUsage> dirDUData = new ArrayList<>();
+    // get object IDs for all its subdirectories
+    Set<Long> bucketSubdirs = bucketNSSummary.getChildDir();
+    // duResponse.setKeySize(bucketNSSummary.getSizeOfFiles());
+    long bucketDataSizeWithReplica = 0L;
+    for (long subdirObjectId: bucketSubdirs) {
+      NSSummary subdirNSSummary = getReconNamespaceSummaryManager()
+              .getNSSummary(subdirObjectId);
+
+      // get directory's name and generate the next-level subpath.
+      String dirName = subdirNSSummary.getDirName();
+      String subpath = BucketHandler.buildSubpath(getNormalizedPath(), dirName);
+      // we need to reformat the subpath in the response in a
+      // format with leading slash and without trailing slash
+      DUResponse.DiskUsage diskUsage = new DUResponse.DiskUsage();
+      diskUsage.setSubpath(subpath);
+
+      // if (withReplica) {
+        long dirDU = getBucketHandler()
+            .calculateDUUnderObject(subdirObjectId);
+        diskUsage.setSizeWithReplica(dirDU);
+        bucketDataSizeWithReplica += dirDU;
+      // }
+      
+      dirDUData.add(diskUsage);
+    }
+    // Either listFile or withReplica is enabled, we need the directKeys info
+    // if (listFile || withReplica) {
+      bucketDataSizeWithReplica += getBucketHandler()
+              .handleDirectKeys(bucketObjectId, true,
+                  true, dirDUData, getNormalizedPath());
+    // }
+
+
+
     quotaUsageResponse.setQuota(quotaInBytes);
-    quotaUsageResponse.setQuotaUsed(quotaUsedInBytes);
+    quotaUsageResponse.setQuotaUsed(bucketDataSizeWithReplica);
     return quotaUsageResponse;
   }
 

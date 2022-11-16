@@ -141,10 +141,11 @@ public class RootEntityHandler extends EntityHandler {
     NodeManager nodeManager = ozoneStorageContainerManager.getScmNodeManager();
     SCMNodeStat stats = nodeManager.getStats();
 
-
     quotaInBytes = stats.getCapacity().get();
-    quotaUsedInBytes = stats.getScmUsed().get();
-
+    // quotaUsedInBytes = stats.getScmUsed().get();
+    
+    DUResponse duResp = getDuResponse(true, true);
+    quotaUsedInBytes = duResp.getSizeWithReplica();
 
     quotaUsageResponse.setQuota(quotaInBytes);
     quotaUsageResponse.setQuotaUsed(quotaUsedInBytes);
