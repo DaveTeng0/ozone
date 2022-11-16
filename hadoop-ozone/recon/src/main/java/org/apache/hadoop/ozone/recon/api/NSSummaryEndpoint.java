@@ -118,6 +118,8 @@ public class NSSummaryEndpoint {
     DUResponse duResponse = new DUResponse();
     if (!isInitializationComplete()) {
       duResponse.setStatus(ResponseStatus.INITIALIZING);
+
+      System.out.println("*** " + this.getClass().getSimpleName() + ", !isInitializationComplete, path: " + path + ", listFile ? " + listFile + ", withReplica ? " + withReplica);
       return Response.ok(duResponse).build();
     }
 

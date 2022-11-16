@@ -46,12 +46,15 @@ import org.apache.hadoop.ozone.recon.api.types.FileSizeDistributionResponse;
 import org.apache.hadoop.ozone.recon.api.types.ResponseStatus;
 import org.apache.hadoop.ozone.recon.api.types.QuotaUsageResponse;
 import org.apache.hadoop.ozone.recon.recovery.ReconOMMetadataManager;
+import org.apache.hadoop.ozone.recon.scm.ReconNodeManager;
 import org.apache.hadoop.ozone.recon.scm.ReconStorageContainerManagerFacade;
 import org.apache.hadoop.ozone.recon.spi.ReconNamespaceSummaryManager;
 import org.apache.hadoop.ozone.recon.spi.StorageContainerServiceProvider;
 import org.apache.hadoop.ozone.recon.spi.impl.OzoneManagerServiceProviderImpl;
 import org.apache.hadoop.ozone.recon.spi.impl.StorageContainerServiceProviderImpl;
 import org.apache.hadoop.ozone.recon.tasks.NSSummaryTaskWithFSO;
+import org.apache.hadoop.hdds.scm.container.placement.metrics.SCMNodeStat;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -363,6 +366,10 @@ public class TestNSSummaryEndpointWithFSO {
     ReconNamespaceSummaryManager reconNamespaceSummaryManager =
         reconTestInjector.getInstance(ReconNamespaceSummaryManager.class);
     nsSummaryEndpoint = reconTestInjector.getInstance(NSSummaryEndpoint.class);
+
+    // when(nsSummaryEndpoint.).thenReturn(true);
+    // ReconNodeManager
+    // ozoneStorageContainerManager
 
     // populate OM DB and reprocess into Recon RocksDB
     populateOMDB();
@@ -1240,10 +1247,18 @@ public class TestNSSummaryEndpointWithFSO {
         .thenReturn(containerReplicas6);
 
     when(reconSCM.getContainerManager()).thenReturn(containerManager);
+    ReconNodeManager tmp = mock(ReconNodeManager.class);
+    when(tmp.getStats()).thenReturn(getMockSCMRootStat());
+    when(reconSCM.getScmNodeManager()).thenReturn(tmp);
+    
     return reconSCM;
   }
 
   private static BucketLayout getBucketLayout() {
     return BucketLayout.FILE_SYSTEM_OPTIMIZED;
+  }
+
+  private static SCMNodeStat getMockSCMRootStat() {
+    return new SCMNodeStat(ROOT_QUOTA,ROOT_DATA_SIZE,ROOT_QUOTA - ROOT_DATA_SIZE);
   }
 }

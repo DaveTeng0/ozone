@@ -113,8 +113,8 @@ public class VolumeEntityHandler extends EntityHandler {
     return duResponse;
   }
 
-  @Override
-  public QuotaUsageResponse getQuotaResponse()
+  // @Override
+  public QuotaUsageResponse getQuotaResponse_old()
           throws IOException {
     QuotaUsageResponse quotaUsageResponse = new QuotaUsageResponse();
     String[] names = getNames();
@@ -134,6 +134,58 @@ public class VolumeEntityHandler extends EntityHandler {
     quotaUsageResponse.setQuotaUsed(quotaUsedInBytes);
     return quotaUsageResponse;
   }
+
+  @Override
+  public QuotaUsageResponse getQuotaResponse()
+          throws IOException {
+    QuotaUsageResponse quotaUsageResponse = new QuotaUsageResponse();
+    String[] names = getNames();
+    List<OmBucketInfo> buckets = listBucketsUnderVolume(names[0]);
+    String volKey = getOmMetadataManager().getVolumeKey(names[0]);
+    OmVolumeArgs volumeArgs =
+            getOmMetadataManager().getVolumeTable().getSkipCache(volKey);
+    long quotaInBytes = volumeArgs.getQuotaInBytes();
+    long quotaUsedInBytes = 0L;
+
+    // Get the total data size used by all buckets
+
+    String volName = names[0];
+    // List<OmBucketInfo> buckets = listBucketsUnderVolume(volName);
+    // duResponse.setCount(buckets.size());
+
+    // List of DiskUsage data for all buckets (with replica)
+    // List<DUResponse.DiskUsage> bucketDuData = new ArrayList<>();
+    // long volDataSize = 0L;
+    long volDiskUsageWithReplica = 0L;
+    /*  
+    for (OmBucketInfo bucket: buckets) {
+      String bucketName = bucket.getBucketName();
+      long bucketObjectID = bucket.getObjectID();
+      String subpath = getOmMetadataManager().getBucketKey(volName, bucketName);
+      DUResponse.DiskUsage diskUsage = new DUResponse.DiskUsage();
+      diskUsage.setSubpath(subpath);
+      // long dataSize = getTotalSize(bucketObjectID);
+      // volDataSize += dataSize;
+      // if (withReplica) {
+        BucketHandler bucketHandler =
+              BucketHandler.getBucketHandler(
+                  getReconNamespaceSummaryManager(),
+                  getOmMetadataManager(), getReconSCM(), bucket);
+        long bucketDU = bucketHandler
+              .calculateDUUnderObject(bucketObjectID);
+        // diskUsage.setSizeWithReplica(bucketDU);
+        volDiskUsageWithReplica += bucketDU;
+      // }
+      }
+
+      */
+
+      
+    quotaUsageResponse.setQuota(quotaInBytes);
+    quotaUsageResponse.setQuotaUsed(volDiskUsageWithReplica);
+    return quotaUsageResponse;
+    }
+
 
   @Override
   public FileSizeDistributionResponse getDistResponse()

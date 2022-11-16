@@ -328,6 +328,19 @@ public abstract class EntityHandler {
     return totalSize;
   }
 
+  public long getDiskUsage(long objectId) throws IOException {
+    NSSummary nsSummary = reconNamespaceSummaryManager.getNSSummary(objectId);
+    if (nsSummary == null) {
+      return 0L;
+    }
+    long totalSize = nsSummary.getSizeOfFiles();
+    for (long childId: nsSummary.getChildDir()) {
+      totalSize += getTotalSize(childId);
+    }
+    return totalSize;
+  }
+
+
   public static String[] parseRequestPath(String path) {
     if (path.startsWith(OM_KEY_PREFIX)) {
       path = path.substring(1);
