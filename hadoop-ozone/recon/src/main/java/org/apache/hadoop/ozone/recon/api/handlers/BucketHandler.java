@@ -116,14 +116,17 @@ public abstract class BucketHandler {
   }
 
   public long getKeySizeWithReplication(OmKeyInfo keyInfo) {
+
+    System.out.println("*** *** *** yoga-day *** keyInfo = " + keyInfo.getObjectInfo());
     OmKeyLocationInfoGroup locationGroup = keyInfo.getLatestVersionLocations();
     List<OmKeyLocationInfo> keyLocations =
         locationGroup.getBlocksLatestVersionOnly();
     long du = 0L;
     // a key could be too large to fit in one single container
-    for (OmKeyLocationInfo location: keyLocations) {
-      BlockID block = location.getBlockID();
-      ContainerID containerId = new ContainerID(block.getContainerID());
+    
+//    for (OmKeyLocationInfo location: keyLocations) {
+//      BlockID block = location.getBlockID();
+//      ContainerID containerId = new ContainerID(block.getContainerID());
       //try {
         /* 
         int replicationFactor =
@@ -131,11 +134,14 @@ public abstract class BucketHandler {
         long blockSize = location.getLength() * replicationFactor;
         */
 
-        du += keyInfo.getReplicatedSize();
+        //du += keyInfo.getReplicatedSize();
       //} catch (ContainerNotFoundException cnfe) {
         //LOG.warn("Cannot find container {}", block.getContainerID(), cnfe);
       //}
-    }
+    //}
+    
+
+    du += keyInfo.getReplicatedSize();
     return du;
   }
 

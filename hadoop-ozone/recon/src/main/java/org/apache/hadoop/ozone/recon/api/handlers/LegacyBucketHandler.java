@@ -114,6 +114,10 @@ public class LegacyBucketHandler extends BucketHandler {
   @Override
   public long calculateDUUnderObject(long parentId)
       throws IOException {
+
+        System.out.println("*** *** " + this.getClass().getSimpleName() + ", calculateDUUnderObject( ).. parentId = " + parentId);                            
+
+
     Table<String, OmKeyInfo> keyTable = getKeyTable();
 
     long totalDU = 0L;
@@ -191,6 +195,10 @@ public class LegacyBucketHandler extends BucketHandler {
                                boolean listFile,
                                List<DUResponse.DiskUsage> duData,
                                String normalizedPath) throws IOException {
+
+
+    System.out.println("*** *** " + this.getClass().getSimpleName() + ", handleDirectKeys( ).. duData len = " + duData.size());                            
+                                
 
     Table<String, OmKeyInfo> keyTable = getKeyTable();
     long keyDataSizeWithReplica = 0L;

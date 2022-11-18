@@ -62,6 +62,9 @@ public class KeyEntityHandler extends EntityHandler {
     duResponse.setCount(0);
     OmKeyInfo keyInfo = getBucketHandler().getKeyInfo(getNames());
 
+
+    System.out.println("*** *** " + this.getClass().getSimpleName() + ", getDuResponse, listFile = " + listFile + ", OmKeyInfo = " + keyInfo.getObjectInfo());
+
     duResponse.setSize(keyInfo.getDataSize());
     if (withReplica) {
       long keySizeWithReplica = getBucketHandler()
