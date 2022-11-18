@@ -706,6 +706,7 @@ public final class OmKeyInfo extends WithParentObjectId {
         "volume='" + volumeName + '\'' +
         ", bucket='" + bucketName + '\'' +
         ", key='" + keyName + '\'' +
+        ", isFile= " + isFile + '\'' +
         ", dataSize='" + dataSize + '\'' +
         ", creationTime='" + creationTime + '\'' +
         ", objectID='" + objectID + '\'' +
@@ -724,20 +725,21 @@ public final class OmKeyInfo extends WithParentObjectId {
       return false;
     }
     OmKeyInfo omKeyInfo = (OmKeyInfo) o;
-    return dataSize == omKeyInfo.dataSize &&
-        creationTime == omKeyInfo.creationTime &&
-        modificationTime == omKeyInfo.modificationTime &&
+    return 
+    //dataSize == omKeyInfo.dataSize &&
+        // creationTime == omKeyInfo.creationTime &&
+        // modificationTime == omKeyInfo.modificationTime &&
         volumeName.equals(omKeyInfo.volumeName) &&
-        bucketName.equals(omKeyInfo.bucketName) &&
-        keyName.equals(omKeyInfo.keyName) &&
-        Objects
-            .equals(keyLocationVersions, omKeyInfo.keyLocationVersions) &&
-        replicationConfig.equals(omKeyInfo.replicationConfig) &&
-        Objects.equals(metadata, omKeyInfo.metadata) &&
-        Objects.equals(acls, omKeyInfo.acls) &&
-        objectID == omKeyInfo.objectID &&
-        updateID == omKeyInfo.updateID &&
-        parentObjectID == omKeyInfo.parentObjectID;
+        bucketName.equals(omKeyInfo.bucketName); //&&
+        // keyName.equals(omKeyInfo.keyName);// &&
+        // Objects
+        //     .equals(keyLocationVersions, omKeyInfo.keyLocationVersions) &&
+        // replicationConfig.equals(omKeyInfo.replicationConfig) &&
+        // Objects.equals(metadata, omKeyInfo.metadata) &&
+        // Objects.equals(acls, omKeyInfo.acls) &&
+        // objectID == omKeyInfo.objectID &&
+        // updateID == omKeyInfo.updateID &&
+        // parentObjectID == omKeyInfo.parentObjectID;
   }
 
   @Override
