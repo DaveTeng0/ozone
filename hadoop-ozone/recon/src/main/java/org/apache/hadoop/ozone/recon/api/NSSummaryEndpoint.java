@@ -115,6 +115,8 @@ public class NSSummaryEndpoint {
       return Response.status(Response.Status.BAD_REQUEST).build();
     }
 
+    System.out.println("*** *** *** sunshine~ *** *** ");
+
     DUResponse duResponse = new DUResponse();
     if (!isInitializationComplete()) {
       duResponse.setStatus(ResponseStatus.INITIALIZING);

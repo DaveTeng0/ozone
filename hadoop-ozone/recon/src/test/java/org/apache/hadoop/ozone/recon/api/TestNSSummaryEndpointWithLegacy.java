@@ -53,6 +53,11 @@ import org.apache.hadoop.ozone.recon.spi.StorageContainerServiceProvider;
 import org.apache.hadoop.ozone.recon.spi.impl.OzoneManagerServiceProviderImpl;
 import org.apache.hadoop.ozone.recon.spi.impl.StorageContainerServiceProviderImpl;
 import org.apache.hadoop.ozone.recon.tasks.NSSummaryTaskWithLegacy;
+import org.apache.hadoop.ozone.recon.scm.ReconNodeManager;
+import org.apache.hadoop.hdds.scm.container.placement.metrics.SCMNodeStat;
+import org.apache.hadoop.ozone.om.helpers.OmKeyInfo;
+
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -79,6 +84,9 @@ import static org.apache.hadoop.ozone.recon.OMMetadataManagerTestUtils.getMockOz
 import static org.apache.hadoop.ozone.recon.OMMetadataManagerTestUtils.getTestReconOmMetadataManager;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 /**
  * Test for NSSummary REST APIs with Legacy.
@@ -364,6 +372,8 @@ public class TestNSSummaryEndpointWithLegacy {
             .addBinding(StorageContainerServiceProvider.class,
                 mock(StorageContainerServiceProviderImpl.class))
             .addBinding(NSSummaryEndpoint.class)
+            
+            // .addBinding(BucketHandler.class, MockBucketHandler.class)
             .build();
     ReconNamespaceSummaryManager reconNamespaceSummaryManager =
         reconTestInjector.getInstance(ReconNamespaceSummaryManager.class);
@@ -559,9 +569,17 @@ public class TestNSSummaryEndpointWithLegacy {
         invalidObj.getStatus());
   }
 
+
+  private static SCMNodeStat getMockSCM_MULTI_BLOCK_KEY_PATHStat() {
+    return new SCMNodeStat(ROOT_QUOTA,MULTI_BLOCK_KEY_SIZE_WITH_REPLICA,ROOT_QUOTA - MULTI_BLOCK_KEY_SIZE_WITH_REPLICA);
+  }
+
+
+
   @Test
   public void testDiskUsageWithReplication() throws Exception {
     setUpMultiBlockKey();
+
     Response keyResponse = nsSummaryEndpoint.getDiskUsage(MULTI_BLOCK_KEY_PATH,
         false, true);
     DUResponse replicaDUResponse = (DUResponse) keyResponse.getEntity();
@@ -986,7 +1004,7 @@ public class TestNSSummaryEndpointWithLegacy {
         BUCKET_ONE_OBJECT_ID,
         VOL_OBJECT_ID,
         Collections.singletonList(locationInfoGroup),
-        getBucketLayout());
+        getBucketLayout(), FILE7_SIZE_WITH_REPLICA);
   }
 
   private OmKeyLocationInfoGroup getLocationInfoGroup1() {
@@ -1079,7 +1097,7 @@ public class TestNSSummaryEndpointWithLegacy {
         BUCKET_ONE_OBJECT_ID,
         VOL_OBJECT_ID,
         Collections.singletonList(locationInfoGroup1),
-          getBucketLayout());
+          getBucketLayout(), FILE1_SIZE_WITH_REPLICA);
 
     //vol/bucket1/dir1/dir2/file2
     writeKeyToOm(reconOMMetadataManager,
@@ -1092,7 +1110,7 @@ public class TestNSSummaryEndpointWithLegacy {
         BUCKET_ONE_OBJECT_ID,
         VOL_OBJECT_ID,
         Collections.singletonList(locationInfoGroup2),
-          getBucketLayout());
+          getBucketLayout(),FILE2_SIZE_WITH_REPLICA);
 
     //vol/bucket1/dir1/dir3/file3
     writeKeyToOm(reconOMMetadataManager,
@@ -1105,7 +1123,7 @@ public class TestNSSummaryEndpointWithLegacy {
         BUCKET_ONE_OBJECT_ID,
         VOL_OBJECT_ID,
         Collections.singletonList(locationInfoGroup1),
-          getBucketLayout());
+          getBucketLayout(), FILE3_SIZE_WITH_REPLICA);
 
     //vol/bucket2/file4
     writeKeyToOm(reconOMMetadataManager,
@@ -1118,7 +1136,7 @@ public class TestNSSummaryEndpointWithLegacy {
         BUCKET_TWO_OBJECT_ID,
         VOL_OBJECT_ID,
         Collections.singletonList(locationInfoGroup2),
-        getBucketLayout());
+        getBucketLayout(), FILE4_SIZE_WITH_REPLICA);
 
     //vol/bucket2/file5
     writeKeyToOm(reconOMMetadataManager,
@@ -1131,7 +1149,7 @@ public class TestNSSummaryEndpointWithLegacy {
         BUCKET_TWO_OBJECT_ID,
         VOL_OBJECT_ID,
         Collections.singletonList(locationInfoGroup1),
-        getBucketLayout());
+        getBucketLayout(), FILE5_SIZE_WITH_REPLICA);
 
     //vol/bucket1/dir1/dir4/file6
     writeKeyToOm(reconOMMetadataManager,
@@ -1144,7 +1162,7 @@ public class TestNSSummaryEndpointWithLegacy {
         BUCKET_ONE_OBJECT_ID,
         VOL_OBJECT_ID,
         Collections.singletonList(locationInfoGroup2),
-        getBucketLayout());
+        getBucketLayout(), FILE6_SIZE_WITH_REPLICA);
 
     //vol/bucket1/dir1/file7
     writeKeyToOm(reconOMMetadataManager,
@@ -1157,7 +1175,7 @@ public class TestNSSummaryEndpointWithLegacy {
         BUCKET_ONE_OBJECT_ID,
         VOL_OBJECT_ID,
         Collections.singletonList(locationInfoGroup1),
-        getBucketLayout());
+        getBucketLayout(), FILE7_SIZE_WITH_REPLICA);
 
     //vol2/bucket3/file8
     writeKeyToOm(reconOMMetadataManager,
@@ -1170,7 +1188,7 @@ public class TestNSSummaryEndpointWithLegacy {
         BUCKET_THREE_OBJECT_ID,
         VOL_TWO_OBJECT_ID,
         Collections.singletonList(locationInfoGroup2),
-        getBucketLayout());
+        getBucketLayout(), FILE8_SIZE_WITH_REPLICA);
 
     //vol2/bucket3/dir5/file9
     writeKeyToOm(reconOMMetadataManager,
@@ -1183,7 +1201,7 @@ public class TestNSSummaryEndpointWithLegacy {
         BUCKET_THREE_OBJECT_ID,
         VOL_TWO_OBJECT_ID,
         Collections.singletonList(locationInfoGroup1),
-        getBucketLayout());
+        getBucketLayout(), FILE9_SIZE_WITH_REPLICA);
 
     //vol2/bucket3/dir5/file10
     writeKeyToOm(reconOMMetadataManager,
@@ -1196,7 +1214,7 @@ public class TestNSSummaryEndpointWithLegacy {
         BUCKET_THREE_OBJECT_ID,
         VOL_TWO_OBJECT_ID,
         Collections.singletonList(locationInfoGroup2),
-        getBucketLayout());
+        getBucketLayout(), FILE10_SIZE_WITH_REPLICA);
 
     //vol2/bucket4/file11
     writeKeyToOm(reconOMMetadataManager,
@@ -1209,7 +1227,7 @@ public class TestNSSummaryEndpointWithLegacy {
         BUCKET_FOUR_OBJECT_ID,
         VOL_TWO_OBJECT_ID,
         Collections.singletonList(locationInfoGroup1),
-        getBucketLayout());
+        getBucketLayout(), FILE11_SIZE_WITH_REPLICA);
   }
 
   /**
@@ -1233,6 +1251,8 @@ public class TestNSSummaryEndpointWithLegacy {
     }
     return result;
   }
+
+
 
   private static ReconStorageContainerManagerFacade getMockReconSCM()
       throws ContainerNotFoundException {

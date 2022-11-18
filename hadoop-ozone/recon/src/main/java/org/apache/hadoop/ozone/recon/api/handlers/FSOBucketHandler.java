@@ -119,6 +119,8 @@ public class FSOBucketHandler extends BucketHandler {
   @Override
   public long calculateDUUnderObject(long parentId)
       throws IOException {
+
+        System.out.println("*** *** " + this.getClass().getSimpleName() + ", calculateDUUnderObject( ).. parentId = " + parentId);                            
     Table<String, OmKeyInfo> keyTable = getOmMetadataManager().getFileTable();
 
     long totalDU = 0L;
@@ -137,6 +139,9 @@ public class FSOBucketHandler extends BucketHandler {
       while (iterator.hasNext()) {
         Table.KeyValue<String, OmKeyInfo> kv = iterator.next();
         String dbKey = kv.getKey();
+
+        System.out.println("*** *** " + this.getClass().getSimpleName() + ", dbKey = " + dbKey + ", OmKeyInfo = " + kv.getValue().getObjectInfo());
+
         // since the RocksDB is ordered, seek until the prefix isn't matched
         if (!dbKey.startsWith(seekPrefix)) {
           break;
@@ -158,7 +163,9 @@ public class FSOBucketHandler extends BucketHandler {
 
     Set<Long> subDirIds = nsSummary.getChildDir();
     for (long subDirId: subDirIds) {
+      System.out.println("*** " + this.getClass().getSimpleName() + ", go nested subDirId: " + subDirId);
       totalDU += calculateDUUnderObject(subDirId);
+      System.out.println("*** " + this.getClass().getSimpleName() + ", finish nested subDirId: " + subDirId);
     }
     return totalDU;
   }
@@ -179,6 +186,8 @@ public class FSOBucketHandler extends BucketHandler {
                                boolean listFile,
                                List<DUResponse.DiskUsage> duData,
                                String normalizedPath) throws IOException {
+
+    System.out.println("*** *** " + this.getClass().getSimpleName() + ", handleDirectKeys( ).. duData len = " + duData.size());                            
 
     Table<String, OmKeyInfo> keyTable = getOmMetadataManager().getFileTable();
     long keyDataSizeWithReplica = 0L;
