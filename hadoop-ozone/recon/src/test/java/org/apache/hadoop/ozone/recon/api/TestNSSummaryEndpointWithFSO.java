@@ -1036,7 +1036,7 @@ public class TestNSSummaryEndpointWithFSO {
         BUCKET_ONE_OBJECT_ID,
         VOL_OBJECT_ID,
         Collections.singletonList(locationInfoGroup1),
-        getBucketLayout(), FILE1_SIZE_WITH_REPLICA);
+        getBucketLayout(), KEY_ONE_SIZE);
 
     //vol/bucket1/dir1/dir2/file2
     writeKeyToOm(reconOMMetadataManager,
@@ -1049,7 +1049,7 @@ public class TestNSSummaryEndpointWithFSO {
         BUCKET_ONE_OBJECT_ID,
         VOL_OBJECT_ID,
         Collections.singletonList(locationInfoGroup2),
-        getBucketLayout(), FILE2_SIZE_WITH_REPLICA);
+        getBucketLayout(), KEY_TWO_SIZE);
 
     //vol/bucket1/dir1/dir3/file3
     writeKeyToOm(reconOMMetadataManager,
@@ -1062,7 +1062,7 @@ public class TestNSSummaryEndpointWithFSO {
         BUCKET_ONE_OBJECT_ID,
         VOL_OBJECT_ID,
         Collections.singletonList(locationInfoGroup1),
-        getBucketLayout(), FILE3_SIZE_WITH_REPLICA);
+        getBucketLayout(), KEY_THREE_SIZE);
 
     //vol/bucket2/file4
     writeKeyToOm(reconOMMetadataManager,
