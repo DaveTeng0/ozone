@@ -81,6 +81,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.apache.hadoop.ozone.OzoneConsts.OZONE_URI_DELIMITER;
+import static org.apache.hadoop.ozone.OzoneConsts.OZONE_CLI_IS_S3_NAMING_COMPLIANT;
+
 import static org.apache.hadoop.ozone.om.exceptions.OMException.ResultCodes
     .BUCKET_ALREADY_EXISTS;
 import static org.apache.hadoop.ozone.om.exceptions.OMException.ResultCodes
@@ -107,6 +109,7 @@ public class BasicRootedOzoneClientAdapterImpl
   private int configuredDnPort;
   private BucketLayout defaultOFSBucketLayout;
   private OzoneConfiguration config;
+  private boolean isS3NamingCompliant;
 
   /**
    * Create new OzoneClientAdapter implementation.
@@ -196,6 +199,10 @@ public class BasicRootedOzoneClientAdapterImpl
 
       // Fetches the bucket layout to be used by OFS.
       initDefaultFsBucketLayout(conf);
+
+      this.isS3NamingCompliant = conf.getBoolean(
+        "ozone.s3.naming.compliant",
+        true);
 
       config = conf;
     } finally {
@@ -295,10 +302,12 @@ public class BasicRootedOzoneClientAdapterImpl
           OzoneVolume volume = proxy.getVolumeDetails(volumeStr);
           // Create the bucket
           try {
+
+            System.out.println("hello-java-_-_-_" + isS3NamingCompliant + "");
             // Buckets created by OFS should be in FSO layout
             volume.createBucket(bucketStr,
                 BucketArgs.newBuilder().setBucketLayout(
-                    this.defaultOFSBucketLayout).build());
+                    this.defaultOFSBucketLayout).setIsS3NamingCompliant(isS3NamingCompliant).build());
           } catch (OMException newBucEx) {
             // Ignore the case where another client created the bucket
             if (!newBucEx.getResult().equals(BUCKET_ALREADY_EXISTS)) {
@@ -1124,5 +1133,9 @@ public class BasicRootedOzoneClientAdapterImpl
         volume, bucket, ofsPath.getKeyName(),
         length, combineMode, ozoneClient.getObjectStore().getClientProxy());
 
+  }
+
+  public boolean getIsS3NamingCompliant() {
+    return isS3NamingCompliant;
   }
 }

@@ -36,6 +36,10 @@ import static org.apache.ratis.thirdparty.io.grpc.Metadata.ASCII_STRING_MARSHALL
 @InterfaceAudience.Private
 public final class OzoneConsts {
 
+    public static final String UNDERSCORE = "_";
+    public static final String OZONE_CLI_IS_S3_NAMING_COMPLIANT = "ozone.s3.naming.compliant";
+
+    
 
   public static final String STORAGE_DIR = "scm";
   public static final String SCM_ID = "scmUuid";

@@ -410,6 +410,7 @@ public final class OzoneManager extends ServiceRuntimeInfoImpl
 
   private boolean isBootstrapping = false;
   private boolean isForcedBootstrapping = false;
+  private boolean isS3NamingCompliant = true;
 
   // Test flags
   private static boolean testReloadConfigFlag = false;
@@ -489,6 +490,11 @@ public final class OzoneManager extends ServiceRuntimeInfoImpl
           ResultCodes.OM_NOT_INITIALIZED);
     }
     omMetaDir = OMStorage.getOmDbDir(configuration);
+
+    // 456
+    this.isS3NamingCompliant = Boolean.valueOf(conf.get("ozone.s3.naming.compliant", "true"));
+
+
 
     this.isSpnegoEnabled = conf.get(OZONE_OM_HTTP_AUTH_TYPE, "simple")
         .equals("kerberos");
@@ -825,6 +831,11 @@ public final class OzoneManager extends ServiceRuntimeInfoImpl
   public boolean isS3MultiTenancyEnabled() {
     return isS3MultiTenancyEnabled;
   }
+
+  public boolean isS3NamingCompliant() {
+    return isS3NamingCompliant;
+  }
+
 
   /**
    * Throws OMException FEATURE_NOT_ENABLED if S3 multi-tenancy is not enabled.

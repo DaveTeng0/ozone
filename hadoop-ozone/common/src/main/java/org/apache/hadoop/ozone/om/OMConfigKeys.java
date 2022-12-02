@@ -34,6 +34,9 @@ public final class OMConfigKeys {
   private OMConfigKeys() {
   }
 
+  // 456
+  public static final String OZONE_OM_IS_S3_NAMING_COMPLIANT = "OZONE_OM_IS_S3_NAMING_COMPLIANT";
+
   // Location where the OM stores its DB files. In the future we may support
   // multiple entries for performance (sharding)..
   public static final String OZONE_OM_DB_DIRS = "ozone.om.db.dirs";
