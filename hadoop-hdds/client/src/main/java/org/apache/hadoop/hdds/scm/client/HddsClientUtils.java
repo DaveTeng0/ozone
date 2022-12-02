@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import static org.apache.hadoop.ozone.OzoneConsts.UNDERSCORE;
+
 
 import org.apache.hadoop.hdds.annotation.InterfaceAudience;
 import org.apache.hadoop.hdds.annotation.InterfaceStability;
@@ -125,10 +127,22 @@ public final class HddsClientUtils {
       throw new IllegalArgumentException("Bucket or Volume name "
           + "cannot end with a period or dash");
     }
+
   }
 
   private static boolean isSupportedCharacter(char c) {
     return (c == '.' || c == '-' ||
+        Character.isLowerCase(c) || Character.isDigit(c));
+  }
+
+
+  private static boolean isSupportedCharacter_S3(char c, boolean isS3NamingCompliant) {
+    if(isS3NamingCompliant){
+      return (c == '.' || c == '-' || 
+      Character.isLowerCase(c) || Character.isDigit(c));
+    }
+
+    return (c == '.' || c == '-' || c == '_' ||
         Character.isLowerCase(c) || Character.isDigit(c));
   }
 
@@ -155,6 +169,65 @@ public final class HddsClientUtils {
     }
   }
 
+
+
+  private static void doCharacterChecks(char currChar, char prev, boolean isS3NamingCompliant) {
+    if (Character.isUpperCase(currChar)) {
+      throw new IllegalArgumentException(
+          "Bucket or Volume name does not support uppercase characters");
+    }
+    if (!isSupportedCharacter_S3(currChar, isS3NamingCompliant)) {
+      throw new IllegalArgumentException("Bucket or Volume name has an " +
+          "unsupported character : " + currChar);
+    }
+    if (prev == '.' && currChar == '.') {
+      throw new IllegalArgumentException("Bucket or Volume name should not " +
+          "have two contiguous periods");
+    }
+    if (prev == '-' && currChar == '.') {
+      throw new IllegalArgumentException(
+          "Bucket or Volume name should not have period after dash");
+    }
+    if (prev == '.' && currChar == '-') {
+      throw new IllegalArgumentException(
+          "Bucket or Volume name should not have dash after period");
+    }
+  }
+
+
+
+
+  private static void doNameChecks_S3(String resName, boolean isS3NamingCompliant) {
+    if (resName == null) {
+      throw new IllegalArgumentException("Bucket or Volume name is null");
+    }
+
+    if (resName.length() < OzoneConsts.OZONE_MIN_BUCKET_NAME_LENGTH ||
+        resName.length() > OzoneConsts.OZONE_MAX_BUCKET_NAME_LENGTH) {
+      throw new IllegalArgumentException(
+          "Bucket or Volume length is illegal, "
+              + "valid length is 3-63 characters");
+    }
+
+    if (resName.charAt(0) == '.' || resName.charAt(0) == '-') {
+      throw new IllegalArgumentException(
+          "Bucket or Volume name cannot start with a period or dash");
+    }
+
+    if (resName.charAt(resName.length() - 1) == '.' ||
+        resName.charAt(resName.length() - 1) == '-') {
+      throw new IllegalArgumentException("Bucket or Volume name "
+          + "cannot end with a period or dash");
+    }
+
+    // if(isS3NamingCompliant && resName.contains(OzoneConsts.UNDERSCORE)){
+    //   throw new IllegalArgumentException("Bucket or Volume name "
+    //       + "cannot contain a underscore");
+    // }
+  }
+
+
+  
   /**
    * verifies that bucket name / volume name is a valid DNS name.
    *
@@ -175,6 +248,29 @@ public final class HddsClientUtils {
         isIPv4 = ((currChar >= '0') && (currChar <= '9')) && isIPv4;
       }
       doCharacterChecks(currChar, prev);
+      prev = currChar;
+    }
+
+    if (isIPv4) {
+      throw new IllegalArgumentException(
+          "Bucket or Volume name cannot be an IPv4 address or all numeric");
+    }
+  }
+
+
+  public static void verifyResourceName_S3(String resName, boolean isS3NamingCompliant) {
+
+    doNameChecks_S3(resName, isS3NamingCompliant);
+
+    boolean isIPv4 = true;
+    char prev = (char) 0;
+
+    for (int index = 0; index < resName.length(); index++) {
+      char currChar = resName.charAt(index);
+      if (currChar != '.') {
+        isIPv4 = ((currChar >= '0') && (currChar <= '9')) && isIPv4;
+      }
+      doCharacterChecks(currChar, prev, isS3NamingCompliant);
       prev = currChar;
     }
 

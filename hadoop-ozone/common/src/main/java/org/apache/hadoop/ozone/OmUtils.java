@@ -17,6 +17,8 @@
 
 package org.apache.hadoop.ozone;
 
+import static org.apache.hadoop.ozone.OzoneConsts.OZONE_CLI_IS_S3_NAMING_COMPLIANT;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import java.io.File;
@@ -201,6 +203,15 @@ public final class OmUtils {
   public static boolean isServiceIdsDefined(ConfigurationSource conf) {
     String val = conf.get(OZONE_OM_SERVICE_IDS_KEY);
     return val != null && val.length() > 0;
+  }
+
+  public static boolean isS3NamingCompliant(ConfigurationSource conf) {
+    String val = conf.get(OZONE_CLI_IS_S3_NAMING_COMPLIANT);
+    if (val == null || "".equals(val) || "true".equals(val)) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   /**
@@ -542,6 +553,20 @@ public final class OmUtils {
           OMException.ResultCodes.INVALID_BUCKET_NAME);
     }
   }
+
+
+
+  public static void validateBucketName_S3(String bucketName, boolean isS3NamingCompliant)
+      throws OMException {
+    try {
+      HddsClientUtils.verifyResourceName_S3(bucketName, isS3NamingCompliant);
+    } catch (IllegalArgumentException e) {
+      throw new OMException("Invalid bucket name: " + bucketName,
+          OMException.ResultCodes.INVALID_BUCKET_NAME);
+    }
+  }
+
+
 
   /**
    * Return OM Client Rpc Time out.

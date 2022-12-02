@@ -20,5 +20,11 @@
 <!-- Put site-specific property overrides in this file. -->
 
 <configuration>
+  <property>
+    <name>ozone.s3.naming.compliant</name>
+    <value>false</value>
+    <tag>OZONE, MANAGEMENT</tag>
+    <description>Is bucket name compliant with s3 policy</description>
+  </property>
 
 </configuration>

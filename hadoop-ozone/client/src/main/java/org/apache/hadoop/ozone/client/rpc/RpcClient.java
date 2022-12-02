@@ -616,8 +616,9 @@ public class RpcClient implements ClientProtocol {
   public void createBucket(
       String volumeName, String bucketName, BucketArgs bucketArgs)
       throws IOException {
+    
     verifyVolumeName(volumeName);
-    verifyBucketName(bucketName);
+    verifyBucketName_S3(bucketName, bucketArgs.getIsS3NamingCompliant(), this);
     Preconditions.checkNotNull(bucketArgs);
     verifyCountsQuota(bucketArgs.getQuotaInNamespace());
     verifySpaceQuota(bucketArgs.getQuotaInBytes());
@@ -673,7 +674,8 @@ public class RpcClient implements ClientProtocol {
         .setQuotaInNamespace(bucketArgs.getQuotaInNamespace())
         .setAcls(listOfAcls.stream().distinct().collect(Collectors.toList()))
         .setBucketLayout(bucketLayout)
-        .setOwner(owner);
+        .setOwner(owner)
+        .setIsS3NamingCompliant(bucketArgs.getIsS3NamingCompliant());
 
     if (bek != null) {
       builder.setBucketEncryptionKey(bek);
@@ -692,6 +694,8 @@ public class RpcClient implements ClientProtocol {
             "Storage Type set to {} and Encryption set to {} ",
         volumeName, bucketName, layoutMsg, owner, isVersionEnabled,
         storageType, bek != null);
+
+    // throw new RuntimeException("hello-world, " + builder.build());
     ozoneManagerClient.createBucket(builder.build());
   }
 
@@ -712,6 +716,17 @@ public class RpcClient implements ClientProtocol {
           OMException.ResultCodes.INVALID_BUCKET_NAME);
     }
   }
+
+  private static void verifyBucketName_S3(String bucketName, boolean isS3NamingCompliant, Object obj) throws OMException {
+    System.out.println("golang~ " + obj.getClass().getSimpleName() + ": verifyBucketName_S3( ).  isS3NamingCompliant: " + isS3NamingCompliant);
+    try {
+      HddsClientUtils.verifyResourceName_S3(bucketName, isS3NamingCompliant);
+    } catch (IllegalArgumentException e) {
+      throw new OMException("hello-world! " + e.getMessage(),
+          OMException.ResultCodes.INVALID_BUCKET_NAME);
+    }
+  }
+
 
   private static void verifyCountsQuota(long quota) throws OMException {
     if (quota < OzoneConsts.QUOTA_RESET || quota == 0) {

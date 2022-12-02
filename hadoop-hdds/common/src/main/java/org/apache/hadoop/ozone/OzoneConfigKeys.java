@@ -36,6 +36,11 @@ import java.util.concurrent.TimeUnit;
 @InterfaceAudience.Public
 @InterfaceStability.Unstable
 public final class OzoneConfigKeys {
+
+
+    public static final String OZONE_IS_S3_NAMING_COMPLIANT =
+    "ozone.s3.naming.compliant";
+
   public static final String OZONE_TAGS_SYSTEM_KEY =
       "ozone.tags.system";
   public static final String DFS_CONTAINER_IPC_PORT =

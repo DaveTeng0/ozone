@@ -420,6 +420,7 @@ public class OzoneVolume extends WithMetadata {
    */
   public void createBucket(String bucketName, BucketArgs bucketArgs)
       throws IOException {
+    System.out.println("hello-www. " + this.getClass().getSimpleName() + ": createBucket( ). bucketArgs = " + bucketArgs.getIsS3NamingCompliant() + "");
     proxy.createBucket(name, bucketName, bucketArgs);
   }
 
