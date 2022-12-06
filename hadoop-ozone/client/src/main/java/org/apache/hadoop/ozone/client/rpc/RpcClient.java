@@ -111,6 +111,8 @@ import org.apache.hadoop.ozone.om.helpers.KeyInfoWithVolumeContext;
 import org.apache.hadoop.ozone.om.helpers.OmBucketArgs;
 import org.apache.hadoop.ozone.om.helpers.OmBucketInfo;
 import org.apache.hadoop.ozone.om.helpers.OmDeleteKeys;
+
+
 import org.apache.hadoop.ozone.om.helpers.OmKeyArgs;
 import org.apache.hadoop.ozone.om.helpers.OmKeyInfo;
 import org.apache.hadoop.ozone.om.helpers.OmKeyLocationInfo;
@@ -2150,4 +2152,18 @@ public class RpcClient implements ClientProtocol {
     }
     return executor;
   }
+/*
+  @Override
+  public void echoRPCReq(byte[] payloadReq,
+                         int payloadSizeResp)
+          throws IOException {
+//    OmEchoRPCArgs.Builder builder = OmEchoRPCArgs.newBuilder();
+//    builder.setPayloadReq(payloadReq)
+//            .setPayloadSizeResp(payloadSizeResp);
+
+    ozoneManagerClient.echoRPCReq(payloadReq, payloadSizeResp);
+  }
+
+ */
+
 }

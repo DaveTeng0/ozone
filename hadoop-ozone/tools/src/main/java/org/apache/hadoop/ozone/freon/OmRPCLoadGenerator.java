@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.ozone.freon;
 
+
 import com.codahale.metrics.Timer;
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.RandomUtils;
@@ -76,6 +77,7 @@ public class OmRPCLoadGenerator extends BaseFreonGenerator
             "OM echo response payload size should be positive value or zero.");
 
     configuration = createOzoneConfiguration();
+//    clients = new OzoneManagerProtocolClientSideTranslatorPB[clientsCount];
     clients = new OzoneManagerProtocolClientSideTranslatorPB[clientsCount];
     for (int i = 0; i < clientsCount; i++) {
       clients[i] = createOmClient(configuration, null);
