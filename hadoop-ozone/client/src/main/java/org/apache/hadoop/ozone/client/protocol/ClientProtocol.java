@@ -978,4 +978,14 @@ public interface ClientProtocol {
       Map<DatanodeDetails, OzoneInputStream>> getKeysEveryReplicas(
           String volumeName, String bucketName, String keyName)
       throws IOException;
+
+  /**
+   * Send RPC request to OM.
+   *
+   * @param payloadReq        Payload of the RPC request.
+   * @param payloadSizeResp   Size of the payload of RPC response.
+   * @throws IOException
+   */
+//  void echoRPCReq(byte[] payloadReq, int payloadSizeResp) throws IOException;
+
 }

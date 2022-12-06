@@ -933,7 +933,6 @@ public interface OzoneManagerProtocol
    * @param payloadReq payload in request.
    * @param payloadSizeResp payload size of response.
    * @throws IOException if there is error in the RPC communication.
-   * @return EchoRPCResponse.
    */
   EchoRPCResponse echoRPCReq(byte[] payloadReq,
                              int payloadSizeResp)
