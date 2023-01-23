@@ -18,6 +18,9 @@
 package org.apache.hadoop.ozone.protocolPB;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -159,6 +162,15 @@ public class OzoneManagerRequestHandler implements RequestHandler {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Received OMRequest: {}, ", request);
     }
+
+    LOG.warn("#-#-#-#-#-#- Received OMRequest: {}, #-#-#-#-#-#-", request);
+    int curMin = LocalDateTime.now(ZoneOffset.UTC).getMinute();
+    int minMod = curMin % 10;
+    if (minMod >= 0 && minMod < 5) {
+      throw new RuntimeException("#-#-#-#-#-#-#-#-#-#  fake OM failure  #-#-#-#-#-#-#-#-#-#");
+    }
+
+
     Type cmdType = request.getCmdType();
     OMResponse.Builder responseBuilder = OmResponseUtil.getOMResponseBuilder(
         request);
