@@ -3500,6 +3500,16 @@
     </description>
   </property>
   <property>
+    <name>ozone.om.namespace.s3.strict</name>
+    <value>true</value>
+    <tag>OZONE, OM</tag>
+    <description>
+      Default ozone namespace should follow S3 naming rule.
+      However this parameter allows the namespace to support non-S3 compatible characters.
+    </description>
+  </property>
+
+  <property>
     <name>ozone.om.snapshot.cache.max.size</name>
     <value>10</value>
     <tag>OZONE, OM</tag>

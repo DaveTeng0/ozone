@@ -25,6 +25,9 @@ import org.apache.hadoop.ozone.om.exceptions.OMException;
 import org.apache.hadoop.ozone.om.helpers.BucketLayout;
 import org.apache.ozone.test.LambdaTestUtils;
 import org.junit.Assert;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.Test;
 
 import org.apache.hadoop.ozone.om.OMMetadataManager;
@@ -211,17 +214,45 @@ public class TestOMBucketCreateRequest extends TestBucketRequest {
         OMException.ResultCodes.QUOTA_ERROR.toString());
   }
 
-  @Test
-  public void testCreateBucketWithOMConfigNonS3RuleCompliantSetToFalse() throws Exception {
+  @ParameterizedTest
+  @ValueSource(strings = {"bucketname_underscore", "_leadingUnderscoreBucket",
+    "trailingUnderscoreBucket_", "_bucketname___multi_underscore_"})
+  public void testCreateBucketWithOMNamespaceS3NotStrict()
+    throws Exception {
     String volumeName = UUID.randomUUID().toString();
     String bucketName = "bucketname_with_underscore";
-    when(ozoneManager.isNamespaceS3RuleCompliant()).thenReturn(false);
+    when(ozoneManager.isStrictS3()).thenReturn(false);
 
     OMBucketCreateRequest omBucketCreateRequest =
             doPreExecute(volumeName, bucketName);
 
     doValidateAndUpdateCache(volumeName, bucketName,
             omBucketCreateRequest.getOmRequest());
+  }
+
+  @ParameterizedTest
+  @CsvSource({"bucketname_underscore,false",
+      "_bucketname___multi_underscore_,false","bucketName,true"})
+  public void testCreateBucketWithOMNamespaceS3Strict(String inputBucketName, boolean expectBucketCreated)
+    throws Exception {
+    String volumeName = UUID.randomUUID().toString();
+    when(ozoneManager.isStrictS3()).thenReturn(true);
+
+    OMBucketCreateRequest omBucketCreateRequest =
+            doPreExecute(volumeName, inputBucketName);
+
+    if (expectBucketCreated) {
+        doValidateAndUpdateCache(volumeName, inputBucketName,
+        omBucketCreateRequest.getOmRequest());
+    } else {
+        OMClientResponse omClientResponse =
+        omBucketCreateRequest.validateAndUpdateCache(ozoneManager, 1,
+            ozoneManagerDoubleBufferHelper);
+        OMResponse omResponse = omClientResponse.getOMResponse();
+        Assert.assertNotNull(omResponse.getCreateBucketResponse());
+        Assert.assertEquals(OzoneManagerProtocolProtos.Status.INVALID_REQUEST,
+            omResponse.getStatus());
+    }
   }
 
   private OMBucketCreateRequest doPreExecute(String volumeName,
