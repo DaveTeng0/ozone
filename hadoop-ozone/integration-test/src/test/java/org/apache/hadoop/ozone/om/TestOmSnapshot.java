@@ -247,7 +247,7 @@ public class TestOmSnapshot {
 
     // Trigger OM upgrade finalization. Ref: FinalizeUpgradeSubCommand#call
     final OzoneManagerProtocol omclient = 
-        cluster.getRpcClient().getObjectStore()
+        client.getObjectStore()
         .getClientProxy().getOzoneManagerClient();
     final String upgradeClientID = "Test-Upgrade-Client-" + UUID.randomUUID();
     UpgradeFinalizer.StatusAndMessages finalizationResponse =
