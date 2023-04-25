@@ -87,6 +87,18 @@ import static org.junit.Assert.fail;
 import static org.junit.Assert.assertThrows;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+
+import org.apache.hadoop.ozone.om.upgrade.OMLayoutFeature;
+import org.apache.hadoop.ozone.upgrade.UpgradeFinalizer;
+import org.apache.ozone.test.LambdaTestUtils.VoidCallable;
+import org.apache.hadoop.ozone.client.rpc.RpcClient;
+
+
+import static org.apache.hadoop.ozone.admin.scm.FinalizeUpgradeCommandUtil.isDone;
+import static org.apache.hadoop.ozone.admin.scm.FinalizeUpgradeCommandUtil.isStarting;
+
+
+
 /**
  * Test OmSnapshot bucket interface.
  */
@@ -113,6 +125,8 @@ public class TestOmSnapshot {
   private static RDBStore rdbStore;
 
   private static OzoneBucket ozoneBucket;
+  private static final String ACCESS_ID = UUID.randomUUID().toString();
+
 
   @Rule
   public Timeout timeout = new Timeout(180, TimeUnit.SECONDS);
@@ -170,6 +184,7 @@ public class TestOmSnapshot {
         .setScmId(scmId)
         .setOMServiceId("om-service-test1")
         .setNumOfOzoneManagers(3)
+        .setOmLayoutVersion(OMLayoutFeature.INITIAL_VERSION.layoutVersion())
         .build();
     cluster.waitForClusterToBeReady();
     client = cluster.newClient();
@@ -193,6 +208,67 @@ public class TestOmSnapshot {
 
     // stop the deletion services so that keys can still be read
     keyManager.stop();
+
+    preFinalizationChecks(getStoreForAccessID(ACCESS_ID));
+    finalizeOMUpgrade();
+  }
+
+  private static ObjectStore getStoreForAccessID(String accessID)
+      throws IOException {
+    // Cluster provider will modify our provided configuration. We must use
+    // this version to build the client.
+    OzoneConfiguration conf = cluster.getOzoneManager().getConfiguration();
+    // Manually construct an object store instead of using the cluster
+    // provided one so we can specify the access ID.
+    RpcClient rpcClient = new RpcClient(conf, null);
+    return new ObjectStore(conf, rpcClient);
+  }
+
+
+  private static void expectFailurePreFinalization(VoidCallable eval)
+      throws Exception {
+    LambdaTestUtils.intercept(OMException.class,
+        "cannot be invoked before finalization", eval);
+  }
+
+  private static void preFinalizationChecks(ObjectStore objstore)
+      throws Exception {
+    // None of the tenant APIs is usable before the upgrade finalization step
+    expectFailurePreFinalization(objstore::listTenant);
+  }  
+
+
+/**
+   * Trigger OM upgrade finalization from the client and block until completion
+   * (status FINALIZATION_DONE).
+   */
+  private static void finalizeOMUpgrade()
+      throws IOException, InterruptedException, TimeoutException {
+
+    // Trigger OM upgrade finalization. Ref: FinalizeUpgradeSubCommand#call
+    final OzoneManagerProtocol omclient = 
+        cluster.getRpcClient().getObjectStore()
+        .getClientProxy().getOzoneManagerClient();
+    final String upgradeClientID = "Test-Upgrade-Client-" + UUID.randomUUID();
+    UpgradeFinalizer.StatusAndMessages finalizationResponse =
+        omclient.finalizeUpgrade(upgradeClientID);
+
+    // The status should transition as soon as the client call above returns
+    Assert.assertTrue(isStarting(finalizationResponse.status()));
+    // Wait for the finalization to be marked as done.
+    // 10s timeout should be plenty.
+    GenericTestUtils.waitFor(() -> {
+      try {
+        final UpgradeFinalizer.StatusAndMessages progress =
+            omclient.queryUpgradeFinalizationProgress(
+                upgradeClientID, false, false);
+        return isDone(progress.status());
+      } catch (IOException e) {
+        Assert.fail("Unexpected exception while waiting for "
+            + "the OM upgrade to finalize: " + e.getMessage());
+      }
+      return false;
+    }, 500, 10000);
   }
 
   @AfterClass
