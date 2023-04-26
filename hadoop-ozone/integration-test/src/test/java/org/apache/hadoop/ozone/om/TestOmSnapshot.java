@@ -91,7 +91,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import org.apache.hadoop.ozone.om.upgrade.OMLayoutFeature;
 import org.apache.hadoop.ozone.upgrade.UpgradeFinalizer;
 import org.apache.ozone.test.LambdaTestUtils.VoidCallable;
-import org.apache.hadoop.ozone.client.rpc.RpcClient;
+
 
 
 import static org.apache.hadoop.ozone.admin.scm.FinalizeUpgradeCommandUtil.isDone;
@@ -209,20 +209,20 @@ public class TestOmSnapshot {
     // stop the deletion services so that keys can still be read
     keyManager.stop();
 
-    preFinalizationChecks(getStoreForAccessID(ACCESS_ID));
+    preFinalizationChecks(store);
     finalizeOMUpgrade();
   }
 
-  private static ObjectStore getStoreForAccessID(String accessID)
-      throws IOException {
-    // Cluster provider will modify our provided configuration. We must use
-    // this version to build the client.
-    OzoneConfiguration conf = cluster.getOzoneManager().getConfiguration();
-    // Manually construct an object store instead of using the cluster
-    // provided one so we can specify the access ID.
-    RpcClient rpcClient = new RpcClient(conf, null);
-    return new ObjectStore(conf, rpcClient);
-  }
+  // private static ObjectStore getObjectStore()
+  //     throws IOException {
+  //   // Cluster provider will modify our provided configuration. We must use
+  //   // this version to build the client.
+  //   OzoneConfiguration conf = cluster.getOzoneManager().getConfiguration();
+  //   // Manually construct an object store instead of using the cluster
+  //   // provided one so we can specify the access ID.
+  //   RpcClient rpcClient = new RpcClient(conf, null);
+  //   return new ObjectStore(conf, rpcClient);
+  // }
 
 
   private static void expectFailurePreFinalization(VoidCallable eval)
@@ -231,11 +231,23 @@ public class TestOmSnapshot {
         "cannot be invoked before finalization", eval);
   }
 
-  private static void preFinalizationChecks(ObjectStore objstore)
+  private static void preFinalizationChecks(ObjectStore objectStore)
       throws Exception {
-    // None of the tenant APIs is usable before the upgrade finalization step
-    expectFailurePreFinalization(objstore::listTenant);
-  }  
+    // None of the snapshot APIs is usable before the upgrade finalization step
+    expectFailurePreFinalization(() ->
+        objectStore.createSnapshot(volumeName, bucketName,
+          UUID.randomUUID().toString()));
+    expectFailurePreFinalization(() ->
+        objectStore.listSnapshot(volumeName, bucketName));
+    expectFailurePreFinalization(() ->
+        objectStore.snapshotDiff(volumeName, bucketName,
+          UUID.randomUUID().toString(),
+          UUID.randomUUID().toString(),
+          "", 1000, false));
+    expectFailurePreFinalization(() ->
+        objectStore.deleteSnapshot(volumeName, bucketName,
+          UUID.randomUUID().toString()));
+  }
 
 
 /**
