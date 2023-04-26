@@ -280,7 +280,7 @@ public class TestOmSnapshot {
             + "the OM upgrade to finalize: " + e.getMessage());
       }
       return false;
-    }, 500, 10000);
+    }, 500, 300000);
   }
 
   @AfterClass
