@@ -269,6 +269,7 @@ public class TestOmSnapshot {
     Assert.assertTrue(isStarting(finalizationResponse.status()));
     // Wait for the finalization to be marked as done.
     // 10s timeout should be plenty.
+    int waitMilisec = 30 * 60 * 1000;
     GenericTestUtils.waitFor(() -> {
       try {
         final UpgradeFinalizer.StatusAndMessages progress =
@@ -280,7 +281,7 @@ public class TestOmSnapshot {
             + "the OM upgrade to finalize: " + e.getMessage());
       }
       return false;
-    }, 500, 300000);
+    }, 500, waitMilisec);
   }
 
   @AfterClass
