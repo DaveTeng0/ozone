@@ -37,7 +37,6 @@ import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos
 import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos
     .VolumeInfo;
 
-import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.when;
 
 /**
@@ -250,11 +249,12 @@ public class TestOMVolumeCreateRequest extends TestOMVolumeRequest {
 
     when(ozoneManager.isStrictS3()).thenReturn(false);
     for (String volumeName : nonS3CompliantVolumeName) {
-        acceptVolumeCreationHelper(volumeName, adminName, ownerName);
+      acceptVolumeCreationHelper(volumeName, adminName, ownerName);
     }
   }
 
-  private void acceptVolumeCreationHelper(String volumeName, String adminName, String ownerName)
+  private void acceptVolumeCreationHelper(String volumeName, String adminName,
+        String ownerName)
         throws Exception {
     // OMVolumeCreateRequest omVolumeCreateRequest = 
     //     doPreExecute(volumeName, adminName, ownerName);
@@ -264,7 +264,7 @@ public class TestOMVolumeCreateRequest extends TestOMVolumeRequest {
     OMRequest originalRequest = createVolumeRequest(volumeName, adminName,
         ownerName);
     OMVolumeCreateRequest omVolumeCreateRequest =
-    new OMVolumeCreateRequest(originalRequest);
+            new OMVolumeCreateRequest(originalRequest);
     OMRequest modifiedRequest = omVolumeCreateRequest.preExecute(ozoneManager);
     omVolumeCreateRequest = new OMVolumeCreateRequest(modifiedRequest);
     long txLogIndex = 1;
@@ -282,15 +282,12 @@ public class TestOMVolumeCreateRequest extends TestOMVolumeRequest {
 
   }
 
-  private void rejectVolumeCreationHelper(String volumeName, String adminName, String ownerName)
-    throws Exception {
-    // Throwable e = assertThrows(OMException.class, () ->
-    //     doPreExecute(volumeName, adminName, ownerName));
-    // Assert.assertEquals(e.getMessage(), "Invalid volume name: " + volumeName);
-
-///////////
+  private void rejectVolumeCreationHelper(String volumeName, String adminName,
+        String ownerName)
+        throws Exception {
     // Verify exception thrown on invalid volume name
-    LambdaTestUtils.intercept(OMException.class, "Invalid volume name: " + volumeName,
+    LambdaTestUtils.intercept(OMException.class, "Invalid volume name: " 
+        + volumeName,
         () -> doPreExecute(volumeName, adminName, ownerName));
   }
 
