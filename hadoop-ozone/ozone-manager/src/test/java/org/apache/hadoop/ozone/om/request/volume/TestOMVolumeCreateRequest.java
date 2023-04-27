@@ -216,11 +216,11 @@ public class TestOMVolumeCreateRequest extends TestOMVolumeRequest {
         throws Exception {
     String adminName = UUID.randomUUID().toString();
     String ownerName = UUID.randomUUID().toString();
-    String volumeName = UUID.randomUUID().toString();
-
+    
     boolean[] omStrictS3Configs = {true, false};
     for (boolean isStrictS3 : omStrictS3Configs) {
       when(ozoneManager.isStrictS3()).thenReturn(isStrictS3);
+      String volumeName = UUID.randomUUID().toString();
       acceptVolumeCreationHelper(volumeName, adminName, ownerName);
     }
   }
