@@ -134,9 +134,9 @@ public class TestOmSnapshot {
   @Parameterized.Parameters
   public static Collection<Object[]> data() {
     return Arrays.asList(
+                         new Object[]{BucketLayout.LEGACY, true, true},
                          new Object[]{OBJECT_STORE, false, false},
-                         new Object[]{FILE_SYSTEM_OPTIMIZED, false, false},
-                         new Object[]{BucketLayout.LEGACY, true, true});
+                         new Object[]{FILE_SYSTEM_OPTIMIZED, false, false});
   }
 
   public TestOmSnapshot(BucketLayout newBucketLayout,
