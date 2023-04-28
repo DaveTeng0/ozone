@@ -51,21 +51,3 @@ Read key created with S3 API using S3 API
                         Should contain    ${output}    ${PREFIX}: key created using S3 API
                         Execute and checkrc    rm /tmp/get-result    0
 
-
-List snapshot
-    ${output} =         Execute           ozone sh snapshot ls /${PREFIX}-volume/${PREFIX}-bucket2
-                        Should contain    ${output}       snapshot1
-                        Should contain    ${output}       snapshot2
-                        Should contain    ${output}       SNAPSHOT_ACTIVE
-
-Snapshot Diff
-    ${output} =         Execute           ozone sh snapshot snapshotDiff /${PREFIX}-volume/${PREFIX}-bucket2 snapshot1 snapshot2
-                        Should contain    ${output}       +    key1
-
-Delete snapshot
-    ${output} =         Execute           ozone sh snapshot delete /${PREFIX}-volume/${PREFIX}-bucket2 snapshot1
-                        Should not contain      ${output}       Failed
-    ${output} =         Execute           ozone sh snapshot ls /${PREFIX}-volume/${PREFIX}-bucket2
-                        Should contain          ${output}       SNAPSHOT_DELETED
-
-

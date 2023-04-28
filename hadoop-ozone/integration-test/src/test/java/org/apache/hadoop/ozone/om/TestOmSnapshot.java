@@ -281,7 +281,7 @@ public class TestOmSnapshot {
             + "the OM upgrade to finalize: " + e.getMessage());
       }
       return false;
-    }, waitMilisec, waitMilisec);
+    }, 500, 10000);
   }
 
   @AfterClass

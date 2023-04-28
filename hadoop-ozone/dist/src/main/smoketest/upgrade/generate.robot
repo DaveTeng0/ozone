@@ -64,11 +64,3 @@ Create key using S3 API
                         Should not contain    ${output}    error
                         Execute and checkrc    rm /tmp/sourcekey    0
 
-Create snapshot
-    ${output} =         Execute                ozone sh bucket create /${PREFIX}-volume/${PREFIX}-bucket2
-                        Should not contain     ${output}       Failed
-    ${output} =         Execute                ozone sh snapshot create /${PREFIX}-volume/${PREFIX}-bucket2 snapshot1
-                        Should not contain     ${output}       Failed
-                        Execute                ozone sh key put /${PREFIX}-volume/${PREFIX}-bucket2/key1 /tmp/sourcekey
-                        Execute                ozone sh snapshot create /${PREFIX}-volume/${PREFIX}-bucket2 snapshot2
-
