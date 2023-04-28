@@ -184,7 +184,7 @@ public class TestOmSnapshot {
         .setScmId(scmId)
         .setOMServiceId("om-service-test1")
         .setNumOfOzoneManagers(3)
-        .setOmLayoutVersion(OMLayoutFeature.INITIAL_VERSION.layoutVersion())
+        .setOmLayoutVersion(OMLayoutFeature.SNAPSHOT_SUPPORT.layoutVersion())
         .build();
     cluster.waitForClusterToBeReady();
     client = cluster.newClient();
