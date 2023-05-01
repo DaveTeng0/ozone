@@ -1222,6 +1222,15 @@ public class OzoneManagerRequestHandler implements RequestHandler {
   @DisallowedUntilLayoutVersion(SNAPSHOT_SUPPORT)
   private SnapshotDiffResponse snapshotDiff(
       SnapshotDiffRequest snapshotDiffRequest) throws IOException {
+    if (!getOzoneManager().getVersionManager()
+            .isAllowed(SNAPSHOT_SUPPORT)) {
+      throw new OMException(
+//              "coffee!!",
+              "cannot be invoked before finalization.",
+              OMException.ResultCodes.NOT_SUPPORTED_OPERATION_PRIOR_FINALIZATION)
+              ;
+    }
+
     org.apache.hadoop.ozone.snapshot.SnapshotDiffResponse response =
         impl.snapshotDiff(
             snapshotDiffRequest.getVolumeName(),
@@ -1268,6 +1277,16 @@ public class OzoneManagerRequestHandler implements RequestHandler {
   private OzoneManagerProtocolProtos.ListSnapshotResponse getSnapshots(
       OzoneManagerProtocolProtos.ListSnapshotRequest request)
       throws IOException {
+    if (!getOzoneManager().getVersionManager()
+            .isAllowed(SNAPSHOT_SUPPORT)) {
+      throw new OMException(
+//              "coffee!!",
+              "cannot be invoked before finalization.",
+              OMException.ResultCodes.NOT_SUPPORTED_OPERATION_PRIOR_FINALIZATION)
+              ;
+    }
+
+
     List<SnapshotInfo> snapshotInfos = impl.listSnapshot(
         request.getVolumeName(), request.getBucketName());
     List<OzoneManagerProtocolProtos.SnapshotInfo> snapshotInfoList =

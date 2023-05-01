@@ -34,9 +34,13 @@ import org.apache.hadoop.ozone.om.helpers.SnapshotInfo;
 import org.apache.hadoop.ozone.om.ratis.utils.OzoneManagerDoubleBufferHelper;
 import org.apache.hadoop.ozone.om.request.OMClientRequest;
 import org.apache.hadoop.ozone.om.request.util.OmResponseUtil;
+import org.apache.hadoop.ozone.om.request.validation.RequestFeatureValidator;
+import org.apache.hadoop.ozone.om.request.validation.RequestProcessingPhase;
+import org.apache.hadoop.ozone.om.request.validation.ValidationCondition;
 import org.apache.hadoop.ozone.om.response.OMClientResponse;
 import org.apache.hadoop.ozone.om.response.snapshot.OMSnapshotCreateResponse;
 import org.apache.hadoop.ozone.om.upgrade.DisallowedUntilLayoutVersion;
+import org.apache.hadoop.ozone.om.upgrade.OMLayoutFeature;
 import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos;
 import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.CreateSnapshotRequest;
 import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.CreateSnapshotResponse;
@@ -56,6 +60,9 @@ import static org.apache.hadoop.ozone.om.exceptions.OMException.ResultCodes.FILE
 import static org.apache.hadoop.ozone.om.lock.OzoneManagerLock.Resource.BUCKET_LOCK;
 import static org.apache.hadoop.ozone.om.lock.OzoneManagerLock.Resource.SNAPSHOT_LOCK;
 import static org.apache.hadoop.ozone.om.upgrade.OMLayoutFeature.SNAPSHOT_SUPPORT;
+
+
+import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.Type;
 
 /**
  * Handles CreateSnapshot Request.
@@ -90,9 +97,23 @@ public class OMSnapshotCreateRequest extends OMClientRequest {
 
   @Override
   @DisallowedUntilLayoutVersion(SNAPSHOT_SUPPORT)
+//  @RequestFeatureValidator(
+//          conditions = ValidationCondition.CLUSTER_NEEDS_FINALIZATION,
+//          processingPhase = RequestProcessingPhase.PRE_PROCESS,
+//          requestType = Type.CreateSnapshot
+//  )
   public OMRequest preExecute(OzoneManager ozoneManager) throws IOException {
     final OMRequest omRequest = super.preExecute(ozoneManager);
-    // Verify name
+    if (!ozoneManager.getVersionManager()
+//            .versionManager()
+            .isAllowed(SNAPSHOT_SUPPORT)) {
+      throw new OMException(
+//              "coffee!!",
+              "cannot be invoked before finalization.",
+              OMException.ResultCodes.NOT_SUPPORTED_OPERATION_PRIOR_FINALIZATION)
+              ;
+    }
+      // Verify name
     OmUtils.validateSnapshotName(snapshotName);
 
     UserGroupInformation ugi = createUGI();

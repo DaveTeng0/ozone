@@ -741,6 +741,12 @@ public class MiniOzoneClusterImpl implements MiniOzoneCluster {
           conf.set(HDDS_SCM_INIT_DEFAULT_LAYOUT_VERSION,
               String.valueOf(integer)));
 
+      System.out.println(
+              " ############## 4 ## scmLayoutVersion: " + scmLayoutVersion.isPresent()
+                      + ". conf.HDDS_SCM_INIT_DEFAULT_LAYOUT_VERSION: "
+                      + conf.get(HDDS_SCM_INIT_DEFAULT_LAYOUT_VERSION));
+
+
       scmStore = new SCMStorageConfig(conf);
       initializeScmStorage(scmStore);
       StorageContainerManager scm = HddsTestUtils.getScmSimple(conf,
@@ -803,6 +809,10 @@ public class MiniOzoneClusterImpl implements MiniOzoneCluster {
       omLayoutVersion.ifPresent(integer ->
           conf.set(OZONE_OM_INIT_DEFAULT_LAYOUT_VERSION,
               String.valueOf(integer)));
+      System.out.println(
+              " ############## 3 ## omLayoutVersion: " + omLayoutVersion.isPresent()
+            + ". conf.OZONE_OM_INIT_DEFAULT_LAYOUT_VERSION: "
+                      + conf.get(OZONE_OM_INIT_DEFAULT_LAYOUT_VERSION));
       OMStorage omStore = new OMStorage(conf);
       initializeOmStorage(omStore);
       return OzoneManager.createOm(conf);

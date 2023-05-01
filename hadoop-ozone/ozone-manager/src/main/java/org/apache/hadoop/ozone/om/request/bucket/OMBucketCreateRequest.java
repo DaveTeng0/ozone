@@ -433,6 +433,12 @@ public class OMBucketCreateRequest extends OMClientRequest {
   )
   public static OMRequest handleCreateBucketWithBucketLayoutDuringPreFinalize(
       OMRequest req, ValidationContext ctx) throws OMException {
+
+    System.out.println("##############  coke #### "
+      + "tx.getMetadataLayoutVersion(): "
+      + ctx.versionManager().getMetadataLayoutVersion())
+    ;
+
     if (!ctx.versionManager()
         .isAllowed(OMLayoutFeature.BUCKET_LAYOUT_SUPPORT)) {
       if (req.getCreateBucketRequest()

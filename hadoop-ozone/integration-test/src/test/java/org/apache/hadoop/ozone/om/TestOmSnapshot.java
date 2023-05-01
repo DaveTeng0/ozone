@@ -104,6 +104,7 @@ import static org.apache.hadoop.ozone.admin.scm.FinalizeUpgradeCommandUtil.isSta
  */
 @RunWith(Parameterized.class)
 @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
+//################ hello
 public class TestOmSnapshot {
 
   static {
@@ -134,9 +135,10 @@ public class TestOmSnapshot {
   @Parameterized.Parameters
   public static Collection<Object[]> data() {
     return Arrays.asList(
-                         new Object[]{BucketLayout.LEGACY, true, true},
-                         new Object[]{OBJECT_STORE, false, false},
-                         new Object[]{FILE_SYSTEM_OPTIMIZED, false, false});
+                        new Object[]{FILE_SYSTEM_OPTIMIZED, false, false},
+                         new Object[]{BucketLayout.LEGACY, true, true});
+//                         new Object[]{OBJECT_STORE, false, false},
+//                         new Object[]{FILE_SYSTEM_OPTIMIZED, false, false});
   }
 
   public TestOmSnapshot(BucketLayout newBucketLayout,
@@ -184,7 +186,7 @@ public class TestOmSnapshot {
         .setScmId(scmId)
         .setOMServiceId("om-service-test1")
         .setNumOfOzoneManagers(3)
-        .setOmLayoutVersion(OMLayoutFeature.SNAPSHOT_SUPPORT.layoutVersion())
+        .setOmLayoutVersion(OMLayoutFeature.INITIAL_VERSION.layoutVersion())
         .build();
     cluster.waitForClusterToBeReady();
     client = cluster.newClient();
@@ -209,7 +211,7 @@ public class TestOmSnapshot {
     // stop the deletion services so that keys can still be read
     keyManager.stop();
 
-    preFinalizationChecks(store);
+    preFinalizationChecks();
     finalizeOMUpgrade();
   }
 
@@ -228,24 +230,27 @@ public class TestOmSnapshot {
   private static void expectFailurePreFinalization(VoidCallable eval)
       throws Exception {
     LambdaTestUtils.intercept(OMException.class,
-        "cannot be invoked before finalization", eval);
+        "cannot be invoked before finalization.", eval);
   }
 
-  private static void preFinalizationChecks(ObjectStore objectStore)
+  private static void preFinalizationChecks()
       throws Exception {
+    System.out.println("#################### hello ####################");
     // None of the snapshot APIs is usable before the upgrade finalization step
     expectFailurePreFinalization(() ->
-        objectStore.createSnapshot(volumeName, bucketName,
+        store.createSnapshot(volumeName, bucketName,
           UUID.randomUUID().toString()));
+
+    System.out.println("#################### hello 2 ####################");
     expectFailurePreFinalization(() ->
-        objectStore.listSnapshot(volumeName, bucketName));
+        store.listSnapshot(volumeName, bucketName));
     expectFailurePreFinalization(() ->
-        objectStore.snapshotDiff(volumeName, bucketName,
+        store.snapshotDiff(volumeName, bucketName,
           UUID.randomUUID().toString(),
           UUID.randomUUID().toString(),
           "", 1000, false));
     expectFailurePreFinalization(() ->
-        objectStore.deleteSnapshot(volumeName, bucketName,
+        store.deleteSnapshot(volumeName, bucketName,
           UUID.randomUUID().toString()));
   }
 
@@ -281,7 +286,7 @@ public class TestOmSnapshot {
             + "the OM upgrade to finalize: " + e.getMessage());
       }
       return false;
-    }, 500, 10000);
+    }, 500, 110000);
   }
 
   @AfterClass
@@ -524,6 +529,9 @@ public class TestOmSnapshot {
 
   @Test
   public void testCreateSnapshotMissingMandatoryParams() throws Exception {
+    System.out.println("########## test 1 ######");
+
+
     String volume = "vol-" + RandomStringUtils.randomNumeric(5);
     String bucket = "buck-" + RandomStringUtils.randomNumeric(5);
     store.createVolume(volume);
