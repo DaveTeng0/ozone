@@ -126,7 +126,6 @@ public class TestOmSnapshot {
   private static RDBStore rdbStore;
 
   private static OzoneBucket ozoneBucket;
-  private static final String ACCESS_ID = UUID.randomUUID().toString();
 
 
   @Rule
@@ -186,7 +185,7 @@ public class TestOmSnapshot {
         .setScmId(scmId)
         .setOMServiceId("om-service-test1")
         .setNumOfOzoneManagers(3)
-        .setOmLayoutVersion(OMLayoutFeature.INITIAL_VERSION.layoutVersion())
+        .setOmLayoutVersion(OMLayoutFeature.BUCKET_LAYOUT_SUPPORT.layoutVersion())
         .build();
     cluster.waitForClusterToBeReady();
     client = cluster.newClient();

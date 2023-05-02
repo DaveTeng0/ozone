@@ -104,15 +104,15 @@ public class OMSnapshotCreateRequest extends OMClientRequest {
 //  )
   public OMRequest preExecute(OzoneManager ozoneManager) throws IOException {
     final OMRequest omRequest = super.preExecute(ozoneManager);
-    if (!ozoneManager.getVersionManager()
-//            .versionManager()
-            .isAllowed(SNAPSHOT_SUPPORT)) {
-      throw new OMException(
-//              "coffee!!",
-              "cannot be invoked before finalization.",
-              OMException.ResultCodes.NOT_SUPPORTED_OPERATION_PRIOR_FINALIZATION)
-              ;
-    }
+//    if (!ozoneManager.getVersionManager()
+////            .versionManager()
+//            .isAllowed(SNAPSHOT_SUPPORT)) {
+//      throw new OMException(
+////              "coffee!!",
+//              "cannot be invoked before finalization.",
+//              OMException.ResultCodes.NOT_SUPPORTED_OPERATION_PRIOR_FINALIZATION)
+//              ;
+//    }
       // Verify name
     OmUtils.validateSnapshotName(snapshotName);
 
