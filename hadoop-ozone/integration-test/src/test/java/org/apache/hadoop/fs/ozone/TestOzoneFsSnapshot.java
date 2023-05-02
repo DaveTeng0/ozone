@@ -274,6 +274,8 @@ public class TestOzoneFsSnapshot {
     // Key shouldn't exist under bucket
     String listKeyOut = execShellCommandAndGetOutput(0,
         new String[]{"-ls", BUCKET_PATH});
+    System.err.println("######### hhhh ### listKeyOut = " + listKeyOut);
+//    Assertions.assertEquals(listKeyOut, "");
     Assertions.assertTrue(Strings.isNullOrEmpty(listKeyOut));
 
     // Key should still exist under snapshot

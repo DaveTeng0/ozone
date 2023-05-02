@@ -705,8 +705,8 @@ public final class OzoneManagerProtocolClientSideTranslatorPB
   }
 
   private OMResponse handleError(OMResponse resp) throws OMException {
-    System.out.println("################## 1 resp.getStatus(): "
-        + resp.getStatus() +". resp.getMessage: " + resp.getMessage());
+//    System.out.println("################## 1 resp.getStatus(): "
+//        + resp.getStatus() +". resp.getMessage: " + resp.getMessage());
 
     if (resp.getStatus() != OK) {
       throw new OMException(resp.getMessage(),

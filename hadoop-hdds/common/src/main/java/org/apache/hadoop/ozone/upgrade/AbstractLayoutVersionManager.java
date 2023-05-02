@@ -187,11 +187,11 @@ public abstract class AbstractLayoutVersionManager<T extends LayoutFeature>
   public boolean isAllowed(LayoutFeature layoutFeature) {
     lock.readLock().lock();
     try {
-      System.out.println("########### 2 ## check arg layoutFeature: "
-              + layoutFeature
-              + " (" + layoutFeature.layoutVersion() + ")"
-              + " <= metadataLayoutVersion: "
-              + metadataLayoutVersion + " ?");
+//      System.out.println("########### 2 ## check arg layoutFeature: "
+//              + layoutFeature
+//              + " (" + layoutFeature.layoutVersion() + ")"
+//              + " <= metadataLayoutVersion: "
+//              + metadataLayoutVersion + " ?");
       return layoutFeature.layoutVersion() <= metadataLayoutVersion;
     } finally {
       lock.readLock().unlock();
