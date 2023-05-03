@@ -91,13 +91,13 @@ public class OMSnapshotCreateRequest extends OMClientRequest {
   @Override
    @DisallowedUntilLayoutVersion(SNAPSHOT_SUPPORT)
   public OMRequest preExecute(OzoneManager ozoneManager) throws IOException {
-    if (!ozoneManager.getVersionManager()
-        .isAllowed(SNAPSHOT_SUPPORT)) {
-      throw new OMException(
-          "Cannot be invoked before finalization.",
-          OMException.ResultCodes.
-              NOT_SUPPORTED_OPERATION_PRIOR_FINALIZATION);
-    }
+//    if (!ozoneManager.getVersionManager()
+//        .isAllowed(SNAPSHOT_SUPPORT)) {
+//      throw new OMException(
+//          "Cannot be invoked before finalization.",
+//          OMException.ResultCodes.
+//              NOT_SUPPORTED_OPERATION_PRIOR_FINALIZATION);
+//    }
     final OMRequest omRequest = super.preExecute(ozoneManager);
     // Verify name
     OmUtils.validateSnapshotName(snapshotName);
@@ -120,8 +120,8 @@ public class OMSnapshotCreateRequest extends OMClientRequest {
 
   @Override
   public OMClientResponse validateAndUpdateCache(OzoneManager ozoneManager,
-                                                 long transactionLogIndex,
-                                                 OzoneManagerDoubleBufferHelper ozoneManagerDoubleBufferHelper) {
+         long transactionLogIndex,
+         OzoneManagerDoubleBufferHelper ozoneManagerDoubleBufferHelper) {
 
     OMMetrics omMetrics = ozoneManager.getMetrics();
     omMetrics.incNumSnapshotCreates();

@@ -58,15 +58,20 @@ public class OMLayoutFeatureAspect {
     LayoutVersionManager lvm;
     final Object[] args = joinPoint.getArgs();
     if (joinPoint.getTarget() instanceof OzoneManagerRequestHandler) {
+      System.out.println("########### 001");
       OzoneManager ozoneManager = ((OzoneManagerRequestHandler)
           joinPoint.getTarget()).getOzoneManager();
       lvm = ozoneManager.getVersionManager();
     } else if (joinPoint.getTarget() instanceof OMClientRequest &&
         joinPoint.toShortString().endsWith(".preExecute(..))")) {
+      System.out.println("########### 002");
+
       // Get OzoneManager instance from preExecute first argument
       OzoneManager ozoneManager = (OzoneManager) args[0];
       lvm = ozoneManager.getVersionManager();
     } else {
+      System.out.println("########### 003");
+
       try {
         Method method = joinPoint.getTarget().getClass()
             .getMethod(GET_VERSION_MANAGER_METHOD_NAME);
@@ -75,6 +80,13 @@ public class OMLayoutFeatureAspect {
         lvm = new OMLayoutVersionManager();
       }
     }
+
+          System.out.println("########### 004 ## getMetadataLayoutVersion: "
+              + lvm.getMetadataLayoutVersion()
+              + " . getFeature: " + lvm.getFeature("hahahahah") + ". "
+              + " isAllowed: "
+              + lvm.isAllowed("bebebebeb"));
+
     checkIsAllowed(joinPoint.getSignature().toShortString(), lvm, featureName);
   }
 
