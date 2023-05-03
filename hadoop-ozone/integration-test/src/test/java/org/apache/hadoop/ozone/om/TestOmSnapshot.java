@@ -208,6 +208,11 @@ public class TestOmSnapshot {
       throws Exception {
     LambdaTestUtils.intercept(OMException.class,
         "cannot be invoked before finalization.", eval);
+
+//    Assert.assertThrows(OMException.class,
+//            eval,
+//            "cannot be invoked before finalization."
+//            );
   }
 
   private static void preFinalizationChecks()

@@ -89,14 +89,14 @@ public class OMSnapshotCreateRequest extends OMClientRequest {
   }
 
   @Override
-  @DisallowedUntilLayoutVersion(SNAPSHOT_SUPPORT)
+   @DisallowedUntilLayoutVersion(SNAPSHOT_SUPPORT)
   public OMRequest preExecute(OzoneManager ozoneManager) throws IOException {
     if (!ozoneManager.getVersionManager()
-            .isAllowed(SNAPSHOT_SUPPORT)) {
+        .isAllowed(SNAPSHOT_SUPPORT)) {
       throw new OMException(
-              "cannot be invoked before finalization.",
-              OMException.ResultCodes.
-                NOT_SUPPORTED_OPERATION_PRIOR_FINALIZATION);
+          "Cannot be invoked before finalization.",
+          OMException.ResultCodes.
+              NOT_SUPPORTED_OPERATION_PRIOR_FINALIZATION);
     }
     final OMRequest omRequest = super.preExecute(ozoneManager);
     // Verify name
@@ -117,11 +117,11 @@ public class OMSnapshotCreateRequest extends OMClientRequest {
             .setSnapshotId(UUID.randomUUID().toString())
             .build()).build();
   }
-  
+
   @Override
   public OMClientResponse validateAndUpdateCache(OzoneManager ozoneManager,
-      long transactionLogIndex,
-      OzoneManagerDoubleBufferHelper ozoneManagerDoubleBufferHelper) {
+                                                 long transactionLogIndex,
+                                                 OzoneManagerDoubleBufferHelper ozoneManagerDoubleBufferHelper) {
 
     OMMetrics omMetrics = ozoneManager.getMetrics();
     omMetrics.incNumSnapshotCreates();
@@ -187,11 +187,11 @@ public class OMSnapshotCreateRequest extends OMClientRequest {
 
       omMetadataManager.getSnapshotInfoTable()
           .addCacheEntry(new CacheKey<>(key),
-            CacheValue.get(transactionLogIndex, snapshotInfo));
+              CacheValue.get(transactionLogIndex, snapshotInfo));
 
       omResponse.setCreateSnapshotResponse(
           CreateSnapshotResponse.newBuilder()
-          .setSnapshotInfo(snapshotInfo.getProtobuf()));
+              .setSnapshotInfo(snapshotInfo.getProtobuf()));
       omClientResponse = new OMSnapshotCreateResponse(
           omResponse.build(), snapshotInfo);
     } catch (IOException ex) {
@@ -229,7 +229,7 @@ public class OMSnapshotCreateRequest extends OMClientRequest {
     // Performing audit logging outside the lock.
     auditLog(auditLogger, buildAuditMessage(OMAction.CREATE_SNAPSHOT,
         snapshotInfo.toAuditMap(), exception, userInfo));
-    
+
     if (exception == null) {
       LOG.info("Created snapshot '{}' under path '{}'",
           snapshotName, snapshotPath);
