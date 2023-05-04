@@ -43,6 +43,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -51,6 +52,7 @@ import java.util.concurrent.TimeoutException;
 import static org.apache.hadoop.ozone.admin.scm.FinalizeUpgradeCommandUtil.isDone;
 import static org.apache.hadoop.ozone.admin.scm.FinalizeUpgradeCommandUtil.isStarting;
 import static org.apache.hadoop.ozone.om.OMConfigKeys.OZONE_OM_MULTITENANCY_ENABLED;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests that S3 requests for a tenant are directed to that tenant's volume,
@@ -72,6 +74,7 @@ public class TestMultiTenantVolume {
     OzoneConfiguration conf = new OzoneConfiguration();
     conf.setBoolean(
         OMMultiTenantManagerImpl.OZONE_OM_TENANT_DEV_SKIP_RANGER, true);
+    conf.setBoolean(OZONE_OM_MULTITENANCY_ENABLED, true);
     conf.setBoolean(OZONE_OM_MULTITENANCY_ENABLED, true);
     MiniOzoneCluster.Builder builder = MiniOzoneCluster.newBuilder(conf)
         .withoutDatanodes()
@@ -294,5 +297,25 @@ public class TestMultiTenantVolume {
     // Delete tenant and volume
     store.deleteTenant(TENANT_ID);
     store.deleteVolume(TENANT_ID);
+  }
+
+  @Test
+  public void testRejectNonS3CompliantTenantIdCreationWithStrictS3True()
+      throws Exception {
+    ObjectStore store = getStoreForAccessID(ACCESS_ID);
+    String[] nonS3CompliantTenantId =
+        {"tenantid_underscore", "_tenantid___multi_underscore_", "tenantid_"};
+
+    for (String tenantId : nonS3CompliantTenantId) {
+      OMException e = Assertions.assertThrows(
+          OMException.class,
+          () -> store.createTenant(tenantId));
+
+      String msg = e.getMessage();
+      assertTrue(
+          msg.contains("Bucket or Volume name has an unsupported"
+              + " character : _"));
+
+    }
   }
 }

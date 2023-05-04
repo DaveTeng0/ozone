@@ -492,7 +492,7 @@ public final class OmUtils {
     try {
       HddsClientUtils.verifyResourceName(volumeName, isStrictS3);
     } catch (IllegalArgumentException e) {
-      throw new OMException("Invalid volume name: " + volumeName,
+      throw new OMException("Invalid volume name: " + volumeName + ". Reason: " + e.getMessage(),
           OMException.ResultCodes.INVALID_VOLUME_NAME);
     }
   }
