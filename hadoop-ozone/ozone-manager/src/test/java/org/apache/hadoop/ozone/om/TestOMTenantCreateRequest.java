@@ -37,26 +37,35 @@ import org.apache.hadoop.ozone.om.exceptions.OMException;
 
 import org.apache.ozone.test.LambdaTestUtils;
 
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.anyString;
+
+/**
+ * Tests create tenant request.
+ */
 
 public class TestOMTenantCreateRequest {
 
   @Rule
   public TemporaryFolder folder = new TemporaryFolder();
 
-  protected OzoneManager ozoneManager;
-  protected OMMetrics omMetrics;
-  protected OMMetadataManager omMetadataManager;
-  protected AuditLogger auditLogger;
+  private OzoneManager ozoneManager;
+  private OMMetrics omMetrics;
+  private OMMetadataManager omMetadataManager;
+  private AuditLogger auditLogger;
   // Just setting ozoneManagerDoubleBuffer which does nothing.
-  protected OzoneManagerDoubleBufferHelper ozoneManagerDoubleBufferHelper =
+  private OzoneManagerDoubleBufferHelper ozoneManagerDoubleBufferHelper =
       ((response, transactionIndex) -> {
         return null;
       });
@@ -104,7 +113,7 @@ public class TestOMTenantCreateRequest {
 
   @Test
   public void
-  testAcceptS3CompliantTenantIdCreationRegardlessOfStrictS3Setting()
+      testAcceptS3CompliantTenantIdCreationRegardlessOfStrictS3Setting()
       throws Exception {
     boolean[] omStrictS3Configs = {true, false};
     for (boolean isStrictS3 : omStrictS3Configs) {
