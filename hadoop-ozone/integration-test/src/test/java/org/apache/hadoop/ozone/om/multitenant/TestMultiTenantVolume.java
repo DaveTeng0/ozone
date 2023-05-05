@@ -312,10 +312,7 @@ public class TestMultiTenantVolume {
           () -> store.createTenant(tenantId));
 
       String msg = e.getMessage();
-      assertTrue(
-          msg.contains("Bucket or Volume name has an unsupported"
-              + " character : _"));
-
+      assertTrue(msg.contains("Invalid volume name: " + tenantId));
     }
   }
 }
