@@ -41,6 +41,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.Assert;
+
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
@@ -50,6 +52,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.spy;
+
 
 /**
  * Tests create tenant request.
