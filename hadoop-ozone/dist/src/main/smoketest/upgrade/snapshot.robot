@@ -75,3 +75,7 @@ Delete snapshot in non-supported ozone version
     [Tags]     snapshot-non-support
     ${output} =         Execute and checkrc          ozone sh snapshot delete /vol/bucket2 snapshot1     255
 
+Execute debug-hello-world
+    ${output} =        Execute      echo helloworldworld
+    
+
