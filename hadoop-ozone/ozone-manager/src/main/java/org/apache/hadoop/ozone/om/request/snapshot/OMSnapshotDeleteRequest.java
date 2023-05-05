@@ -33,6 +33,7 @@ import org.apache.hadoop.ozone.om.request.OMClientRequest;
 import org.apache.hadoop.ozone.om.request.util.OmResponseUtil;
 import org.apache.hadoop.ozone.om.response.OMClientResponse;
 import org.apache.hadoop.ozone.om.response.snapshot.OMSnapshotDeleteResponse;
+import org.apache.hadoop.ozone.om.upgrade.DisallowedUntilLayoutVersion;
 import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.DeleteSnapshotRequest;
 import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.DeleteSnapshotResponse;
 import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.OMRequest;
@@ -50,6 +51,7 @@ import java.io.IOException;
 import static org.apache.hadoop.ozone.om.exceptions.OMException.ResultCodes.FILE_NOT_FOUND;
 import static org.apache.hadoop.ozone.om.lock.OzoneManagerLock.Resource.BUCKET_LOCK;
 import static org.apache.hadoop.ozone.om.lock.OzoneManagerLock.Resource.SNAPSHOT_LOCK;
+import static org.apache.hadoop.ozone.om.upgrade.OMLayoutFeature.SNAPSHOT_SUPPORT;
 
 /**
  * Handles DeleteSnapshot Request.
@@ -63,7 +65,15 @@ public class OMSnapshotDeleteRequest extends OMClientRequest {
   }
 
   @Override
+  @DisallowedUntilLayoutVersion(SNAPSHOT_SUPPORT)
   public OMRequest preExecute(OzoneManager ozoneManager) throws IOException {
+//    if (!ozoneManager.getVersionManager()
+//            .isAllowed(SNAPSHOT_SUPPORT)) {
+//      throw new OMException(
+//              "cannot be invoked before finalization.",
+//              OMException.ResultCodes.
+//                NOT_SUPPORTED_OPERATION_PRIOR_FINALIZATION);
+//    }
 
     final OMRequest omRequest = super.preExecute(ozoneManager);
 

@@ -36,6 +36,7 @@ import org.apache.hadoop.ozone.om.request.OMClientRequest;
 import org.apache.hadoop.ozone.om.request.util.OmResponseUtil;
 import org.apache.hadoop.ozone.om.response.OMClientResponse;
 import org.apache.hadoop.ozone.om.response.snapshot.OMSnapshotCreateResponse;
+import org.apache.hadoop.ozone.om.upgrade.DisallowedUntilLayoutVersion;
 import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos;
 import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.CreateSnapshotRequest;
 import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.CreateSnapshotResponse;
@@ -54,6 +55,7 @@ import java.util.UUID;
 import static org.apache.hadoop.ozone.om.exceptions.OMException.ResultCodes.FILE_ALREADY_EXISTS;
 import static org.apache.hadoop.ozone.om.lock.OzoneManagerLock.Resource.BUCKET_LOCK;
 import static org.apache.hadoop.ozone.om.lock.OzoneManagerLock.Resource.SNAPSHOT_LOCK;
+import static org.apache.hadoop.ozone.om.upgrade.OMLayoutFeature.SNAPSHOT_SUPPORT;
 
 /**
  * Handles CreateSnapshot Request.
@@ -87,7 +89,15 @@ public class OMSnapshotCreateRequest extends OMClientRequest {
   }
 
   @Override
+   @DisallowedUntilLayoutVersion(SNAPSHOT_SUPPORT)
   public OMRequest preExecute(OzoneManager ozoneManager) throws IOException {
+//    if (!ozoneManager.getVersionManager()
+//        .isAllowed(SNAPSHOT_SUPPORT)) {
+//      throw new OMException(
+//          "Cannot be invoked before finalization.",
+//          OMException.ResultCodes.
+//              NOT_SUPPORTED_OPERATION_PRIOR_FINALIZATION);
+//    }
     final OMRequest omRequest = super.preExecute(ozoneManager);
     // Verify name
     OmUtils.validateSnapshotName(snapshotName);
@@ -107,11 +117,11 @@ public class OMSnapshotCreateRequest extends OMClientRequest {
             .setSnapshotId(UUID.randomUUID().toString())
             .build()).build();
   }
-  
+
   @Override
   public OMClientResponse validateAndUpdateCache(OzoneManager ozoneManager,
-      long transactionLogIndex,
-      OzoneManagerDoubleBufferHelper ozoneManagerDoubleBufferHelper) {
+         long transactionLogIndex,
+         OzoneManagerDoubleBufferHelper ozoneManagerDoubleBufferHelper) {
 
     OMMetrics omMetrics = ozoneManager.getMetrics();
     omMetrics.incNumSnapshotCreates();
@@ -177,11 +187,11 @@ public class OMSnapshotCreateRequest extends OMClientRequest {
 
       omMetadataManager.getSnapshotInfoTable()
           .addCacheEntry(new CacheKey<>(key),
-            CacheValue.get(transactionLogIndex, snapshotInfo));
+              CacheValue.get(transactionLogIndex, snapshotInfo));
 
       omResponse.setCreateSnapshotResponse(
           CreateSnapshotResponse.newBuilder()
-          .setSnapshotInfo(snapshotInfo.getProtobuf()));
+              .setSnapshotInfo(snapshotInfo.getProtobuf()));
       omClientResponse = new OMSnapshotCreateResponse(
           omResponse.build(), snapshotInfo);
     } catch (IOException ex) {
@@ -219,7 +229,7 @@ public class OMSnapshotCreateRequest extends OMClientRequest {
     // Performing audit logging outside the lock.
     auditLog(auditLogger, buildAuditMessage(OMAction.CREATE_SNAPSHOT,
         snapshotInfo.toAuditMap(), exception, userInfo));
-    
+
     if (exception == null) {
       LOG.info("Created snapshot '{}' under path '{}'",
           snapshotName, snapshotPath);
