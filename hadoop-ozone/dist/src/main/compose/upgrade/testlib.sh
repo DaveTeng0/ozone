@@ -104,6 +104,14 @@ run_test() {
   export OZONE_UPGRADE_FROM="$3"
   export OZONE_UPGRADE_TO="$4"
 
+  echo "#############################       #########################"
+  echo "############################# compose_cluster: "$compose_cluster
+  echo "############################# upgrade_type: "$upgrade_type
+  echo "############################# OZONE_UPGRADE_FROM: "$OZONE_UPGRADE_FROM
+  echo "############################# OZONE_UPGRADE_TO: "$OZONE_UPGRADE_TO
+  echo "#############################       #########################"
+
+
   local test_dir="$_upgrade_dir/upgrades/$upgrade_type"
   local callback_dir="$test_dir"/callbacks
   local execution_dir="$test_dir"/execution/"${OZONE_UPGRADE_FROM}-${OZONE_UPGRADE_TO}"
