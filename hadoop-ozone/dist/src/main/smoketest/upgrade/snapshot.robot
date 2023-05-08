@@ -71,14 +71,17 @@ Delete snapshot
     ${output} =         Execute           ozone sh snapshot ls /vol/bucket2
                         Should contain          ${output}       SNAPSHOT_DELETED
                         Execute      echo helloworldworld01
+                        Log          helloworldworld01
 
 Delete snapshot in non-supported ozone version
     [Tags]     snapshot-non-support
     ${output} =         Execute and checkrc          ozone sh snapshot delete /vol/bucket2 snapshot1     255
                         Execute      echo helloworldworld02
+                        Log          helloworldworld02
 
 Execute debug-hello-world
     [Tags]     snapshot-support
     ${output} =        Execute      echo helloworldworld
+                       Log          helloworldworld
     
 

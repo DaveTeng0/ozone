@@ -83,6 +83,7 @@ callback() {
   (
     # Version specific callback is optional.
     if [[ -f "$OZONE_UPGRADE_CALLBACK" ]]; then
+      echo   "####################  testlib.sh source OZONE_UPGRADE_CALLBACK: "$OZONE_UPGRADE_CALLBACK
       source "$OZONE_UPGRADE_CALLBACK"
       if [[ "$(type -t "$func")" = function ]]; then
         "$func"
@@ -118,6 +119,8 @@ run_test() {
   local compose_dir="$_upgrade_dir"/compose/"$compose_cluster"
   # Export variables needed by test, since it is run in a subshell.
   export OZONE_UPGRADE_CALLBACK="$callback_dir"/"$OZONE_UPGRADE_TO"/callback.sh
+  echo "############################# OZONE_UPGRADE_CALLBACK: "$OZONE_UPGRADE_CALLBACK
+
   export OZONE_COMMON_CALLBACK="$callback_dir"/common/callback.sh
   export OZONE_VOLUME="$execution_dir"/data
   export RESULT_DIR="$execution_dir"/result
