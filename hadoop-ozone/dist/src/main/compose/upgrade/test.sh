@@ -16,7 +16,7 @@
 # limitations under the License.
 
 #suite:compat
-
+set -x
 
 TEST_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )
 source "$TEST_DIR/testlib.sh"

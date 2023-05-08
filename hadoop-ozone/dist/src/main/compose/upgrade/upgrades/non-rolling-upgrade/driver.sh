@@ -30,6 +30,8 @@ set -u
 : "${OZONE_CURRENT_VERSION}"
 set +u
 
+set -x
+
 echo "--- RUNNING NON-ROLLING UPGRADE TEST FROM $OZONE_UPGRADE_FROM TO $OZONE_UPGRADE_TO ---"
 
 source "$TEST_DIR"/testlib.sh
