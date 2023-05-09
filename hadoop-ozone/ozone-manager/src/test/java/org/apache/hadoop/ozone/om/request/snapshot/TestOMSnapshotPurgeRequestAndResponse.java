@@ -97,7 +97,7 @@ public class TestOMSnapshotPurgeRequestAndResponse {
     OMLayoutVersionManager lvm = mock(OMLayoutVersionManager.class);
     // when(lvm.getMetadataLayoutVersion()).thenReturn(5);
     // when(lvm.getFeature(any())).thenReturn(OMLayoutFeature.SNAPSHOT_SUPPORT);
-    when(lvm.isAllowed(anyString())).thenReturn(true);
+    // when(lvm.isAllowed(anyString())).thenReturn(true);
     when(ozoneManager.getVersionManager()).thenReturn(lvm);
     when(ozoneManager.isRatisEnabled()).thenReturn(true);
     auditLogger = Mockito.mock(AuditLogger.class);
