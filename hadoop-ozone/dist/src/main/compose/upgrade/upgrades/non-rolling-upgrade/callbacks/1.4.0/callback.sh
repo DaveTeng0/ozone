@@ -27,7 +27,7 @@ validate_snapshot_support() {
   then
     TEST_TAG="snapshot-support"
   fi;
-  execute_robot_test --include $TEST_TAG -v ${@:2} upgrade/snapshot.robot
+  execute_robot_test "$SCM" --include $TEST_TAG -v ${@:2} upgrade/snapshot.robot
 }
 
 ### CALLBACKS ###
