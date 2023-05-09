@@ -93,8 +93,13 @@ public class OMBucketCreateRequest extends OMClientRequest {
         getOmRequest().getCreateBucketRequest();
     BucketInfo bucketInfo = createBucketRequest.getBucketInfo();
     // Verify resource name
-    OmUtils.validateBucketName(bucketInfo.getBucketName(),
-        ozoneManager.isStrictS3());
+    if (bucketInfo != null && bucketInfo.getBucketLayout() == BucketLayout.OBJECT_STORE) {
+      OmUtils.validateBucketName(bucketInfo.getBucketName(),
+          true);
+    } else {
+      OmUtils.validateBucketName(bucketInfo.getBucketName(),
+          ozoneManager.isStrictS3());
+    }
 
     // Get KMS provider.
     KeyProviderCryptoExtension kmsProvider =

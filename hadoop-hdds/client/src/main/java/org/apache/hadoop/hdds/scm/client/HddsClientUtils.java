@@ -46,6 +46,10 @@ import org.apache.ratis.protocol.exceptions.GroupMismatchException;
 import org.apache.ratis.protocol.exceptions.NotReplicatedException;
 import org.apache.ratis.protocol.exceptions.RaftRetryFailureException;
 
+
+import org.apache.hadoop.ozone.om.helpers.BucketLayout;
+
+
 /**
  * Utility methods for Ozone and Container Clients.
  *
@@ -179,6 +183,17 @@ public final class HddsClientUtils {
    *
    * @throws IllegalArgumentException
    */
+  public static void verifyResourceName(String resName, BucketLayout bucketLayout) {
+    verifyResourceName(resName, true);
+  }
+
+  /**
+   * verifies that bucket name / volume name is a valid DNS name.
+   *
+   * @param resName Bucket or volume Name to be validated
+   *
+   * @throws IllegalArgumentException
+   */
   public static void verifyResourceName(String resName, boolean isStrictS3) {
 
     doNameChecks(resName);
@@ -209,6 +224,12 @@ public final class HddsClientUtils {
   public static void verifyResourceName(String... resourceNames) {
     for (String resourceName : resourceNames) {
       HddsClientUtils.verifyResourceName(resourceName);
+    }
+  }
+
+  public static void verifyResourceName(boolean isStrictS3, String... resourceNames) {
+    for (String resourceName : resourceNames) {
+      HddsClientUtils.verifyResourceName(resourceName, isStrictS3);
     }
   }
 
