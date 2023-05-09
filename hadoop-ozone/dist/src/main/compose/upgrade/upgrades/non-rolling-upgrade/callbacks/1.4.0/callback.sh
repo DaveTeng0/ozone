@@ -26,7 +26,7 @@ validate_snapshot_support() {
     TEST_TAG="snapshot-enabled"
   else
     TEST_TAG="snapshot-disabled"
-  fi;
+  fi
   execute_robot_test "$SCM" --include ${TEST_TAG} -v ${@:2} upgrade/snapshot.robot
 }
 
