@@ -22,12 +22,12 @@ source "$TEST_DIR"/testlib.sh
 ## @param All parameters after the first one are passed directly to the robot command,
 ##        see https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#all-command-line-options
 validate_snapshot_support() {
-  TEST_TAG="snapshot-non-support"
-  if [ "$1" = "true" ];
-  then
-    TEST_TAG="snapshot-support"
+  if [ "$1" = "true" ]; then
+    TEST_TAG="snapshot-enabled"
+  else
+    TEST_TAG="snapshot-disabled"
   fi;
-  execute_robot_test "$SCM" --include $TEST_TAG -v ${@:2} upgrade/snapshot.robot
+  execute_robot_test "$SCM" --include ${TEST_TAG} -v ${@:2} upgrade/snapshot.robot
 }
 
 ### CALLBACKS ###
