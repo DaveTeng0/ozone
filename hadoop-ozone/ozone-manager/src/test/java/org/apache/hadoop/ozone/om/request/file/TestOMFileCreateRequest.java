@@ -21,6 +21,8 @@ package org.apache.hadoop.ozone.om.request.file;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.hadoop.ozone.OzoneConsts;
+import org.apache.hadoop.ozone.om.exceptions.OMException;
 import org.apache.hadoop.ozone.om.helpers.OmBucketInfo;
 import org.apache.hadoop.ozone.om.request.OMRequestTestUtils;
 import org.jetbrains.annotations.NotNull;
@@ -111,6 +113,22 @@ public class TestOMFileCreateRequest extends TestOMKeyRequest {
     Assert.assertNotNull(keyArgs);
     Assert.assertTrue(keyArgs.getModificationTime() == 0);
     Assert.assertTrue(keyArgs.getKeyLocationsList().size() == 0);
+  }
+  @Test
+  public void testPreExecuteWithInvalidKeyPrefix() throws Exception {
+    OMRequest omRequest = createFileRequest(volumeName, bucketName,
+        OzoneConsts.OM_SNAPSHOT_INDICATOR + keyName,
+        HddsProtos.ReplicationFactor.ONE, HddsProtos.ReplicationType.RATIS,
+        false, false);
+
+    OMFileCreateRequest omFileCreateRequest = getOMFileCreateRequest(omRequest);
+
+    OMException ex = Assert.assertThrows(OMException.class,
+        () -> omFileCreateRequest.preExecute(ozoneManager));
+
+    Assert.assertTrue(ex.getMessage().contains(
+        "Can not use key name starting with prefix: "
+            + OzoneConsts.OM_SNAPSHOT_INDICATOR));
   }
 
   @Test
