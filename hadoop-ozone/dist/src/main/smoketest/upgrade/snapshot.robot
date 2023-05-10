@@ -17,8 +17,8 @@
 Documentation       Smoketest ozone cluster snapshot feature
 Library             OperatingSystem
 Library             BuiltIn
-Resource            ../commonlib.robot
-Test Timeout        5 minutes
+#Resource            ../commonlib.robot
+Test Timeout        10 minutes
 
 *** Variables ***
 
@@ -70,18 +70,10 @@ Delete snapshot
                         Should not contain      ${output}       Failed
     ${output} =         Execute           ozone sh snapshot ls /vol/bucket2
                         Should contain          ${output}       SNAPSHOT_DELETED
-                        Execute      echo helloworldworld01
-                        Log          helloworldworld01
 
 Attempt to delete when snapshot feature is disabled
     [Tags]     snapshot-disabled
     ${output} =         Execute and checkrc          ozone sh snapshot delete /vol/bucket2 snapshot1     252
-                        Execute      echo helloworldworld02
-                        Log          helloworldworld02
 
-Execute debug-hello-world
-    [Tags]     snapshot-enabled
-    ${output} =        Execute      echo helloworldworld
-                       Log          helloworldworld
     
 
