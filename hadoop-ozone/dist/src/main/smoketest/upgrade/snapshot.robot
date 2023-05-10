@@ -40,7 +40,7 @@ Attempt to create snapshot when snapshot feature is disabled
     [Tags]     snapshot-disabled
     ${output} =         Execute and checkrc    ozone sh volume create vol     0
     ${output} =         Execute and checkrc    ozone sh bucket create /vol/bucket2     0
-    ${output} =         Execute and checkrc    ozone sh snapshot create /vol/bucket2 snapshot1     255
+    ${output} =         Execute and checkrc    ozone sh snapshot create /vol/bucket2 snapshot1     252
 
 List snapshot
     [Tags]     snapshot-enabled
@@ -51,7 +51,7 @@ List snapshot
 
 Attempt to list snapshot when snapshot feature is disabled
     [Tags]     snapshot-disabled
-    ${output} =         Execute and checkrc       ozone sh snapshot ls /vol/bucket2    255
+    ${output} =         Execute and checkrc       ozone sh snapshot ls /vol/bucket2    252
 
 Snapshot Diff
     [Tags]     snapshot-enabled
@@ -62,7 +62,7 @@ Snapshot Diff
 
 Attempt to snapshotDiff when snapshot feature is disabled
     [Tags]     snapshot-disabled
-    ${output} =         Execute and checkrc          ozone sh snapshot snapshotDiff /vol/bucket2 snapshot1 snapshot2     255
+    ${output} =         Execute and checkrc          ozone sh snapshot snapshotDiff /vol/bucket2 snapshot1 snapshot2     252
 
 Delete snapshot
     [Tags]     snapshot-enabled
@@ -75,7 +75,7 @@ Delete snapshot
 
 Attempt to delete when snapshot feature is disabled
     [Tags]     snapshot-disabled
-    ${output} =         Execute and checkrc          ozone sh snapshot delete /vol/bucket2 snapshot1     255
+    ${output} =         Execute and checkrc          ozone sh snapshot delete /vol/bucket2 snapshot1     252
                         Execute      echo helloworldworld02
                         Log          helloworldworld02
 
