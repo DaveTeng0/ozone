@@ -14,7 +14,7 @@
 # limitations under the License.
 
 *** Settings ***
-Documentation       Smoketest ozone cluster startup
+Documentation       Smoketest ozone cluster snapshot feature
 Library             OperatingSystem
 Library             BuiltIn
 Resource            ../commonlib.robot
