@@ -17,8 +17,8 @@
 Documentation       Smoketest ozone cluster snapshot feature
 Library             OperatingSystem
 Library             BuiltIn
-#Resource            ../commonlib.robot
-Resource            lib.resource
+Resource            ../commonlib.robot
+#Resource            lib.resource
 Test Timeout        10 minutes
 
 *** Variables ***
