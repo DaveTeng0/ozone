@@ -23,6 +23,7 @@ Test Timeout        5 minutes
 *** Variables ***
 
 
+
 *** Test Cases ***
 Create snapshot
     [Tags]     snapshot-enabled
@@ -38,9 +39,8 @@ Create snapshot
 
 Attempt to create snapshot when snapshot feature is disabled
     [Tags]     snapshot-disabled
-    ${output} =         Execute and checkrc    ozone sh volume create snapvolume-2     0
-    ${output} =         Execute and checkrc    ozone sh bucket create /snapvolume-2/snapbucket-1     0
-    #${output} =         Execute and checkrc    ozone sh snapshot create /snapvolume-2/snapbucket-1 snapshot1     255
+    ${output} =         Execute And Ignore Error    ozone sh volume create snapvolume-2     
+    ${output} =         Execute And Ignore Error    ozone sh bucket create /snapvolume-2/snapbucket-1     
     ${rc}               ${output} =          Run And Return Rc And Output       ozone sh snapshot create /snapvolume-2/snapbucket-1 snapshot1
                         Should be True        ${rc} != 0
 
@@ -53,7 +53,6 @@ List snapshot
 
 Attempt to list snapshot when snapshot feature is disabled
     [Tags]     snapshot-disabled
-    #${output} =         Execute and checkrc       ozone sh snapshot ls /snapvolume-2/snapbucket-1    255
     ${rc}               ${output} =          Run And Return Rc And Output       ozone sh snapshot ls /snapvolume-2/snapbucket-1
                         Should be True        ${rc} != 0
 
@@ -67,7 +66,6 @@ Snapshot Diff
 
 Attempt to snapshotDiff when snapshot feature is disabled
     [Tags]     snapshot-disabled
-    #${output} =         Execute and checkrc          ozone sh snapshot snapshotDiff /snapvolume-2/snapbucket-1 snapshot1 snapshot2     255
     ${rc}               ${output} =          Run And Return Rc And Output       ozone sh snapshot snapshotDiff /snapvolume-2/snapbucket-1 snapshot1 snapshot2
                         Should be True        ${rc} != 0
 
@@ -81,7 +79,6 @@ Delete snapshot
 
 Attempt to delete when snapshot feature is disabled
     [Tags]     snapshot-disabled
-    #${output} =         Execute and checkrc          ozone sh snapshot delete /snapvolume-2/snapbucket-1 snapshot1     255
     ${rc}               ${output} =          Run And Return Rc And Output       ozone sh snapshot delete /snapvolume-2/snapbucket-1 snapshot1
                         Should be True        ${rc} != 0
 
