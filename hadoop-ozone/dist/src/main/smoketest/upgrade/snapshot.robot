@@ -23,6 +23,7 @@ Test Timeout        5 minutes
 *** Variables ***
 
 
+
 *** Test Cases ***
 Create snapshot
     [Tags]     snapshot-enabled
