@@ -38,8 +38,8 @@ Create snapshot
 
 Attempt to create snapshot when snapshot feature is disabled
     [Tags]     snapshot-disabled
-    ${output} =         Execute And Ignore Error    ozone sh volume create snapvolume-2     0
-    ${output} =         Execute And Ignore Error    ozone sh bucket create /snapvolume-2/snapbucket-1     0
+    ${output} =         Execute And Ignore Error    ozone sh volume create snapvolume-2     
+    ${output} =         Execute And Ignore Error    ozone sh bucket create /snapvolume-2/snapbucket-1     
     ${rc}               ${output} =          Run And Return Rc And Output       ozone sh snapshot create /snapvolume-2/snapbucket-1 snapshot1
                         Should be True        ${rc} != 0
 
