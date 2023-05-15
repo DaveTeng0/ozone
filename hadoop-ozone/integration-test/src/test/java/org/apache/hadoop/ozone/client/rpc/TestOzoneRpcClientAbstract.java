@@ -162,6 +162,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import io.jaegertracing.crossdock.thrift.TracedService.AsyncProcessor.startTrace;
+
 /**
  * This is an abstract class to test all the public facing APIs of Ozone
  * Client, w/o OM Ratis server.
@@ -192,6 +194,7 @@ public abstract class TestOzoneRpcClientAbstract {
   private static String scmId = UUID.randomUUID().toString();
   private static String clusterId = UUID.randomUUID().toString();
 
+  public static int cnt;
 
   /**
    * Create a MiniOzoneCluster for testing.
@@ -4099,10 +4102,14 @@ public abstract class TestOzoneRpcClientAbstract {
     }
   }
 
-  @Test   
+  @Test   //hhhhhhhhhhhhhhhhhhhhhh
   public void testOverWriteKeyWithAndWithOutVersioning() throws Exception {
-    for(int i = 0; i < 5; i++) {
-      System.err.println("################### hello i= " + i + " ###################");
+    // for(int i = 0; i < 5; i++) {
+      System.err.println("################### hello cnt= " + cnt + " ###################");
+      if (cnt == 0) {
+        cnt ++;
+        throw new RuntimeException("intends to let cnt == 0 fail");
+      }
 
       String volumeName = UUID.randomUUID().toString();
       String bucketName = UUID.randomUUID().toString();
@@ -4120,7 +4127,7 @@ public abstract class TestOzoneRpcClientAbstract {
       
       createRequiredForVersioningTest(volumeName, bucketName, keyName, true);
       checkExceptedResultForVersioningTest(volumeName, bucketName, keyName, 2);
-    }
+    // }
   }
 
   @Test
