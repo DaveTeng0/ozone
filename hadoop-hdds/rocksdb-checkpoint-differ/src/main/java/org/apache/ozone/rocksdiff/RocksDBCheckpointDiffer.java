@@ -379,7 +379,7 @@ public class RocksDBCheckpointDiffer implements AutoCloseable {
         bw.flush();
       } catch (IOException e) {
         throw new RuntimeException("Failed to append compaction log to " +
-            currentCompactionLogPath, e);
+            currentCompactionLogPath + ".  Because of: " + e.getMessage(), e);
       }
     }
   }
