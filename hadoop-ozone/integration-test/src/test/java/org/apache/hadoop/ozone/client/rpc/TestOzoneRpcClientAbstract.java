@@ -4099,24 +4099,28 @@ public abstract class TestOzoneRpcClientAbstract {
     }
   }
 
-  @Test
+  @Test   
   public void testOverWriteKeyWithAndWithOutVersioning() throws Exception {
-    String volumeName = UUID.randomUUID().toString();
-    String bucketName = UUID.randomUUID().toString();
-    String keyName = UUID.randomUUID().toString();
+    for(int i = 0; i < 5; i++) {
+      System.err.println("################### hello i= " + i + " ###################");
 
-    createRequiredForVersioningTest(volumeName, bucketName, keyName, false);
-
-    checkExceptedResultForVersioningTest(volumeName, bucketName, keyName, 1);
-
-
-    // Versioning turned on
-    volumeName = UUID.randomUUID().toString();
-    bucketName = UUID.randomUUID().toString();
-    keyName = UUID.randomUUID().toString();
-
-    createRequiredForVersioningTest(volumeName, bucketName, keyName, true);
-    checkExceptedResultForVersioningTest(volumeName, bucketName, keyName, 2);
+      String volumeName = UUID.randomUUID().toString();
+      String bucketName = UUID.randomUUID().toString();
+      String keyName = UUID.randomUUID().toString();
+      
+      createRequiredForVersioningTest(volumeName, bucketName, keyName, false);
+      
+      checkExceptedResultForVersioningTest(volumeName, bucketName, keyName, 1);
+      
+      
+      // Versioning turned on
+      volumeName = UUID.randomUUID().toString();
+      bucketName = UUID.randomUUID().toString();
+      keyName = UUID.randomUUID().toString();
+      
+      createRequiredForVersioningTest(volumeName, bucketName, keyName, true);
+      checkExceptedResultForVersioningTest(volumeName, bucketName, keyName, 2);
+    }
   }
 
   @Test
