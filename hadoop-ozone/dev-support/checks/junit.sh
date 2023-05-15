@@ -31,6 +31,10 @@ fi
 export MAVEN_OPTS="-Xmx4096m $MAVEN_OPTS"
 MAVEN_OPTIONS='-B -Dskip.npx -Dskip.installnpx --no-transfer-progress'
 
+if [[ ${ITERATIONS} -gt 1 ]]; then
+  grep -c "exit code: [^0]" "${REPORT_DIR}/summary.txt" > "${REPORT_DIR}/failures"
+fi
+
 if [[ "${OZONE_WITH_COVERAGE}" != "true" ]]; then
   MAVEN_OPTIONS="${MAVEN_OPTIONS} -Djacoco.skip"
 fi
