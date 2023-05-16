@@ -4106,11 +4106,14 @@ public abstract class TestOzoneRpcClientAbstract {
   public void testOverWriteKeyWithAndWithOutVersioning() throws Exception {
 //     for(int i = 0; i < 5; i++) {
       System.err.println("################### hello cnt= " + cnt + " ###################");
+      System.out.println("################### hello cnt= " + cnt + " ###################");
       System.err.println("################### hello miniclusterID= " + cluster.getClusterId() + ". name: " + cluster.getName() + " ###################");
+      System.out.println("################### hello miniclusterID= " + cluster.getClusterId() + ". name: " + cluster.getName() + " ###################");
 
       if (cnt == 0) {
         cnt ++;
-        throw new RuntimeException("intends to let cnt == 0 fail");
+//        throw new RuntimeException("intends to let cnt == 0 fail");
+        Assert.assertEquals(1,2);
       }
 
       String volumeName = UUID.randomUUID().toString();

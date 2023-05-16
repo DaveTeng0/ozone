@@ -379,12 +379,12 @@ public class RocksDBCheckpointDiffer implements AutoCloseable {
     synchronized (this) {
       try (BufferedWriter bw = Files.newBufferedWriter(
           Paths.get(currentCompactionLogPath),
-          StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
+          StandardOpenOption.CREATE_NEW, StandardOpenOption.APPEND)) {
         bw.write(content);
         bw.flush();
       } catch (IOException e) {
         throw new RuntimeException("Failed to append compaction log to " +
-            currentCompactionLogPath + ".  Because of: " + e.getMessage(), e);
+            currentCompactionLogPath + ".  It's because of  ====>  " + e, e);
       }
     }
   }
