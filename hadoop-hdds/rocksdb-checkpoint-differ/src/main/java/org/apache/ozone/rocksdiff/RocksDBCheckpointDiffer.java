@@ -385,6 +385,9 @@ public class RocksDBCheckpointDiffer implements AutoCloseable {
           // file is not exist
           File f = new File(currentCompactionLogPath);
           f.createNewFile();
+          LOG.warn("####################3 File creating : "
+              + currentCompactionLogPath);
+
         } else {
           LOG.warn("####################3 File already exists : "
            + currentCompactionLogPath);
