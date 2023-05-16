@@ -379,7 +379,18 @@ public class RocksDBCheckpointDiffer implements AutoCloseable {
     synchronized (this) {
       try (BufferedWriter bw = Files.newBufferedWriter(
           Paths.get(currentCompactionLogPath),
-          StandardOpenOption.CREATE_NEW, StandardOpenOption.APPEND)) {
+          StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
+
+        if (Files.notExists(Paths.get(currentCompactionLogPath))) {
+          // file is not exist
+          File f = new File(currentCompactionLogPath);
+          f.createNewFile();
+        } else {
+          LOG.warn("####################3 File already exists : "
+           + currentCompactionLogPath);
+
+        }
+
         bw.write(content);
         bw.flush();
       } catch (IOException e) {
