@@ -4104,7 +4104,7 @@ public abstract class TestOzoneRpcClientAbstract {
 
   @Test   //hhhhhhhhhhhhhhhhhhhhhh
   public void testOverWriteKeyWithAndWithOutVersioning() throws Exception {
-     for(int i = 0; i < 5; i++) {
+//     for(int i = 0; i < 5; i++) {
       System.err.println("################### hello cnt= " + cnt + " ###################");
       System.err.println("################### hello miniclusterID= " + cluster.getClusterId() + ". name: " + cluster.getName() + " ###################");
 
@@ -4129,7 +4129,7 @@ public abstract class TestOzoneRpcClientAbstract {
       
       createRequiredForVersioningTest(volumeName, bucketName, keyName, true);
       checkExceptedResultForVersioningTest(volumeName, bucketName, keyName, 2);
-     }
+//     }
   }
 
   @Test
