@@ -4120,7 +4120,9 @@ public abstract class TestOzoneRpcClientAbstract {
       if (cnt == 0) {
         cnt ++;
 //        throw new RuntimeException("intends to let cnt == 0 fail");
-//        Assert.assertEquals(1,2);
+        Assert.assertEquals(1,2);
+      } else {
+        cnt ++;
       }
 
       String volumeName = UUID.randomUUID().toString();

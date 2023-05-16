@@ -443,6 +443,8 @@ public class MiniOzoneClusterImpl implements MiniOzoneCluster {
       final File baseDir = new File(getBaseDir());
       stop();
       FileUtils.deleteDirectory(baseDir);
+      LOG.error("###################### mini-cluster deleteDirectory => ", baseDir);
+
       ContainerCache.getInstance(conf).shutdownCache();
       DefaultMetricsSystem.shutdown();
 
@@ -577,6 +579,7 @@ public class MiniOzoneClusterImpl implements MiniOzoneCluster {
     public MiniOzoneCluster build() throws IOException {
       DefaultMetricsSystem.setMiniClusterMode(true);
       DatanodeStoreCache.setMiniClusterMode();
+      // hhhhhhhhhhhhhhhhhhhhhh
       initializeConfiguration();
       StorageContainerManager scm = null;
       OzoneManager om = null;
@@ -635,9 +638,16 @@ public class MiniOzoneClusterImpl implements MiniOzoneCluster {
      *
      * @throws IOException
      */
+    // hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
+
     protected void initializeConfiguration() throws IOException {
       Path metaDir = Paths.get(path, "ozone-meta");
       Files.createDirectories(metaDir);
+      LOG.warn("###################### miniCluster init createDirectories => ", metaDir);
+      LOG.warn("###################### check dir: " + metaDir + "? " + Files.exists(metaDir));
+
+
+
       conf.set(HddsConfigKeys.OZONE_METADATA_DIRS, metaDir.toString());
       // conf.setBoolean(ScmConfigKeys.OZONE_SCM_HA_ENABLE_KEY, true);
       if (!chunkSize.isPresent()) {
@@ -711,6 +721,10 @@ public class MiniOzoneClusterImpl implements MiniOzoneCluster {
 
     void removeConfiguration() {
       FileUtils.deleteQuietly(new File(path));
+      LOG.warn("###################### miniCluster removeConfiguration => ", path);
+      LOG.warn("###################### after delete, mini cluster config  => ", Files.exists(Paths.get(path)));
+
+
     }
 
     /**
