@@ -61,6 +61,7 @@ import org.apache.hadoop.hdds.scm.container.ContainerInfo;
 import org.apache.hadoop.hdds.scm.pipeline.Pipeline;
 import org.apache.hadoop.hdds.scm.protocolPB.StorageContainerLocationProtocolClientSideTranslatorPB;
 import org.apache.hadoop.hdds.scm.server.StorageContainerManager;
+import org.apache.hadoop.hdds.utils.db.RDBStore;
 import org.apache.hadoop.hdds.utils.db.Table;
 import org.apache.hadoop.ozone.HddsDatanodeService;
 import org.apache.hadoop.ozone.MiniOzoneCluster;
@@ -163,6 +164,8 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import io.jaegertracing.crossdock.thrift.TracedService.AsyncProcessor.startTrace;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This is an abstract class to test all the public facing APIs of Ozone
@@ -173,6 +176,8 @@ import io.jaegertracing.crossdock.thrift.TracedService.AsyncProcessor.startTrace
  */
 @TestMethodOrder(MethodOrderer.MethodName.class)
 public abstract class TestOzoneRpcClientAbstract {
+  private static final Logger LOG =
+      LoggerFactory.getLogger(TestOzoneRpcClientAbstract.class);
 
   private static MiniOzoneCluster cluster = null;
   private static OzoneClient ozClient = null;
@@ -4107,13 +4112,15 @@ public abstract class TestOzoneRpcClientAbstract {
 //     for(int i = 0; i < 5; i++) {
       System.err.println("################### hello cnt= " + cnt + " ###################");
       System.out.println("################### hello cnt= " + cnt + " ###################");
+      LOG.warn("################### hello cnt= " + cnt + " ###################");
       System.err.println("################### hello miniclusterID= " + cluster.getClusterId() + ". name: " + cluster.getName() + " ###################");
       System.out.println("################### hello miniclusterID= " + cluster.getClusterId() + ". name: " + cluster.getName() + " ###################");
+      LOG.warn("################### hello miniclusterID= " + cluster.getClusterId() + ". name: " + cluster.getName() + " ###################");
 
       if (cnt == 0) {
         cnt ++;
 //        throw new RuntimeException("intends to let cnt == 0 fail");
-        Assert.assertEquals(1,2);
+//        Assert.assertEquals(1,2);
       }
 
       String volumeName = UUID.randomUUID().toString();
