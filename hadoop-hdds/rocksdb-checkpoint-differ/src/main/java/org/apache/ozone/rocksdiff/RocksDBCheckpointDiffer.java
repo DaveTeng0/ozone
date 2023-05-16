@@ -364,6 +364,11 @@ public class RocksDBCheckpointDiffer implements AutoCloseable {
    * Note: This does NOT automatically append newline to the log.
    */
   private void appendToCurrentCompactionLog(String content) {
+
+    LOG.warn("################### appendToCurrentCompactionLog(content = "
+        + content);
+
+
     if (currentCompactionLogPath == null) {
       LOG.error("Unable to append compaction log. "
           + "Compaction log path is not set. "

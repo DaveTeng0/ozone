@@ -348,7 +348,7 @@ jobs:
           java-version: 8
       - name: Execute tests
         #run: hadoop-ozone/dev-support/checks/integration.sh -P${{ matrix.profile }}
-        run: hadoop-ozone/dev-support/checks/integration.sh -Dtest=TestOzoneRpcClient,TestSecureOzoneRpcClient
+        run: hadoop-ozone/dev-support/checks/integration.sh -Dtest=TestOzoneRpcClient#testOverWriteKeyWithAndWithOutVersioning
         env:
           ITERATIONS: 10
       - name: Execute flaky tests
