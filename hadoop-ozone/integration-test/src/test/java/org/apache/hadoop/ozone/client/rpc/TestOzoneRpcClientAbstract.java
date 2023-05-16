@@ -210,6 +210,10 @@ public abstract class TestOzoneRpcClientAbstract {
     // Reduce long wait time in MiniOzoneClusterImpl#waitForHddsDatanodesStop
     //  for testZReadKeyWithUnhealthyContainerReplica.
     conf.set("ozone.scm.stale.node.interval", "10s");
+
+    LOG.warn("################### Integ test starting miniclusterID= "
+        + clusterId + ". cnt = " + cnt );
+
     cluster = MiniOzoneCluster.newBuilder(conf)
         .setNumDatanodes(14)
         .setTotalPipelineNumLimit(10)

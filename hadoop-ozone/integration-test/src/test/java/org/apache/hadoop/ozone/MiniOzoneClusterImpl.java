@@ -443,7 +443,9 @@ public class MiniOzoneClusterImpl implements MiniOzoneCluster {
       final File baseDir = new File(getBaseDir());
       stop();
       FileUtils.deleteDirectory(baseDir);
-      LOG.error("###################### mini-cluster deleteDirectory => ", baseDir);
+      LOG.error("###################### mini-cluster deleteDirectory => " + baseDir);
+      LOG.error("###################### after mini-cluster deleteDirectory ["
+          + baseDir + "] . dir exist? " + baseDir.exists());
 
       ContainerCache.getInstance(conf).shutdownCache();
       DefaultMetricsSystem.shutdown();
@@ -643,8 +645,8 @@ public class MiniOzoneClusterImpl implements MiniOzoneCluster {
     protected void initializeConfiguration() throws IOException {
       Path metaDir = Paths.get(path, "ozone-meta");
       Files.createDirectories(metaDir);
-      LOG.warn("###################### miniCluster init createDirectories => ", metaDir);
-      LOG.warn("###################### check dir: " + metaDir + "? " + Files.exists(metaDir));
+      LOG.warn("###################### miniCluster init createDirectories => " + metaDir);
+      LOG.warn("###################### check dir: {{" + metaDir + "}} created ? ===> " + Files.exists(metaDir));
 
 
 
@@ -721,8 +723,8 @@ public class MiniOzoneClusterImpl implements MiniOzoneCluster {
 
     void removeConfiguration() {
       FileUtils.deleteQuietly(new File(path));
-      LOG.warn("###################### miniCluster removeConfiguration => ", path);
-      LOG.warn("###################### after delete, mini cluster config  => ", Files.exists(Paths.get(path)));
+      LOG.warn("###################### miniCluster removeConfiguration => " + path);
+      LOG.warn("###################### after delete, mini cluster config  => " + Files.exists(Paths.get(path)));
 
 
     }
