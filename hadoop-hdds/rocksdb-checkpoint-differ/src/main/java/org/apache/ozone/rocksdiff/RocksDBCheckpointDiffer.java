@@ -302,6 +302,14 @@ public class RocksDBCheckpointDiffer implements AutoCloseable {
     // Local temp variable for storing the new compaction log file path
     final String newCompactionLog = compactionLogDir + latestSequenceIdStr +
         COMPACTION_LOG_FILE_NAME_SUFFIX;
+    LOG.warn("################ latestSequenceNum: {}. latestSequenceIdStr: {}",
+        latestSequenceNum, latestSequenceIdStr);
+    LOG.warn("################ compactionLogDir:{}. newCompactionLog: {}.",
+        compactionLogDir,newCompactionLog);
+    LOG.warn("################ compactionLogDir there? {}",
+        Files.exists(Paths.get(compactionLogDir)));
+
+
 
     File clFile = new File(newCompactionLog);
     if (clFile.exists()) {
@@ -398,7 +406,7 @@ public class RocksDBCheckpointDiffer implements AutoCloseable {
         bw.flush();
       } catch (IOException e) {
         throw new RuntimeException("Failed to append compaction log to " +
-            currentCompactionLogPath + ".  It's because of  ====>  " + e, e);
+            currentCompactionLogPath + " ################################.  It's because of  ====>  " + e, e);
       }
     }
   }

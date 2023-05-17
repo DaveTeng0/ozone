@@ -724,8 +724,8 @@ public class MiniOzoneClusterImpl implements MiniOzoneCluster {
     void removeConfiguration() {
       FileUtils.deleteQuietly(new File(path));
       LOG.warn("###################### miniCluster removeConfiguration => " + path);
-      LOG.warn("###################### after delete, mini cluster config  => " + Files.exists(Paths.get(path)));
-
+      LOG.warn("###################### after delete, mini cluster config there?  ==> "
+          + Files.exists(Paths.get(path)));
 
     }
 
