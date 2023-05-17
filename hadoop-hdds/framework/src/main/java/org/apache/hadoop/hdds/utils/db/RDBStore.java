@@ -138,6 +138,8 @@ public class RDBStore implements DBStore {
             Paths.get(dbLocation.getParent(), OM_SNAPSHOT_CHECKPOINT_DIR);
         snapshotsParentDir = snapshotsParentDirPath.toString();
         Files.createDirectories(snapshotsParentDirPath);
+        LOG.warn("######################## should createCheckpointDirs ? ", createCheckpointDirs);
+
       }
 
       if (enableCompactionLog) {

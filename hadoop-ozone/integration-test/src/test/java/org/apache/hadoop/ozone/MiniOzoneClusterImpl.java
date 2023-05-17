@@ -443,7 +443,7 @@ public class MiniOzoneClusterImpl implements MiniOzoneCluster {
       final File baseDir = new File(getBaseDir());
       stop();
       FileUtils.deleteDirectory(baseDir);
-      LOG.error("###################### mini-cluster deleteDirectory => " + baseDir);
+      LOG.error("###################### each rounds, mini-cluster deleteDirectory => " + baseDir);
       LOG.error("###################### after mini-cluster deleteDirectory ["
           + baseDir + "] . dir exist? " + baseDir.exists());
 

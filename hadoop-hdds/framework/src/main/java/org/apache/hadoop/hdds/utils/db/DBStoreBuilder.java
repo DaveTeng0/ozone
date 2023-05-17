@@ -21,6 +21,7 @@ package org.apache.hadoop.hdds.utils.db;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -207,6 +208,9 @@ public final class DBStoreBuilder {
       if (!dbFile.getParentFile().exists()) {
         throw new IOException("The DB destination directory should exist.");
       }
+      LOG.error("#####################  dbFile: [[{}]] there? ."
+          , dbFile, dbFile.exists());
+
 
       return new RDBStore(dbFile, rocksDBOption, writeOptions, tableConfigs,
           registry.build(), openReadOnly, maxFSSnapshots, dbJmxBeanNameName,

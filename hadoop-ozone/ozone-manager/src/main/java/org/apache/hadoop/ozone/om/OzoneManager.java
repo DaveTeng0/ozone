@@ -649,7 +649,7 @@ public final class OzoneManager extends ServiceRuntimeInfoImpl
     Collection<String> s3AdminGroups =
             OzoneConfigUtil.getS3AdminsGroupsFromConfig(configuration);
     s3OzoneAdmins = new OzoneAdmins(s3AdminUsernames, s3AdminGroups);
-    instantiateServices(false);
+    instantiateServices(false); //hhhhhhhhhhhhhhhhhhhhhhhhhhhhh
 
     // Create special volume s3v which is required for S3G.
     addS3GVolumeToDB();
