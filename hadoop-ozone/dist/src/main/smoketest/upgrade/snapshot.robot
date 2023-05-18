@@ -43,7 +43,7 @@ Attempt to create snapshot when snapshot feature is disabled
     ${output} =         Execute And Ignore Error    ozone sh bucket create /snapvolume-2/snapbucket-1     
                         Should not contain     ${output}       Failed
     ${rc}               ${output} =          Run And Return Rc And Output       ozone sh snapshot create /snapvolume-2/snapbucket-1 snapshot1
-                        Should be True        ${rc} != 0
+                        Should be True        ${rc} = 0
 
 
 List snapshot
@@ -56,7 +56,7 @@ List snapshot
 Attempt to list snapshot when snapshot feature is disabled
     [Tags]     snapshot-disabled
     ${rc}               ${output} =          Run And Return Rc And Output       ozone sh snapshot ls /snapvolume-2/snapbucket-1
-                        Should be True        ${rc} != 0
+                        Should be True        ${rc} = 2
 
 
 Snapshot Diff
@@ -69,7 +69,7 @@ Snapshot Diff
 Attempt to snapshotDiff when snapshot feature is disabled
     [Tags]     snapshot-disabled
     ${rc}               ${output} =          Run And Return Rc And Output       ozone sh snapshot snapshotDiff /snapvolume-2/snapbucket-1 snapshot1 snapshot2
-                        Should be True        ${rc} != 0
+                        Should be True        ${rc} != 2
 
 
 Delete snapshot
@@ -82,5 +82,5 @@ Delete snapshot
 Attempt to delete when snapshot feature is disabled
     [Tags]     snapshot-disabled
     ${rc}               ${output} =          Run And Return Rc And Output       ozone sh snapshot delete /snapvolume-2/snapbucket-1 snapshot1
-                        Should be True        ${rc} != 0
+                        Should be True        ${rc} != 2
 
