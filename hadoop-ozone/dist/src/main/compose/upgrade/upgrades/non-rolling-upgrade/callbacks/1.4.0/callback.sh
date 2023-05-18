@@ -23,11 +23,11 @@ source "$TEST_DIR"/testlib.sh
 ##        see https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#all-command-line-options
 validate_snapshot_support() {
   if [ "$1" = "true" ]; then
-    TEST_TAG="snapshot-enabled"
+    TEST_TAG="post-finalized-snapshot-tests"
   else
-    TEST_TAG="snapshot-disabled"
+    TEST_TAG="pre-finalized-snapshot-tests"
   fi
-  execute_robot_test "$SCM" --include "${TEST_TAG}" upgrade/snapshot.robot
+  execute_robot_test "$SCM" --include "${TEST_TAG}" snapshot/upgrade-snapshot-check.robot
 }
 
 ### CALLBACKS ###
