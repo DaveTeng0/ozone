@@ -32,23 +32,17 @@ validate_snapshot_support() {
 
 ### CALLBACKS ###
 
-with_old_version() {
-  execute_robot_test "$SCM" --include finalized upgrade/check-finalization.robot
-  validate_snapshot_support false
-}
 
 with_this_version_pre_finalized() {
   execute_robot_test "$SCM" --include pre-finalized upgrade/check-finalization.robot
-  validate_snapshot_support false
-}
-
-with_old_version_downgraded() {
-  execute_robot_test "$SCM" --include finalized upgrade/check-finalization.robot
-  validate_snapshot_support false
+  # validate_snapshot_support false
+  execute_robot_test "$SCM" --include pre-finalized-snapshot-tests snapshot/upgrade-snapshot-check.robot
 }
 
 with_this_version_finalized() {
   execute_robot_test "$SCM" --include finalized upgrade/check-finalization.robot
-  validate_snapshot_support true
+  # validate_snapshot_support true
+  execute_robot_test "$SCM" --include post-finalized-snapshot-tests snapshot/upgrade-snapshot-check.robot
+
 }
 

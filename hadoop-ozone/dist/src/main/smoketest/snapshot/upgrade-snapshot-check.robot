@@ -42,7 +42,7 @@ Attempt to create snapshot when snapshot feature is disabled
                         Should not contain     ${output}       Failed
     ${output} =         Execute And Ignore Error    ozone sh bucket create /snapvolume-2/snapbucket-1     
                         Should not contain     ${output}       Failed
-                        Execute and checkrc         ozone sh snapshot create /snapvolume-2/snapbucket-1 snapshot1    2
+                        Execute and checkrc         ozone sh snapshot create /snapvolume-2/snapbucket-1 snapshot1    255
 
 
 List snapshot
@@ -54,7 +54,7 @@ List snapshot
 
 Attempt to list snapshot when snapshot feature is disabled
     [Tags]     pre-finalized-snapshot-tests
-                        Execute and checkrc         ozone sh snapshot ls /snapvolume-2/snapbucket-1    2
+                        Execute and checkrc         ozone sh snapshot ls /snapvolume-2/snapbucket-1    255
 
 
 Snapshot Diff
@@ -66,7 +66,7 @@ Snapshot Diff
 
 Attempt to snapshotDiff when snapshot feature is disabled
     [Tags]     pre-finalized-snapshot-tests
-                        Execute and checkrc         ozone sh snapshot snapshotDiff /snapvolume-2/snapbucket-1 snapshot1 snapshot2    2
+                        Execute and checkrc         ozone sh snapshot snapshotDiff /snapvolume-2/snapbucket-1 snapshot1 snapshot2    255
 
 
 Delete snapshot
@@ -78,5 +78,5 @@ Delete snapshot
 
 Attempt to delete when snapshot feature is disabled
     [Tags]     pre-finalized-snapshot-tests
-                        Execute and checkrc         ozone sh snapshot delete /snapvolume-2/snapbucket-1 snapshot1    2
+                        Execute and checkrc         ozone sh snapshot delete /snapvolume-2/snapbucket-1 snapshot1    255
 
