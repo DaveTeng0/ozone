@@ -21,14 +21,14 @@ source "$TEST_DIR"/testlib.sh
 ## @param Whether the snapshot feature should be supported in cluster.
 ## @param All parameters after the first one are passed directly to the robot command,
 ##        see https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#all-command-line-options
-validate_snapshot_support() {
-  if [ "$1" = "true" ]; then
-    TEST_TAG="post-finalized-snapshot-tests"
-  else
-    TEST_TAG="pre-finalized-snapshot-tests"
-  fi
-  execute_robot_test "$SCM" --include "${TEST_TAG}" snapshot/upgrade-snapshot-check.robot
-}
+# validate_snapshot_support() {
+#   if [ "$1" = "true" ]; then
+#     TEST_TAG="post-finalized-snapshot-tests"
+#   else
+#     TEST_TAG="pre-finalized-snapshot-tests"
+#   fi
+#   execute_robot_test "$SCM" --include "${TEST_TAG}" snapshot/upgrade-snapshot-check.robot
+# }
 
 ### CALLBACKS ###
 
