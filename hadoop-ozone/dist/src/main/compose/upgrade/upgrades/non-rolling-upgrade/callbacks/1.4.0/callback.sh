@@ -21,34 +21,28 @@ source "$TEST_DIR"/testlib.sh
 ## @param Whether the snapshot feature should be supported in cluster.
 ## @param All parameters after the first one are passed directly to the robot command,
 ##        see https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#all-command-line-options
-validate_snapshot_support() {
-  if [ "$1" = "true" ]; then
-    TEST_TAG="snapshot-enabled"
-  else
-    TEST_TAG="snapshot-disabled"
-  fi
-  execute_robot_test "$SCM" --include "${TEST_TAG}" upgrade/snapshot.robot
-}
+# validate_snapshot_support() {
+#   if [ "$1" = "true" ]; then
+#     TEST_TAG="post-finalized-snapshot-tests"
+#   else
+#     TEST_TAG="pre-finalized-snapshot-tests"
+#   fi
+#   execute_robot_test "$SCM" --include "${TEST_TAG}" snapshot/upgrade-snapshot-check.robot
+# }
 
 ### CALLBACKS ###
 
-with_old_version() {
-  execute_robot_test "$SCM" --include finalized upgrade/check-finalization.robot
-  validate_snapshot_support false
-}
 
 with_this_version_pre_finalized() {
   execute_robot_test "$SCM" --include pre-finalized upgrade/check-finalization.robot
-  validate_snapshot_support false
-}
-
-with_old_version_downgraded() {
-  execute_robot_test "$SCM" --include finalized upgrade/check-finalization.robot
-  validate_snapshot_support false
+  # validate_snapshot_support false
+  execute_robot_test "$SCM" --include pre-finalized-snapshot-tests snapshot/upgrade-snapshot-check.robot
 }
 
 with_this_version_finalized() {
   execute_robot_test "$SCM" --include finalized upgrade/check-finalization.robot
-  validate_snapshot_support true
+  # validate_snapshot_support true
+  execute_robot_test "$SCM" --include post-finalized-snapshot-tests snapshot/upgrade-snapshot-check.robot
+
 }
 
