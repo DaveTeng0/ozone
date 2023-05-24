@@ -34,6 +34,7 @@ import org.junit.Test;
 
 import java.util.UUID;
 
+import static org.apache.hadoop.ozone.OzoneConsts.OM_SNAPSHOT_INDICATOR;
 /**
  * Tests OMFileCreateRequest - prefix layout.
  */
@@ -111,13 +112,13 @@ public class TestOMFileCreateRequestWithFSO extends TestOMFileCreateRequest {
     OmDirectoryInfo omDirInfo = getDirInfo("c/d/e");
     OmKeyInfo omKeyInfo =
             OMRequestTestUtils.createOmKeyInfo(volumeName, bucketName, key,
-                    HddsProtos.ReplicationType.RATIS,
-                    HddsProtos.ReplicationFactor.ONE,
-                    omDirInfo.getObjectID() + 10,
-                    omDirInfo.getObjectID(), 100, Time.now());
+                HddsProtos.ReplicationType.RATIS,
+                HddsProtos.ReplicationFactor.ONE,
+                omDirInfo.getObjectID() + 10,
+                omDirInfo.getObjectID(), 100, Time.now());
     OMRequestTestUtils.addFileToKeyTable(false, false,
-            "f", omKeyInfo, -1,
-            omDirInfo.getObjectID() + 10, omMetadataManager);
+        "f", omKeyInfo, -1,
+        omDirInfo.getObjectID() + 10, omMetadataManager);
 
     // Even if key exists, should be able to create file as overwrite is set
     // to true
@@ -154,6 +155,18 @@ public class TestOMFileCreateRequestWithFSO extends TestOMFileCreateRequest {
     // overwrite is set to true
     testNonRecursivePath(key, true, false, false);
     testNonRecursivePath(key, false, false, true);
+  }
+
+  @Test
+  public void testValidateAndUpdateCacheWithSnapshotReservedWord()
+      throws Exception {
+    String[] validPaths = {
+        "a/b/" + OM_SNAPSHOT_INDICATOR + "c/d",
+        "a/b/c/" + OM_SNAPSHOT_INDICATOR + "/d"
+    };
+    for (String validPath : validPaths) {
+      testNonRecursivePath(validPath, false, true, false);
+    }
   }
 
   @Override

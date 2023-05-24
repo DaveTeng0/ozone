@@ -119,68 +119,59 @@ public class TestOMFileCreateRequest extends TestOMKeyRequest {
   @Test
   public void testValidateAndUpdateCache() throws Exception {
 
-    String[] validKeyNames = {
-        keyName,
-        OM_SNAPSHOT_INDICATOR + "abc/" + keyName,
-        "a/" + OM_SNAPSHOT_INDICATOR + "/b/c/" + keyName
-    };
-
-    for (String validKeyName : validKeyNames) {
-      keyName = validKeyName;
-      OMRequest omRequest = createFileRequest(volumeName, bucketName, keyName,
+    OMRequest omRequest = createFileRequest(volumeName, bucketName, keyName,
           HddsProtos.ReplicationFactor.ONE, HddsProtos.ReplicationType.RATIS,
           false, true);
 
-      OMRequestTestUtils.addVolumeAndBucketToDB(volumeName, bucketName,
+    OMRequestTestUtils.addVolumeAndBucketToDB(volumeName, bucketName,
           omMetadataManager, getBucketLayout());
-      OMFileCreateRequest omFileCreateRequest =
+    OMFileCreateRequest omFileCreateRequest =
           getOMFileCreateRequest(omRequest);
 
-      OMRequest modifiedOmRequest =
+    OMRequest modifiedOmRequest =
           omFileCreateRequest.preExecute(ozoneManager);
 
-      long id = modifiedOmRequest.getCreateFileRequest().getClientID();
+    long id = modifiedOmRequest.getCreateFileRequest().getClientID();
 
-      // Before calling
-      OmKeyInfo omKeyInfo = verifyPathInOpenKeyTable(keyName, id, false);
-      Assert.assertNull(omKeyInfo);
+    // Before calling
+    OmKeyInfo omKeyInfo = verifyPathInOpenKeyTable(keyName, id, false);
+    Assert.assertNull(omKeyInfo);
 
-      omFileCreateRequest = getOMFileCreateRequest(modifiedOmRequest);
+    omFileCreateRequest = getOMFileCreateRequest(modifiedOmRequest);
 
-      OMClientResponse omFileCreateResponse =
+    OMClientResponse omFileCreateResponse =
           omFileCreateRequest.validateAndUpdateCache(ozoneManager, 100L,
               ozoneManagerDoubleBufferHelper);
 
-      Assert.assertEquals(OzoneManagerProtocolProtos.Status.OK,
+    Assert.assertEquals(OzoneManagerProtocolProtos.Status.OK,
           omFileCreateResponse.getOMResponse().getStatus());
 
-      // Check open table whether key is added or not.
+    // Check open table whether key is added or not.
 
-      omKeyInfo = verifyPathInOpenKeyTable(keyName, id, true);
+    omKeyInfo = verifyPathInOpenKeyTable(keyName, id, true);
 
-      List<OmKeyLocationInfo> omKeyLocationInfoList =
+    List<OmKeyLocationInfo> omKeyLocationInfoList =
           omKeyInfo.getLatestVersionLocations().getLocationList();
-      Assert.assertTrue(omKeyLocationInfoList.size() == 1);
+    Assert.assertTrue(omKeyLocationInfoList.size() == 1);
 
-      OmKeyLocationInfo omKeyLocationInfo = omKeyLocationInfoList.get(0);
+    OmKeyLocationInfo omKeyLocationInfo = omKeyLocationInfoList.get(0);
 
       // Check modification time
-      Assert.assertEquals(modifiedOmRequest.getCreateFileRequest()
+    Assert.assertEquals(modifiedOmRequest.getCreateFileRequest()
           .getKeyArgs().getModificationTime(), omKeyInfo.getModificationTime());
 
-      Assert.assertEquals(omKeyInfo.getModificationTime(),
+    Assert.assertEquals(omKeyInfo.getModificationTime(),
           omKeyInfo.getCreationTime());
 
       // Check data of the block
-      OzoneManagerProtocolProtos.KeyLocation keyLocation =
+    OzoneManagerProtocolProtos.KeyLocation keyLocation =
           modifiedOmRequest.getCreateFileRequest().getKeyArgs()
               .getKeyLocations(0);
 
-      Assert.assertEquals(keyLocation.getBlockID().getContainerBlockID()
+    Assert.assertEquals(keyLocation.getBlockID().getContainerBlockID()
           .getContainerID(), omKeyLocationInfo.getContainerID());
-      Assert.assertEquals(keyLocation.getBlockID().getContainerBlockID()
+    Assert.assertEquals(keyLocation.getBlockID().getContainerBlockID()
           .getLocalID(), omKeyLocationInfo.getLocalID());
-    }
   }
 
   @Test

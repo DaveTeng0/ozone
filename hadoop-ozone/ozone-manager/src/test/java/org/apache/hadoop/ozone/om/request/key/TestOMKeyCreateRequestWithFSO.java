@@ -27,15 +27,22 @@ import org.apache.hadoop.ozone.om.helpers.OmKeyInfo;
 import org.apache.hadoop.ozone.om.helpers.OmVolumeArgs;
 import org.apache.hadoop.ozone.om.helpers.OzoneFSUtils;
 import org.apache.hadoop.ozone.om.helpers.BucketLayout;
+import org.apache.hadoop.ozone.om.lock.OzoneLockProvider;
 import org.apache.hadoop.ozone.om.request.OMRequestTestUtils;
+import org.apache.hadoop.ozone.om.response.OMClientResponse;
 import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.OMRequest;
 import org.apache.hadoop.util.Time;
 import org.junit.Assert;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Iterator;
+
+import static org.apache.hadoop.ozone.OzoneConsts.OM_SNAPSHOT_INDICATOR;
+import static org.apache.hadoop.ozone.om.request.OMRequestTestUtils.addVolumeAndBucketToDB;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests OMCreateKeyRequestWithFSO class.
@@ -47,6 +54,66 @@ public class TestOMKeyCreateRequestWithFSO extends TestOMKeyCreateRequest {
     super(setKeyPathLock, setFileSystemPaths);
   }
 
+  @Test
+  public void testValidateAndUpdateCacheWithKeycontainsSnapshotReservedWord()
+      throws Exception {
+    when(ozoneManager.getOzoneLockProvider()).thenReturn(
+        new OzoneLockProvider(getKeyPathLockEnabled(),
+            getEnableFileSystemPaths()));
+
+    String[] validKeyNames = {
+        keyName,
+        OM_SNAPSHOT_INDICATOR + "abc/" + keyName,
+        "a/" + OM_SNAPSHOT_INDICATOR + "/b/c/" + keyName
+    };
+    for (String validKeyName : validKeyNames) {
+      keyName = validKeyName;
+      OMRequest modifiedOmRequest =
+          doPreExecute(createKeyRequest(false, 0));
+
+      OMKeyCreateRequest omKeyCreateRequest =
+          getOMKeyCreateRequest(modifiedOmRequest);
+
+      // Add volume and bucket entries to DB.
+      addVolumeAndBucketToDB(volumeName, bucketName,
+          omMetadataManager, getBucketLayout());
+
+      long id = modifiedOmRequest.getCreateKeyRequest().getClientID();
+
+      String openKey = getOpenKey(id);
+
+      // Before calling
+      OmKeyInfo omKeyInfo =
+          omMetadataManager.getOpenKeyTable(
+                  omKeyCreateRequest.getBucketLayout())
+              .get(openKey);
+
+      Assert.assertNull(omKeyInfo);
+
+      OMClientResponse omKeyCreateResponse =
+          omKeyCreateRequest.validateAndUpdateCache(ozoneManager, 100L,
+              ozoneManagerDoubleBufferHelper);
+
+      checkResponse(modifiedOmRequest, omKeyCreateResponse, id, false,
+          omKeyCreateRequest.getBucketLayout());
+
+      // Network returns only latest version.
+      Assert.assertEquals(1, omKeyCreateResponse.getOMResponse()
+          .getCreateKeyResponse().getKeyInfo().getKeyLocationListCount());
+
+      // Disk should have 1 version, as it is fresh key create.
+      Assert.assertEquals(1,
+          omMetadataManager.getOpenKeyTable(
+                  omKeyCreateRequest.getBucketLayout())
+              .get(openKey).getKeyLocationVersions().size());
+
+      // Write to DB like key commit.
+      omMetadataManager.getKeyTable(omKeyCreateRequest.getBucketLayout())
+          .put(getOzoneKey(), omMetadataManager
+              .getOpenKeyTable(omKeyCreateRequest.getBucketLayout())
+              .get(openKey));
+    }
+  }
   @Override
   protected OzoneConfiguration getOzoneConfiguration() {
     OzoneConfiguration config = super.getOzoneConfiguration();
