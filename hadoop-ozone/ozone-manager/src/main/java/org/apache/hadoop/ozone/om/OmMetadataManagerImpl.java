@@ -1834,8 +1834,8 @@ public class OmMetadataManagerImpl implements OMMetadataManager,
             .append(volumeId)
             .append(OM_KEY_PREFIX)
             .append(bucketId)
-            .append(OM_KEY_PREFIX)
-            .append(parentObjectId)
+//            .append(OM_KEY_PREFIX)
+//            .append(parentObjectId)
             .append(OM_KEY_PREFIX)
             .append(pathComponentName);
     return builder.toString();

@@ -21,14 +21,10 @@ package org.apache.hadoop.ozone.om.request.key;
 import org.apache.hadoop.hdds.conf.OzoneConfiguration;
 import org.apache.hadoop.hdds.protocol.proto.HddsProtos;
 import org.apache.hadoop.ozone.OzoneConsts;
-import org.apache.hadoop.ozone.om.helpers.OmBucketInfo;
-import org.apache.hadoop.ozone.om.helpers.OmDirectoryInfo;
-import org.apache.hadoop.ozone.om.helpers.OmKeyInfo;
-import org.apache.hadoop.ozone.om.helpers.OmVolumeArgs;
-import org.apache.hadoop.ozone.om.helpers.OzoneFSUtils;
-import org.apache.hadoop.ozone.om.helpers.BucketLayout;
+import org.apache.hadoop.ozone.om.helpers.*;
 import org.apache.hadoop.ozone.om.lock.OzoneLockProvider;
 import org.apache.hadoop.ozone.om.request.OMRequestTestUtils;
+import org.apache.hadoop.ozone.om.request.file.OMFileCreateRequest;
 import org.apache.hadoop.ozone.om.response.OMClientResponse;
 import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.OMRequest;
 import org.apache.hadoop.util.Time;
@@ -39,6 +35,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Iterator;
+import java.util.List;
 
 import static org.apache.hadoop.ozone.OzoneConsts.OM_SNAPSHOT_INDICATOR;
 import static org.apache.hadoop.ozone.om.request.OMRequestTestUtils.addVolumeAndBucketToDB;
@@ -55,7 +52,54 @@ public class TestOMKeyCreateRequestWithFSO extends TestOMKeyCreateRequest {
   }
 
   @Test
-  public void testValidateAndUpdateCacheWithKeycontainsSnapshotReservedWord()
+  public void testValidateAndUpdateCacheWithKeyContainsSnapshotReservedWord() throws Exception{
+    when(ozoneManager.getOzoneLockProvider()).thenReturn(
+        new OzoneLockProvider(getKeyPathLockEnabled(),
+            getEnableFileSystemPaths()));
+
+    String[] validKeyNames = {
+        keyName,
+        OM_SNAPSHOT_INDICATOR + "a/" + keyName,
+        "a/" + OM_SNAPSHOT_INDICATOR + "/b/c/" + keyName
+    };
+    for (String validKeyName : validKeyNames) {
+      keyName = validKeyName;
+      OMRequest omRequest = createKeyRequest(false, 0);
+
+      OMRequestTestUtils.addVolumeAndBucketToDB(volumeName, bucketName,
+          omMetadataManager, getBucketLayout());
+      OMKeyCreateRequest omKeyCreateRequest = getOMKeyCreateRequest(omRequest);
+
+      OMRequest modifiedOmRequest = omKeyCreateRequest.preExecute(ozoneManager);
+
+      omKeyCreateRequest = getOMKeyCreateRequest(modifiedOmRequest);
+
+      OMClientResponse omKeyCreateResponse =
+          omKeyCreateRequest.validateAndUpdateCache(ozoneManager, 100L,
+              ozoneManagerDoubleBufferHelper);
+      Assert.assertTrue(omKeyCreateResponse.getOMResponse().getSuccess());
+      long id = modifiedOmRequest.getCreateKeyRequest().getClientID();
+
+      Assert.assertEquals("Incorrect keyName", keyName, omKeyCreateResponse.getOMResponse().getCreateKeyResponse().getKeyInfo().getKeyName());
+
+
+//      OmKeyInfo omKeyInfo = verifyPathInOpenKeyTable(validKeyName, id, true);
+
+//      List<OmKeyLocationInfo> omKeyLocationInfoList =
+//          omKeyInfo.getLatestVersionLocations().getLocationList();
+//      Assert.assertTrue(omKeyLocationInfoList.size() == 1);
+//
+//      OmKeyLocationInfo omKeyLocationInfo = omKeyLocationInfoList.get(0);
+//
+//      // Check modification time
+//      Assert.assertEquals(modifiedOmRequest.getCreateKeyRequest()
+//          .getKeyArgs().getModificationTime(), omKeyInfo.getModificationTime());
+    }
+
+  }
+
+  @Test
+  public void testValidateAndUpdateCacheWithKeyContainsSnapshotReservedWord_old()
       throws Exception {
     when(ozoneManager.getOzoneLockProvider()).thenReturn(
         new OzoneLockProvider(getKeyPathLockEnabled(),
@@ -63,7 +107,7 @@ public class TestOMKeyCreateRequestWithFSO extends TestOMKeyCreateRequest {
 
     String[] validKeyNames = {
         keyName,
-        OM_SNAPSHOT_INDICATOR + "abc/" + keyName,
+        OM_SNAPSHOT_INDICATOR + "a/" + keyName,
         "a/" + OM_SNAPSHOT_INDICATOR + "/b/c/" + keyName
     };
     for (String validKeyName : validKeyNames) {

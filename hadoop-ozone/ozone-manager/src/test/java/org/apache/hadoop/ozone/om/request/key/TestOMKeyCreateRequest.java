@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.ozone.om.request.key;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -29,6 +30,8 @@ import java.util.UUID;
 import org.apache.hadoop.hdds.client.ECReplicationConfig;
 import org.apache.hadoop.hdds.client.ReplicationConfig;
 import org.apache.hadoop.hdds.conf.OzoneConfiguration;
+import org.apache.hadoop.hdds.utils.db.Table;
+import org.apache.hadoop.hdds.utils.db.TableIterator;
 import org.apache.hadoop.ozone.OzoneConsts;
 import org.apache.hadoop.ozone.om.exceptions.OMException;
 import org.apache.hadoop.ozone.om.helpers.BucketLayout;
@@ -257,6 +260,15 @@ public class TestOMKeyCreateRequest extends TestOMKeyRequest {
     String openKey = getOpenKey(id);
 
     // Check open table whether key is added or not.
+    Table<String, OmKeyInfo> openKeyTable = omMetadataManager.getOpenKeyTable(bucketLayout);
+//    File file = new File("/Users/dteng/Desktop/hi_test.txt");
+//    openKeyTable.dumpToFileWithPrefix(file, "coffee_");
+    int cnt = 0;
+//    while (iter.hasNext()) {
+//      System.out.println("######## iter[" + cnt + "] = " +
+//          iter.next());
+//      cnt ++;
+//    }
 
     OmKeyInfo omKeyInfo =
         omMetadataManager.getOpenKeyTable(bucketLayout).get(openKey);

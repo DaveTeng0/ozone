@@ -117,7 +117,7 @@ public class OMKeyCreateRequestWithFSO extends OMKeyCreateRequest {
               .getObjectID();
 
       OmKeyInfo dbFileInfo = null;
-
+//hhhhhhhhhhh
       OMFileRequest.OMPathInfoWithFSO pathInfoFSO =
               OMFileRequest.verifyDirectoryKeysInPath(omMetadataManager,
                       volumeName, bucketName, keyName, Paths.get(keyName));

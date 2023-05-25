@@ -268,7 +268,9 @@ public final class OMFileRequest {
     }
 
     String dbDirKeyName = omMetadataManager.getOzoneDirKey(volumeName,
-            bucketName, dbDirName);
+//            bucketName, dbDirName);
+            bucketName, keyName);
+
     LOG.trace("Acls inherited from parent " + dbDirKeyName + " are : "
             + inheritAcls);
 
