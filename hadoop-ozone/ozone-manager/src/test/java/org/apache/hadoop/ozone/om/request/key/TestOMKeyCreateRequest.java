@@ -188,7 +188,7 @@ public class TestOMKeyCreateRequest extends TestOMKeyRequest {
 
     // Override same key again
     modifiedOmRequest =
-        doPreExecute(createKeyRequest(false, 0, validKeyName));
+        doPreExecute(createKeyRequest(false, 0));
 
     id = modifiedOmRequest.getCreateKeyRequest().getClientID();
     openKey = getOpenKey(id);
