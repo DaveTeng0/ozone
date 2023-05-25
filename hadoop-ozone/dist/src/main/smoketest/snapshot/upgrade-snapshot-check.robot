@@ -68,6 +68,7 @@ Snapshot Diff
             Should contain    ${output}       +    key1
             BREAK
         END
+    END
 
 Attempt to snapshotDiff when snapshot feature is disabled
     [Tags]     pre-finalized-snapshot-tests
