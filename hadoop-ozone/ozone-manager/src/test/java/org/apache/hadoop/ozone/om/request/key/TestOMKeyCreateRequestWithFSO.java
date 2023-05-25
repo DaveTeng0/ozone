@@ -98,7 +98,7 @@ public class TestOMKeyCreateRequestWithFSO extends TestOMKeyCreateRequest {
 
   }
 
-  @Test
+//  @Test
   public void testValidateAndUpdateCacheWithKeyContainsSnapshotReservedWord_old()
       throws Exception {
     when(ozoneManager.getOzoneLockProvider()).thenReturn(

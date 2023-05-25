@@ -260,10 +260,10 @@ public class TestOMKeyCreateRequest extends TestOMKeyRequest {
     String openKey = getOpenKey(id);
 
     // Check open table whether key is added or not.
-    Table<String, OmKeyInfo> openKeyTable = omMetadataManager.getOpenKeyTable(bucketLayout);
+//    Table<String, OmKeyInfo> openKeyTable = omMetadataManager.getOpenKeyTable(bucketLayout);
 //    File file = new File("/Users/dteng/Desktop/hi_test.txt");
 //    openKeyTable.dumpToFileWithPrefix(file, "coffee_");
-    int cnt = 0;
+//    int cnt = 0;
 //    while (iter.hasNext()) {
 //      System.out.println("######## iter[" + cnt + "] = " +
 //          iter.next());
