@@ -60,7 +60,7 @@ Attempt to list snapshot when snapshot feature is disabled
 Snapshot Diff
     [Tags]     finalized-snapshot-tests
     WHILE   True
-        ${rc}  ${output} = Run And Return Rc And Output      ozone sh snapshot snapshotDiff /snapvolume-1/snapbucket-1 snapshot1 snapshot2
+        ${output} =       Execute      ozone sh snapshot snapshotDiff /snapvolume-1/snapbucket-1 snapshot1 snapshot2
         Run Keyword If    "Snapshot diff job is IN_PROGRESS" in """${output}"""   sleep   10s
         ...  ELSE         Should contain    ${output}       +    key1       BREAK
     END
