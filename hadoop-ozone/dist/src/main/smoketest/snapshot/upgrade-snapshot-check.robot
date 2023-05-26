@@ -61,9 +61,11 @@ Snapshot Diff
     [Tags]     finalized-snapshot-tests
     WHILE   True
         ${output} =       Execute      ozone sh snapshot snapshotDiff /snapvolume-1/snapbucket-1 snapshot1 snapshot2
-        Run Keyword If    "Snapshot diff job is IN_PROGRESS" in """${output}"""   sleep   10s
-        ...  ELSE         Should contain    ${output}       +    key1       BREAK
+        LOG                     hhhhhhhhhhhhhhhhhhhhhhhhhhhhhh: ${output}
+        Run Keyword If    "Snapshot diff job is IN_PROGRESS" in """${output}"""   Sleep   10s
+        ...  ELSE         BREAK
     END
+    Should contain    ${output}       +    key1
 
 Attempt to snapshotDiff when snapshot feature is disabled
     [Tags]     pre-finalized-snapshot-tests
