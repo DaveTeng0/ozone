@@ -62,8 +62,10 @@ Snapshot Diff
     WHILE   True
         ${output} =       Execute      ozone sh snapshot snapshotDiff /snapvolume-1/snapbucket-1 snapshot1 snapshot2
         LOG                     hhhhhhhhhhhhhhhhhhhhhhhhhhhhhh: ${output}
-        Run Keyword If    "Snapshot diff job is IN_PROGRESS" in """${output}"""   Sleep   10s
-        ...  ELSE         BREAK
+        IF                "Snapshot diff job is IN_PROGRESS" in """${output}"""
+                          Sleep   10s
+        ELSE
+                          BREAK
     END
     Should contain    ${output}       +    key1
 
