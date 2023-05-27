@@ -66,6 +66,7 @@ Snapshot Diff
                           Sleep   10s
         ELSE
                           BREAK
+        END
     END
     Should contain    ${output}       +    key1
 
