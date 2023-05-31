@@ -16,7 +16,7 @@ name: full-ci
 on:
   workflow_call:
 env:
-  FAIL_FAST: ${{ github.event_name == 'pull_request' }}
+  FAIL_FAST: false
   MAVEN_OPTS: -Dhttp.keepAlive=false -Dmaven.wagon.http.pool=false -Dmaven.wagon.http.retryHandler.class=standard -Dmaven.wagon.http.retryHandler.count=3
   OZONE_WITH_COVERAGE: ${{ github.repository == 'apache/ozone' && github.event_name != 'pull_request' }}
 jobs:
@@ -27,7 +27,7 @@ jobs:
     outputs:
       basic-checks: ${{ steps.selective-checks.outputs.basic-checks }}
       needs-basic-checks: false
-      needs-build: false
+      needs-build: true
       needs-compile: false
       needs-compose-tests: true
       needs-dependency-check: false
