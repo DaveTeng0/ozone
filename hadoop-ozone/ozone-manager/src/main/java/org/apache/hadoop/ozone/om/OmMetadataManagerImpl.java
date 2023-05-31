@@ -1295,8 +1295,8 @@ public class OmMetadataManagerImpl implements OMMetadataManager,
     String prefix = getBucketKey(volumeName, bucketName + OM_KEY_PREFIX);
     TreeMap<String, SnapshotInfo> snapshotInfoMap = new TreeMap<>();
 
-    appendSnapshotFromCacheToMap(snapshotInfoMap, prefix);
     appendSnapshotFromDBToMap(snapshotInfoMap, prefix);
+    appendSnapshotFromCacheToMap(snapshotInfoMap, prefix);
 
     return new ArrayList<>(snapshotInfoMap.values());
   }
