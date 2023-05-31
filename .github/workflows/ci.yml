@@ -349,7 +349,7 @@ jobs:
       - name: Execute tests
         run: |
           cd hadoop-ozone/integration-test
-          hadoop-ozone/dev-support/checks/integration.sh  -Dtest=TestOzoneRpcClient#testOverWriteKeyWithAndWithOutVersioning  -Dsurefire.rerunFailingTestsCount=5
+          ./hadoop-ozone/dev-support/checks/integration.sh  -Dtest=TestOzoneRpcClient#testOverWriteKeyWithAndWithOutVersioning  -Dsurefire.rerunFailingTestsCount=5
         env:
           ITERATIONS: 8  
       - name: Execute flaky tests
