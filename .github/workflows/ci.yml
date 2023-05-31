@@ -241,7 +241,6 @@ jobs:
           name: dependency
           path: target/dependency
         continue-on-error: true
-#  hhhhhhhhhhhhhhhhhh
   acceptance:
     needs:
       - build-info
@@ -259,7 +258,7 @@ jobs:
 #          - HA-unsecure
 #          - MR
 #          - misc
-        profile: [1,2,3,4,5,6,7,8,9,10]
+        profile: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
       fail-fast: false
     steps:
       - name: Checkout project
@@ -283,7 +282,7 @@ jobs:
           KEEP_IMAGE: false
           OZONE_ACCEPTANCE_SUITE: ${{ matrix.suite }}
           OZONE_VOLUME_OWNER: 1000
-          ITERATIONS: 7
+          ITERATIONS: 8
       - name: Archive build results
         uses: actions/upload-artifact@v3
         if: always()
