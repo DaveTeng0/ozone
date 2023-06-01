@@ -78,6 +78,7 @@ Delete snapshot
     [Tags]     finalized-snapshot-tests
     ${output} =         Execute           ozone sh snapshot delete /snapvolume-1/snapbucket-1 snapshot1
                         Should not contain      ${output}       Failed
+                        sleep 10s
     ${output} =         Execute           ozone sh snapshot ls /snapvolume-1/snapbucket-1
                         Should contain          ${output}       SNAPSHOT_DELETED
 
