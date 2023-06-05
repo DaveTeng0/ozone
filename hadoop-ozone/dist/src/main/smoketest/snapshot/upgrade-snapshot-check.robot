@@ -80,6 +80,7 @@ Delete snapshot
                         Should not contain      ${output}       Failed
                         Sleep   1s
     ${output} =         Execute           ozone sh snapshot ls /snapvolume-1/snapbucket-1
+                        Should contain          ${output}       snapshot1
                         Should contain          ${output}       SNAPSHOT_DELETED
 
 Attempt to delete when snapshot feature is disabled
