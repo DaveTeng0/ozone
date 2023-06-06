@@ -117,7 +117,7 @@ public class OMSnapshotCreateRequest extends OMClientRequest {
   }
   
   @Override
-  public OMClientResponse validateAndUpdateCache(OzoneManager ozoneManager,
+  public synchronized OMClientResponse validateAndUpdateCache(OzoneManager ozoneManager,
       long transactionLogIndex,
       OzoneManagerDoubleBufferHelper ozoneManagerDoubleBufferHelper) {
 

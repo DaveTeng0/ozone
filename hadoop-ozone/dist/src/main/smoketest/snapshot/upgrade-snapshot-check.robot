@@ -77,6 +77,7 @@ Attempt to snapshotDiff when snapshot feature is disabled
 Delete snapshot
     [Tags]     finalized-snapshot-tests
                         Execute           ozone sh snapshot create /snapvolume-1/snapbucket-1 snapshot3
+                        Sleep      2s
     ${output} =         Execute           ozone sh snapshot delete /snapvolume-1/snapbucket-1 snapshot3
                         Should not contain      ${output}       Failed
     ${output} =         Execute           ozone sh snapshot ls /snapvolume-1/snapbucket-1
