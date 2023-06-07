@@ -181,42 +181,50 @@ public class TestOMSnapshotCreateRequest {
 
   @Test
   public void testValidateAndUpdateCache() throws Exception {
-    when(ozoneManager.isAdmin(any())).thenReturn(true);
-    OMRequest omRequest = createSnapshotRequest(volumeName,
-        bucketName, snapshotName1);
-    OMSnapshotCreateRequest omSnapshotCreateRequest = doPreExecute(omRequest);
-    String key = getTableKey(volumeName, bucketName, snapshotName1);
+    int cnt = 20;
+    int[] snSuffixArr = new int[cnt];
+    for (int i = 0; i < snSuffixArr.length; i++) {
+      snSuffixArr[i] = i;
+    }
+    for (int j = 0; j < snSuffixArr.length; j++) {
+      snapshotName1 = snapshotName1 + snSuffixArr[j];
+      when(ozoneManager.isAdmin(any())).thenReturn(true);
+      OMRequest omRequest = createSnapshotRequest(volumeName,
+          bucketName, snapshotName1);
+      OMSnapshotCreateRequest omSnapshotCreateRequest = doPreExecute(omRequest);
+      String key = getTableKey(volumeName, bucketName, snapshotName1);
 
-    // Value in cache should be null as of now.
-    assertNull(omMetadataManager.getSnapshotInfoTable().get(key));
+      // Value in cache should be null as of now.
+      assertNull(omMetadataManager.getSnapshotInfoTable().get(key));
 
-    // Run validateAndUpdateCache.
-    OMClientResponse omClientResponse =
-        omSnapshotCreateRequest.validateAndUpdateCache(ozoneManager, 1,
-            ozoneManagerDoubleBufferHelper);
+      // Run validateAndUpdateCache.
+      OMClientResponse omClientResponse =
+          omSnapshotCreateRequest.validateAndUpdateCache(ozoneManager, 1,
+              ozoneManagerDoubleBufferHelper);
 
-    assertNotNull(omClientResponse.getOMResponse());
+      assertNotNull(omClientResponse.getOMResponse());
 
-    OMResponse omResponse = omClientResponse.getOMResponse();
-    assertNotNull(omResponse.getCreateSnapshotResponse());
-    assertEquals(CreateSnapshot, omResponse.getCmdType());
-    assertEquals(OK, omResponse.getStatus());
+      OMResponse omResponse = omClientResponse.getOMResponse();
+      assertNotNull(omResponse.getCreateSnapshotResponse());
+      assertEquals(CreateSnapshot, omResponse.getCmdType());
+      assertEquals(OK, omResponse.getStatus());
 
-    // verify table data with response data.
-    SnapshotInfo snapshotInfoFromProto = getFromProtobuf(omClientResponse
-        .getOMResponse()
-        .getCreateSnapshotResponse()
-        .getSnapshotInfo()
-    );
+      // verify table data with response data.
+      SnapshotInfo snapshotInfoFromProto = getFromProtobuf(omClientResponse
+          .getOMResponse()
+          .getCreateSnapshotResponse()
+          .getSnapshotInfo()
+      );
 
-    // Get value form cache
-    SnapshotInfo snapshotInfoInCache =
-        omMetadataManager.getSnapshotInfoTable().get(key);
-    assertNotNull(snapshotInfoInCache);
-    assertEquals(snapshotInfoFromProto, snapshotInfoInCache);
-    assertEquals(0, omMetrics.getNumSnapshotCreateFails());
-    assertEquals(1, omMetrics.getNumSnapshotActive());
-    assertEquals(1, omMetrics.getNumSnapshotCreates());
+      // Get value form cache
+      SnapshotInfo snapshotInfoInCache =
+          omMetadataManager.getSnapshotInfoTable().get(key);
+      assertNotNull(snapshotInfoInCache);
+      assertEquals(snapshotInfoFromProto, snapshotInfoInCache);
+      assertEquals(0, omMetrics.getNumSnapshotCreateFails());
+      assertEquals(1, omMetrics.getNumSnapshotActive());
+      assertEquals(1, omMetrics.getNumSnapshotCreates());
+    }
   }
 
   @Test
