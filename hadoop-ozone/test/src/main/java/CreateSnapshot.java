@@ -31,12 +31,15 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Executors;
 
 public class CreateSnapshot {
   ExecutorService executorService;
@@ -61,15 +64,22 @@ public class CreateSnapshot {
     this.volume = volume;
     this.bucket = bucket;
     this.start = start;
-    executorService = new ThreadPoolExecutor(threadCnt,
-        threadCnt, 0, TimeUnit.MILLISECONDS,
-        new ArrayBlockingQueue<>(numberKeysPerSnapshot), new ThreadFactoryBuilder()
-        .setNameFormat("create key")
-        .build());
+    // executorService = new ThreadPoolExecutor(threadCnt,
+    //     threadCnt, 10, TimeUnit.SECONDS,
+    //     new ArrayBlockingQueue<>(numberKeysPerSnapshot), new ThreadFactoryBuilder()
+    //     .setNameFormat("create key")
+    //     .build());
+
+    executorService = Executors.newFixedThreadPool(threadCnt);
+
     this.keyContent = "hello".getBytes(StandardCharsets.UTF_8);
     this.numberKeysPerSnapshot = numberKeysPerSnapshot;
     this.numberOfSnapshot = numberOfSnapshot;
     this.numberOfOpsPerThread = numberOfOpsPerThread;
+    LOG.info("constructor, numberKeysPerSnapshot= {}. " +
+             "numberOfSnapshot= {}. threadCnt= {}. numberOfOpsPerThread= {}. start= {}"
+        , numberKeysPerSnapshot, numberOfSnapshot, threadCnt, numberOfOpsPerThread, start
+        );
   }
 
 
@@ -93,21 +103,37 @@ public class CreateSnapshot {
         LOG.info("Creating Bucket {}", bucket);
         ozoneClient.getObjectStore().getVolume(volume).createBucket(bucket);
       }
-      long keyCnt = 0;
+
       OzoneBucket ozoneBucket = volume1.getBucket(bucket);
+      long curKeyIdx = start;
+
       for (int snapCnt = 0; snapCnt < numberOfSnapshot; snapCnt ++) {
-        if (keyCnt >= start) {
-          createKeysInParallel(ozoneBucket, keyCnt, keyCnt + numberKeysPerSnapshot);
+          LOG.info("curKeyIdx: {}", curKeyIdx);
+        // if (curKeyIdx >= start) {
+          createKeysInParallel(ozoneBucket, curKeyIdx, curKeyIdx + numberKeysPerSnapshot);
+          
           LOG.info("Creating Snapshot snap{}", snapCnt);
-          ozoneClient.getObjectStore().createSnapshot(volume, bucket,
-              String.format("snap%d", snapCnt));
-        }
-        keyCnt += numberKeysPerSnapshot;
+          try {
+            ozoneClient.getObjectStore().createSnapshot(volume, bucket,
+            String.format("snap%d", snapCnt));
+          }catch(Exception e) { 
+            if (e.getMessage().contains("Snapshot already exists")) {
+              LOG.info("snap{} already exist", snapCnt);
+              // continue;
+            }else{
+              throw e;
+            }
+          }
+        // }
+        curKeyIdx += numberKeysPerSnapshot;
+        // LOG.info("numberKeysPerSnapshot: {}. Next round curKeyIdx= {}",
+        //  numberKeysPerSnapshot, curKeyIdx);
       }
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     } finally {
       executorService.shutdown();
+      // executorService.awaitTermination(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
     }
 
   }
@@ -116,14 +142,16 @@ public class CreateSnapshot {
                                     long end)
       throws InterruptedException {
     LOG.info("Creating key b/w {} - {}", start, end);
-    List<Future<?>> futures = new ArrayList<>();
+    // List<Future<?>> futures = new ArrayList<>();
+    Map<String, Future<?>> futures = new HashMap<>();
     long suffix = start;
-    while (suffix <= end) {
+    // while (suffix <= end) {
+    while (suffix < end) {
       long finalSuffix = suffix;
       long endSuffix = Math.min(suffix + numberOfOpsPerThread - 1, end);
-      futures.add(executorService.submit(() -> {
+      futures.put( "keyIdx-" + finalSuffix + "-" + endSuffix ,executorService.submit(() -> {
 //        try (OzoneClient ozoneClient = ozoneAddress.createClient(ozoneConfiguration)){
-        {
+        // {
           LOG.info("Creating keys => key{} -> key{}", finalSuffix, endSuffix);
           for (long s = finalSuffix; s<=endSuffix; s++) {
             try (OzoneOutputStream ozoneOutputStream = ozoneBucket
@@ -135,17 +163,18 @@ public class CreateSnapshot {
               return 1;
             }
           }
-        }
+        // }
 
         return 0;
       }));
 
       suffix = endSuffix + 1;
     }
-    int cnt  =0;
-    for (Future<?> future: futures) {
+
+    for (String fKey: futures.keySet()) {
+      Future<?> future = futures.get(fKey);
       while (!future.isDone()) {
-        LOG.info("Waiting on {}", start + cnt);
+        LOG.info("Waiting on {}", fKey);
         Thread.sleep(1000);
       }
     }
