@@ -1084,4 +1084,12 @@ public interface OzoneManagerProtocol
    */
   boolean setSafeMode(SafeModeAction action, boolean isChecked)
       throws IOException;
+
+  /**
+   * List open keys.
+   * @return List<OmKeyInfo>
+   */
+//  List<OmKeyInfo> listOpenKeys(String volumeName, String bucketName,
+//                               String keyPrefix) throws IOException;
+
 }

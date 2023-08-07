@@ -584,6 +584,33 @@ public class KeyManagerImpl implements KeyManager {
   }
 
   @Override
+  public List<OmKeyInfo> listOpenKeys(String volumeName, String bucketName,
+                                  String keyPrefix) throws IOException {
+    Preconditions.checkNotNull(volumeName);
+    Preconditions.checkNotNull(bucketName);
+
+    // We don't take a lock in this path, since we walk the
+    // underlying table using an iterator. That automatically creates a
+    // snapshot of the data, so we don't need these locks at a higher level
+    // when we iterate.
+
+    if (enableFileSystemPaths) {
+      keyPrefix = OmUtils.normalizeKey(keyPrefix, true);
+    }
+
+    List<OmKeyInfo> keyList = metadataManager.listOpenKeys(volumeName, bucketName,
+        keyPrefix);
+
+    // For listOpenKeys, we return the latest Key Location by default
+    for (OmKeyInfo omKeyInfo : keyList) {
+      slimLocationVersion(omKeyInfo);
+    }
+
+    return keyList;
+  }
+
+
+  @Override
   public List<RepeatedOmKeyInfo> listTrash(String volumeName,
       String bucketName, String startKeyName, String keyPrefix,
       int maxKeys) throws IOException {
@@ -1575,7 +1602,7 @@ public class KeyManagerImpl implements KeyManager {
     return iterator;
   }
 
-  @SuppressWarnings("parameternumber")
+  @SuppressWarnings("parameternumber") // hhhhhhhhhhhhhhhhhhhhhhhhh
   private void findKeyInDbWithIterator(boolean recursive, String startKey,
       long numEntries, String volumeName, String bucketName, String keyName,
       TreeMap<String, OzoneFileStatus> cacheKeyMap, String keyArgs,

@@ -142,6 +142,16 @@ public class OmSnapshot implements IOmMetadataReader, Closeable {
   }
 
   @Override
+  public List<OmKeyInfo> listOpenKeys(String vname, String bname,
+                                  String keyPrefix) throws IOException {
+    List<OmKeyInfo> l = omMetadataReader.listOpenKeys(vname, bname,
+        normalizeKeyName(keyPrefix));
+    return l.stream().map(this::denormalizeOmKeyInfo)
+        .collect(Collectors.toList());
+  }
+
+
+  @Override
   public List<OzoneAcl> getAcl(OzoneObj obj) throws IOException {
     // TODO: [SNAPSHOT] handle denormalization
     return omMetadataReader.getAcl(normalizeOzoneObj(obj));

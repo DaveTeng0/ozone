@@ -259,6 +259,12 @@ public class ClientProtocolStub implements ClientProtocol {
   }
 
   @Override
+  public List<OzoneKey> listOpenKeys(String volumeName, String bucketName,
+                                 String keyPrefix) throws IOException {
+    return null;
+  }
+
+  @Override
   public List<RepeatedOmKeyInfo> listTrash(String volumeName, String bucketName,
                                            String startKeyName,
                                            String keyPrefix, int maxKeys)

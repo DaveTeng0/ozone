@@ -195,6 +195,10 @@ import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.Type;
 import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.VolumeInfo;
 import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.EchoRPCRequest;
 import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.EchoRPCResponse;
+
+import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.ListOpenKeysRequest;
+import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.ListOpenKeysResponse;
+
 import org.apache.hadoop.ozone.protocolPB.OMPBHelper;
 import org.apache.hadoop.ozone.security.OzoneTokenIdentifier;
 import org.apache.hadoop.ozone.security.acl.OzoneObj;
@@ -1003,6 +1007,7 @@ public final class OzoneManagerProtocolClientSideTranslatorPB
     return keys;
 
   }
+
 
   @Override
   public S3SecretValue getS3Secret(String kerberosID) throws IOException {
@@ -2378,6 +2383,37 @@ public final class OzoneManagerProtocolClientSideTranslatorPB
         handleError(submitRequest(omRequest)).getSetSafeModeResponse();
     return setSafeModeResponse.getResponse();
   }
+
+//  @Override
+//  public List<OmKeyInfo> listOpenKeys() throws IOException {
+//    return null;
+//  }
+
+
+  @Override
+  public List<OmKeyInfo> listOpenKeys(String volumeName, String bucketName,
+                                      String keyPrefix) throws IOException {
+    ListOpenKeysRequest listOpenKeysRequest =
+        ListOpenKeysRequest.newBuilder()
+            .setVolumeName("volumeName")
+            .setBucketName("bucketName")
+            .setKeyPrefix("keyprefixv1")
+            .build();
+
+    OMRequest omRequest = createOMRequest(Type.ListOpenKeys)
+        .setListOpenKeysRequest(listOpenKeysRequest).build();
+
+    ListOpenKeysResponse resp =
+        handleError(submitRequest(omRequest)).getListOpenKeysResponse();
+    List<OmKeyInfo> list = new ArrayList<>();
+    for (OzoneManagerProtocolProtos.KeyInfo keyInfo : resp.getKeyInfoList()) {
+      OmKeyInfo fromProtobuf = OmKeyInfo.getFromProtobuf(keyInfo);
+      list.add(fromProtobuf);
+    }
+
+    return list;
+  }
+
 
   private SafeMode toProtoBuf(SafeModeAction action) {
     switch (action) {

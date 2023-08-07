@@ -141,6 +141,7 @@ enum Type {
   CancelSnapshotDiff = 123;
   SetSafeMode = 124;
   PrintCompactionLogDag = 125;
+  ListOpenKeys = 126;
 }
 
 enum SafeMode {
@@ -272,6 +273,8 @@ message OMRequest {
   optional CancelSnapshotDiffRequest        CancelSnapshotDiffRequest      = 123;
   optional SetSafeModeRequest               SetSafeModeRequest             = 124;
   optional PrintCompactionLogDagRequest     PrintCompactionLogDagRequest   = 125;
+  optional ListOpenKeysRequest     ListOpenKeysRequest   = 126;
+
 }
 
 message OMResponse {
@@ -388,6 +391,8 @@ message OMResponse {
   optional CancelSnapshotDiffResponse        cancelSnapshotDiffResponse    = 123;
   optional SetSafeModeResponse               SetSafeModeResponse           = 124;
   optional PrintCompactionLogDagResponse     PrintCompactionLogDagResponse = 125;
+  optional ListOpenKeysResponse     ListOpenKeysResponse   = 126;
+
 }
 
 enum Status {
@@ -1968,7 +1973,7 @@ message RecoverLeaseResponse {
   optional bool response = 1;
 }
 
-message SetTimesRequest {
+message SetTimesRequest { // hhhhhh
   required KeyArgs keyArgs = 1;
   required uint64 mtime    = 2;
   required uint64 atime    = 3;
@@ -1984,6 +1989,17 @@ message SetSafeModeRequest {
 message SetSafeModeResponse {
   optional bool response = 1;
 }
+
+message ListOpenKeysRequest {
+  optional string volumeName = 1;
+  optional string bucketName = 2;
+  optional string keyPrefix = 3;
+}
+
+message ListOpenKeysResponse {
+  repeated KeyInfo keyInfo = 1;
+}
+
 
 /**
  The OM service that takes care of Ozone namespace.

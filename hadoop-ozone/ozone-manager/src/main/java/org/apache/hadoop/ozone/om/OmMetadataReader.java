@@ -339,6 +339,40 @@ public class OmMetadataReader implements IOmMetadataReader, Auditor {
     }
   }
 
+  @Override
+  public List<OmKeyInfo> listOpenKeys(String volumeName, String bucketName,
+                                  String keyPrefix) throws IOException {
+
+    ResolvedBucket bucket = ozoneManager.resolveBucketLink(
+        Pair.of(volumeName, bucketName));
+
+    boolean auditSuccess = true;
+    Map<String, String> auditMap = bucket.audit();
+    auditMap.put(OzoneConsts.KEY_PREFIX, keyPrefix);
+
+    try {
+      if (isAclEnabled) {
+        checkAcls(ResourceType.BUCKET, StoreType.OZONE, ACLType.LIST,
+            bucket.realVolume(), bucket.realBucket(), keyPrefix);
+      }
+      metrics.incNumKeyLists();
+      return keyManager.listOpenKeys(bucket.realVolume(), bucket.realBucket(),
+          keyPrefix);
+    } catch (IOException ex) {
+      metrics.incNumKeyListFails();
+      auditSuccess = false;
+      audit.logReadFailure(buildAuditMessageForFailure(OMAction.LIST_KEYS,
+          auditMap, ex));
+      throw ex;
+    } finally {
+      if (auditSuccess) {
+        audit.logReadSuccess(buildAuditMessageForSuccess(OMAction.LIST_KEYS,
+            auditMap));
+      }
+    }
+  }
+
+
   /**
    * Returns list of ACLs for given Ozone object.
    *

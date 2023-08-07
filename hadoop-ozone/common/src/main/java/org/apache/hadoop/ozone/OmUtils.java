@@ -271,6 +271,7 @@ public final class OmUtils {
     case TransferLeadership:
     case SetSafeMode:
     case PrintCompactionLogDag:
+    case ListOpenKeys:
       return true;
     case CreateVolume:
     case SetVolumeProperty:

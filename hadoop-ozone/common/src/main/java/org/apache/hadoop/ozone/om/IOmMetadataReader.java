@@ -113,6 +113,11 @@ public interface IOmMetadataReader {
                            String startKey, String keyPrefix, int maxKeys)
       throws IOException;
 
+  List<OmKeyInfo> listOpenKeys(String volumeName, String bucketName,
+                           String keyPrefix)
+      throws IOException;
+
+
   /**
    * Returns list of ACLs for given Ozone object.
    *

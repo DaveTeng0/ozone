@@ -21,18 +21,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -53,29 +42,15 @@ import org.apache.hadoop.hdds.utils.db.cache.CacheKey;
 import org.apache.hadoop.hdds.utils.db.cache.CacheValue;
 import org.apache.hadoop.hdds.utils.db.cache.TableCache.CacheType;
 import org.apache.hadoop.ozone.ClientVersion;
+import org.apache.hadoop.ozone.OFSPath;
 import org.apache.hadoop.ozone.OmUtils;
 import org.apache.hadoop.ozone.OzoneConsts;
+import org.apache.hadoop.ozone.client.OzoneBucket;
 import org.apache.hadoop.ozone.common.BlockGroup;
 import org.apache.hadoop.ozone.om.codec.TokenIdentifierCodec;
 import org.apache.hadoop.ozone.om.exceptions.OMException;
 import org.apache.hadoop.ozone.om.exceptions.OMException.ResultCodes;
-import org.apache.hadoop.ozone.om.helpers.OmBucketInfo;
-import org.apache.hadoop.ozone.om.helpers.OmDBAccessIdInfo;
-import org.apache.hadoop.ozone.om.helpers.OmDBUserPrincipalInfo;
-import org.apache.hadoop.ozone.om.helpers.OmDirectoryInfo;
-import org.apache.hadoop.ozone.om.helpers.OmKeyInfo;
-import org.apache.hadoop.ozone.om.helpers.OmKeyLocationInfoGroup;
-import org.apache.hadoop.ozone.om.helpers.OmMultipartKeyInfo;
-import org.apache.hadoop.ozone.om.helpers.OmMultipartUpload;
-import org.apache.hadoop.ozone.om.helpers.OmPrefixInfo;
-import org.apache.hadoop.ozone.om.helpers.OmDBTenantState;
-import org.apache.hadoop.ozone.om.helpers.OmVolumeArgs;
-import org.apache.hadoop.ozone.om.helpers.OzoneFSUtils;
-import org.apache.hadoop.ozone.om.helpers.RepeatedOmKeyInfo;
-import org.apache.hadoop.ozone.om.helpers.S3SecretValue;
-import org.apache.hadoop.ozone.om.helpers.SnapshotInfo;
-import org.apache.hadoop.ozone.om.helpers.BucketLayout;
-import org.apache.hadoop.ozone.om.helpers.WithMetadata;
+import org.apache.hadoop.ozone.om.helpers.*;
 import org.apache.hadoop.ozone.om.lock.IOzoneManagerLock;
 import org.apache.hadoop.ozone.om.lock.OmReadOnlyLock;
 import org.apache.hadoop.ozone.om.lock.OzoneManagerLock;
@@ -1265,6 +1240,171 @@ public class OmMetadataManagerImpl implements OMMetadataManager,
     return result;
   }
 
+  @Override
+  public List<OmKeyInfo> listOpenKeys(String volumeName, String bucketName,
+  String keyPrefix) throws IOException {
+
+    String seekPrefix = "";
+    if (StringUtil.isNotBlank(keyPrefix)) {
+      // Seek to the specified key.
+      seekPrefix = getOzoneKey(volumeName, bucketName, keyPrefix);
+    }
+
+    Iterator<Map.Entry<CacheKey<String>, CacheValue<OmKeyInfo>>> iterator =
+        keyTable.cacheIterator();
+    TreeMap<String, OmKeyInfo> cacheKeyMap = new TreeMap<>();
+
+    while (iterator.hasNext()) {
+      Map.Entry< CacheKey<String>, CacheValue<OmKeyInfo>> entry =
+          iterator.next();
+
+      String key = entry.getKey().getCacheKey();
+      OmKeyInfo omKeyInfo = entry.getValue().getCacheValue();
+      // Making sure that entry in cache is not for delete key request.
+
+      if (omKeyInfo != null
+          && key.startsWith(seekPrefix)
+          && key.compareTo(seekPrefix) >= 0) {
+        cacheKeyMap.put(key, omKeyInfo);
+      }
+    }
+
+    //check rockDB
+    try (TableIterator<String, ? extends KeyValue<String, OmKeyInfo>>
+             keyIter = getKeyTable(getBucketLayout()).iterator()) {
+      KeyValue< String, OmKeyInfo > kv;
+      keyIter.seek(seekPrefix);
+      while (keyIter.hasNext()) {
+        kv = keyIter.next();
+        if (kv != null && kv.getKey().startsWith(seekPrefix)) {
+
+          // Entry should not be marked for delete, consider only those
+          // entries.
+          CacheValue<OmKeyInfo> cacheValue =
+              keyTable.getCacheValue(new CacheKey<>(kv.getKey()));
+          if (cacheValue == null || cacheValue.getCacheValue() != null) {
+            cacheKeyMap.put(kv.getKey(), kv.getValue());
+          }
+        } else {
+          // The SeekPrefix does not match any more, we can break out of the
+          // loop.
+          break;
+        }
+      }
+    } catch (Exception e) {
+      LOG.warn("##################  hello: {}", e.getMessage());
+    }
+
+
+
+//    List<OzoneFileStatus> statuses = bucket
+//        .listStatus(keyName, recursive, startKey, numEntries);// hhhhhhhhhhhh
+    List<OmKeyInfo> result = new ArrayList<>();
+    for (Map.Entry<String, OmKeyInfo>  cacheKey : cacheKeyMap.entrySet()) {
+
+      result.add(cacheKey.getValue());
+    }
+
+    return result;
+  }
+
+/*
+//  @Override
+  public List<OmKeyInfo> listOpenKeys_v1(String volumeName, String bucketName,
+                                  String keyPrefix) throws IOException {
+
+    boolean recursive = true;
+    OFSPath ofsPath = new OFSPath(pathStr, config);
+    if (ofsPath.isRoot()) {
+      return listOpenKeysRoot(
+          recursive, startPath, numEntries, uri, workingDir, username);
+    }
+    OFSPath ofsStartPath = new OFSPath(startPath, config);
+    if (ofsPath.isVolume()) {
+      String startBucket = ofsStartPath.getBucketName();
+      return listOpenKeysVolume(ofsPath.getVolumeName(),
+          recursive, startBucket, numEntries, uri, workingDir, username);
+    }
+
+    String keyName = ofsPath.getKeyName();
+    String startKey = ofsStartPath.getKeyName();
+    try {
+      OzoneBucket bucket = getBucket(ofsPath, false);
+      List<OzoneFileStatus> statuses;
+      if (bucket.isSourcePathExist()) {
+        statuses = bucket
+            .listStatus(keyName, recursive, startKey, numEntries);
+      } else {
+        LOG.warn("Source Bucket does not exist, link bucket {} is orphan " +
+            "and returning empty list of files inside it", bucket.getName());
+        statuses = Collections.emptyList();
+      }
+    }catch (Exception e) {
+      System.out.println(e.getCause());
+    }
+
+//////////////////////////////////////////////////
+    final Table<String, OmKeyInfo> kt = getKeyTable(bucketLayout);
+    // Only check for expired keys in the open key table, not its cache.
+    // If a key expires while it is in the cache, it will be cleaned
+    // up after the cache is flushed.
+    try (TableIterator<String, ? extends KeyValue<String, OmKeyInfo>>
+             keyValueTableIterator = getOpenKeyTable(bucketLayout).iterator()) {
+
+      final long expiredCreationTimestamp =
+          expireThreshold.negated().plusMillis(Time.now()).toMillis();
+
+
+      int num = 0;
+      while (num < count && keyValueTableIterator.hasNext()) {
+        KeyValue<String, OmKeyInfo> openKeyValue = keyValueTableIterator.next();
+        String dbOpenKeyName = openKeyValue.getKey();
+
+        final int lastPrefix = dbOpenKeyName.lastIndexOf(OM_KEY_PREFIX);
+        final String dbKeyName = dbOpenKeyName.substring(0, lastPrefix);
+        OmKeyInfo openKeyInfo = openKeyValue.getValue();
+
+        if (openKeyInfo.getCreationTime() <= expiredCreationTimestamp) {
+          final String clientIdString
+              = dbOpenKeyName.substring(lastPrefix + 1);
+
+          final OmKeyInfo info = kt.get(dbKeyName);
+          final boolean isHsync = java.util.Optional.ofNullable(info)
+              .map(WithMetadata::getMetadata)
+              .map(meta -> meta.get(OzoneConsts.HSYNC_CLIENT_ID))
+              .filter(id -> id.equals(clientIdString))
+              .isPresent();
+
+          if (!isHsync) {
+            // add non-hsync'ed keys
+            expiredKeys.addOpenKey(openKeyInfo, dbOpenKeyName);
+          } else {
+            // add hsync'ed keys
+            final KeyArgs.Builder keyArgs = KeyArgs.newBuilder()
+                .setVolumeName(info.getVolumeName())
+                .setBucketName(info.getBucketName())
+                .setKeyName(info.getKeyName())
+                .setDataSize(info.getDataSize());
+            java.util.Optional.ofNullable(info.getLatestVersionLocations())
+                .map(OmKeyLocationInfoGroup::getLocationList)
+                .map(Collection::stream)
+                .orElseGet(Stream::empty)
+                .map(loc -> loc.getProtobuf(ClientVersion.CURRENT_VERSION))
+                .forEach(keyArgs::addKeyLocations);
+
+            OzoneManagerProtocolClientSideTranslatorPB.setReplicationConfig(
+                info.getReplicationConfig(), keyArgs);
+
+            expiredKeys.addHsyncKey(keyArgs, Long.parseLong(clientIdString));
+          }
+          num++;
+        }
+      }
+    }
+
+  }
+*/
+
   // TODO: HDDS-2419 - Complete stub below for core logic
   @Override
   public List<RepeatedOmKeyInfo> listTrash(String volumeName, String bucketName,
@@ -1675,7 +1815,7 @@ public class OmMetadataManagerImpl implements OMMetadataManager,
     return rcOmSnapshot.orElse(null);
   }
 
-  @Override
+  @Override // hhhhhhhhhhhhhhhhhhhhhhhhhhh
   public ExpiredOpenKeys getExpiredOpenKeys(Duration expireThreshold,
       int count, BucketLayout bucketLayout) throws IOException {
     final ExpiredOpenKeys expiredKeys = new ExpiredOpenKeys();

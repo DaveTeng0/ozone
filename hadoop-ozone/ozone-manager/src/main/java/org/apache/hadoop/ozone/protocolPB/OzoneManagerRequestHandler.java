@@ -98,6 +98,12 @@ import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.ListBuc
 import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.ListBucketsResponse;
 import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.ListKeysRequest;
 import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.ListKeysResponse;
+
+import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.ListOpenKeysRequest;
+import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.ListOpenKeysResponse;
+
+
+
 import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.ListTenantRequest;
 import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.ListTenantResponse;
 import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.ListTrashRequest;
@@ -218,6 +224,12 @@ public class OzoneManagerRequestHandler implements RequestHandler {
             request.getListKeysRequest(), request.getVersion());
         responseBuilder.setListKeysResponse(listKeysResponse);
         break;
+      case ListOpenKeys:
+        ListOpenKeysResponse listOpenKeysResponse = listOpenKeys(
+            request.getListOpenKeysRequest(), request.getVersion());
+        responseBuilder.setListOpenKeysResponse(listOpenKeysResponse);
+        break;
+
       case ListTrash:
         ListTrashResponse listTrashResponse = listTrash(
             request.getListTrashRequest(), request.getVersion());
@@ -685,6 +697,23 @@ public class OzoneManagerRequestHandler implements RequestHandler {
 
     return resp.build();
   }
+
+  private ListOpenKeysResponse listOpenKeys(ListOpenKeysRequest request, int clientVersion)
+      throws IOException {
+    ListOpenKeysResponse.Builder resp =
+        ListOpenKeysResponse.newBuilder();
+
+    List<OmKeyInfo> openKeys = impl.listOpenKeys(
+        request.getVolumeName(),
+        request.getBucketName(),
+        request.getKeyPrefix());
+    for (OmKeyInfo key : openKeys) {
+      resp.addKeyInfo(key.getProtobuf(true, clientVersion));
+    }
+
+    return resp.build();
+  }
+
 
   @RequestFeatureValidator(
       conditions = ValidationCondition.OLDER_CLIENT_REQUESTS,

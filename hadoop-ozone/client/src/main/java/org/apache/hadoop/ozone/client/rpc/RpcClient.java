@@ -1975,7 +1975,7 @@ public class RpcClient implements ClientProtocol {
     });
   }
 
-  @Override
+  @Override //hhhhhhh
   public OzoneOutputStream createFile(String volumeName, String bucketName,
       String keyName, long size, ReplicationConfig replicationConfig,
       boolean overWrite, boolean recursive) throws IOException {
@@ -2375,6 +2375,23 @@ public class RpcClient implements ClientProtocol {
         .setKeyName(keyName);
     ozoneManagerClient.setTimes(builder.build(), mtime, atime);
   }
+
+  @Override
+  public List<OzoneKey> listOpenKeys(String volName, String buckName, String keyPrefix)
+      throws IOException {
+    List<OmKeyInfo> keys = ozoneManagerClient.listOpenKeys(volName,buckName,keyPrefix);
+    return keys.stream().map(key -> new OzoneKey(
+            key.getVolumeName(),
+            key.getBucketName(),
+            key.getKeyName(),
+            key.getDataSize(),
+            key.getCreationTime(),
+            key.getModificationTime(),
+            key.getReplicationConfig(),
+            key.isFile()))
+        .collect(Collectors.toList());
+  }
+
 
   public ExecutorService getECReconstructExecutor() {
     // local ref to a volatile to ensure access

@@ -2828,6 +2828,16 @@ public final class OzoneManager extends ServiceRuntimeInfoImpl
   }
 
   @Override
+  public List<OmKeyInfo> listOpenKeys(String volumeName, String bucketName,
+                                  String keyPrefix) throws IOException {
+    try (ReferenceCounted<IOmMetadataReader, SnapshotCache> rcReader =
+             getReader(volumeName, bucketName, keyPrefix)) {
+      return rcReader.get().listOpenKeys(
+          volumeName, bucketName, keyPrefix);
+    }
+  }
+
+  @Override
   public List<RepeatedOmKeyInfo> listTrash(String volumeName,
       String bucketName, String startKeyName, String keyPrefix, int maxKeys)
       throws IOException {

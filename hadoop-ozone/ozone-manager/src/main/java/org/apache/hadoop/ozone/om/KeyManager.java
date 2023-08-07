@@ -102,6 +102,24 @@ public interface KeyManager extends OzoneManagerFS, IOzoneAcl {
       String bucketName, String startKey, String keyPrefix, int maxKeys)
       throws IOException;
 
+
+  /**
+   * Returns a list of open keys represented by {@link OmKeyInfo}
+   *
+   * @param volumeName
+   *   the name of the volume.
+   * @param bucketName
+   *   the name of the bucket.
+   * @param keyPrefix
+   *   key name prefix, only the keys whose name has
+   *   this prefix will be included in the result.
+   * @return a list of keys.
+   * @throws IOException
+   */
+  List<OmKeyInfo> listOpenKeys(String volumeName,
+                           String bucketName, String keyPrefix)
+      throws IOException;
+
   /**
    * List trash allows the user to list the keys that were marked as deleted,
    * but not actually deleted by Ozone Manager. This allows a user to recover
