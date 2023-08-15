@@ -184,6 +184,8 @@ public class OzoneManagerRequestHandler implements RequestHandler {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Received OMRequest: {}, ", request);
     }
+    LOG.warn("######## hi Received OMRequest: {}, ", request);
+
     Type cmdType = request.getCmdType();
     OMResponse.Builder responseBuilder = OmResponseUtil.getOMResponseBuilder(
         request);
@@ -224,7 +226,7 @@ public class OzoneManagerRequestHandler implements RequestHandler {
             request.getListKeysRequest(), request.getVersion());
         responseBuilder.setListKeysResponse(listKeysResponse);
         break;
-      case ListOpenKeys:
+      case ListOpenKeys: // hhhhhhhhhhhhhhhhhhhhhhhhhhh
         ListOpenKeysResponse listOpenKeysResponse = listOpenKeys(
             request.getListOpenKeysRequest(), request.getVersion());
         responseBuilder.setListOpenKeysResponse(listOpenKeysResponse);
@@ -700,6 +702,8 @@ public class OzoneManagerRequestHandler implements RequestHandler {
 
   private ListOpenKeysResponse listOpenKeys(ListOpenKeysRequest request, int clientVersion)
       throws IOException {
+//    LOG.warn("######## hi inside OMReqHandler listOpenKeys( ) ");
+
     ListOpenKeysResponse.Builder resp =
         ListOpenKeysResponse.newBuilder();
 
@@ -707,9 +711,13 @@ public class OzoneManagerRequestHandler implements RequestHandler {
         request.getVolumeName(),
         request.getBucketName(),
         request.getKeyPrefix());
+    StringBuilder sb = new StringBuilder();
     for (OmKeyInfo key : openKeys) {
       resp.addKeyInfo(key.getProtobuf(true, clientVersion));
+      sb.append("keyName: " + key.getKeyName()).append(", objInfo = " + key.getObjectInfo());
     }
+    LOG.warn("######## hi inside listOpenKeys return len: {}, result => {}"
+    , openKeys.size(), sb);
 
     return resp.build();
   }

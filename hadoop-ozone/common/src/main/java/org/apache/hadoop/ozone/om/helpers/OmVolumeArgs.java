@@ -463,6 +463,7 @@ public final class OmVolumeArgs extends WithObjectID
   @Override
   public String getObjectInfo() {
     return "OMVolumeArgs{" +
+        "objectID='" + objectID + '\'' +
         "volume='" + volume + '\'' +
         ", admin='" + adminName + '\'' +
         ", owner='" + ownerName + '\'' +

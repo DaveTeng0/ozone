@@ -2395,9 +2395,9 @@ public final class OzoneManagerProtocolClientSideTranslatorPB
                                       String keyPrefix) throws IOException {
     ListOpenKeysRequest listOpenKeysRequest =
         ListOpenKeysRequest.newBuilder()
-            .setVolumeName("volumeName")
-            .setBucketName("bucketName")
-            .setKeyPrefix("keyprefixv1")
+            .setVolumeName(volumeName)
+            .setBucketName(bucketName)
+            .setKeyPrefix(keyPrefix)
             .build();
 
     OMRequest omRequest = createOMRequest(Type.ListOpenKeys)

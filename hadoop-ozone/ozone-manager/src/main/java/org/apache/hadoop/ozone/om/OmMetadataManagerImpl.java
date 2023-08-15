@@ -1247,13 +1247,15 @@ public class OmMetadataManagerImpl implements OMMetadataManager,
     String seekPrefix = "";
     if (StringUtil.isNotBlank(keyPrefix)) {
       // Seek to the specified key.
-      seekPrefix = getOzoneKey(volumeName, bucketName, keyPrefix);
+//      seekPrefix = getOzoneKey(volumeName, bucketName, keyPrefix);
+      seekPrefix =  keyPrefix;
+//      seekPrefix = "/volObjId/bucketObjId/bucketObjId/" + seekPrefix;
     }
 
+    //key table cache
     Iterator<Map.Entry<CacheKey<String>, CacheValue<OmKeyInfo>>> iterator =
         keyTable.cacheIterator();
     TreeMap<String, OmKeyInfo> cacheKeyMap = new TreeMap<>();
-
     while (iterator.hasNext()) {
       Map.Entry< CacheKey<String>, CacheValue<OmKeyInfo>> entry =
           iterator.next();
@@ -1262,27 +1264,71 @@ public class OmMetadataManagerImpl implements OMMetadataManager,
       OmKeyInfo omKeyInfo = entry.getValue().getCacheValue();
       // Making sure that entry in cache is not for delete key request.
 
-      if (omKeyInfo != null
-          && key.startsWith(seekPrefix)
-          && key.compareTo(seekPrefix) >= 0) {
+//      if (omKeyInfo != null
+//          && key.startsWith(seekPrefix)
+//          && key.compareTo(seekPrefix) >= 0) {
         cacheKeyMap.put(key, omKeyInfo);
-      }
+//      }
     }
+    printTableCache(cacheKeyMap, keyTable.getName(), volumeName, bucketName, keyPrefix);
+
+
+    //print file table cache
+    Iterator<Map.Entry<CacheKey<String>, CacheValue<OmKeyInfo>>> iterator2 =
+        fileTable.cacheIterator();
+    TreeMap<String, OmKeyInfo> cacheKeyMap2 = new TreeMap<>();
+
+    while (iterator.hasNext()) {
+      Map.Entry< CacheKey<String>, CacheValue<OmKeyInfo>> entry =
+          iterator2.next();
+
+      String key = entry.getKey().getCacheKey();
+      OmKeyInfo omKeyInfo = entry.getValue().getCacheValue();
+      // Making sure that entry in cache is not for delete key request.
+
+//      if (omKeyInfo != null
+//          && key.startsWith(seekPrefix)
+//          && key.compareTo(seekPrefix) >= 0) {
+        cacheKeyMap2.put(key, omKeyInfo);
+//      }
+    }
+    printTableCache(cacheKeyMap2, fileTable.getName(),volumeName, bucketName, keyPrefix);
+
 
     //check rockDB
+    int cnt = 0;
     try (TableIterator<String, ? extends KeyValue<String, OmKeyInfo>>
-             keyIter = getKeyTable(getBucketLayout()).iterator()) {
+             keyIter = getKeyTable(BucketLayout.FILE_SYSTEM_OPTIMIZED).iterator()) {
       KeyValue< String, OmKeyInfo > kv;
-      keyIter.seek(seekPrefix);
+//      LOG.warn("############ keyIter seek: {}", seekPrefix);
+//      keyIter.seek(seekPrefix);
+//      keyIter.
       while (keyIter.hasNext()) {
+        cnt++;
         kv = keyIter.next();
-        if (kv != null && kv.getKey().startsWith(seekPrefix)) {
+
+
+//        if (kv != null && kv.getValue().getKeyName().startsWith(seekPrefix)) {
+        if (kv != null ) {
+
+          if (! kv.getValue().getKeyName().startsWith(seekPrefix)) {
+            continue;
+          }
+
+          LOG.warn("##### does kv.getKeyName(): {}, startWith: {}? {}"
+              , kv.getValue().getKeyName(), seekPrefix, kv.getValue().getKeyName().startsWith(seekPrefix));
 
           // Entry should not be marked for delete, consider only those
           // entries.
           CacheValue<OmKeyInfo> cacheValue =
               keyTable.getCacheValue(new CacheKey<>(kv.getKey()));
-          if (cacheValue == null || cacheValue.getCacheValue() != null) {
+          LOG.warn("##### does cacheValue == null? {}, " +
+              "does cacheValue.getCacheValue() == null? {}", cacheValue, cacheValue == null? "no access.." :cacheValue.getCacheValue() == null);
+
+
+
+          if ((cacheValue == null || cacheValue.getCacheValue() != null)
+                && kv.getValue().isHsync()) {
             cacheKeyMap.put(kv.getKey(), kv.getValue());
           }
         } else {
@@ -1292,20 +1338,155 @@ public class OmMetadataManagerImpl implements OMMetadataManager,
         }
       }
     } catch (Exception e) {
-      LOG.warn("##################  hello: {}", e.getMessage());
+      LOG.warn("##################  hello error: {}", e.getCause());
     }
 
-
-
-//    List<OzoneFileStatus> statuses = bucket
-//        .listStatus(keyName, recursive, startKey, numEntries);// hhhhhhhhhhhh
+    StringBuilder sb = new StringBuilder();
     List<OmKeyInfo> result = new ArrayList<>();
     for (Map.Entry<String, OmKeyInfo>  cacheKey : cacheKeyMap.entrySet()) {
-
+      sb.append("key [").append(cacheKey.getKey()).append("] => keyName: ")
+              .append(cacheKey.getValue().getKeyName() + ", objInfo = ")
+                  .append(cacheKey.getValue().getObjectInfo() + ", isHsync = ")
+                      .append(cacheKey.getValue().isHsync())
+                          .append(".  ");
       result.add(cacheKey.getValue());
     }
+    LOG.warn("##################  hello: result of LsOpenKeysCmd of size {} in total {}, => {}"
+        , result.size(), cnt,sb);
+
+    printTable(fileTable,volumeName, bucketName, keyPrefix);
+    printTable(keyTable,volumeName, bucketName, keyPrefix);
+    printTable(openFileTable,volumeName, bucketName, keyPrefix);
+    printTable(openKeyTable,volumeName, bucketName, keyPrefix);
+    printTable(bucketTable,volumeName, bucketName, keyPrefix);
+    printTable(volumeTable,volumeName, bucketName, keyPrefix);
+    printTable(prefixTable,volumeName, bucketName, keyPrefix);
+
 
     return result;
+  }
+
+  public void printTable(Table table, String volumeName, String bucketName, String keyPrefix) {
+    try {
+
+      //print vol,bucket, prefix tables
+      if (table.getName().equals("bucketTable") ||
+          table.getName().equals("volumeTable") ||
+          table.getName().equals("prefixTable")) {
+        TableIterator<String, ? extends KeyValue<String, Object>> iterator2 =
+            table.iterator();
+        KeyValue<String, Object> kv2;
+        StringBuilder sb2 = new StringBuilder();
+        int cnt2 = 0;
+        while (iterator2.hasNext()) {
+          cnt2++;
+          kv2 = iterator2.next();
+          String key = kv2.getKey();
+          Object someobjInfo = kv2.getValue();
+          // Making sure that entry in cache is not for delete key request.
+          //        LOG.warn("########## check keyName {} if prefix of {}"
+          //            , omKeyInfo.getKeyName(), seekPrefix);
+          if(table.getName().equals("bucketTable")) {
+            appendKeyToSbForBucket(sb2, key, someobjInfo);
+          } else if (table.getName().equals("volumeTable")) {
+            appendKeyToSbForVol(sb2, key, someobjInfo);
+          } else {
+            appendKeyToSb2(sb2, key, someobjInfo);
+          }
+        }
+        iterator2.close();
+        LOG.warn(
+            "############  print: {}, of vol: {}, bucket: {}, keyPrefix: {}. " +
+                "{} rows  ==> {}"
+            , table.getName(), volumeName, bucketName, keyPrefix, cnt2, sb2);
+      } else {
+    //      String seekPrefix = getOzoneKey(volumeName, bucketName, keyPrefix);
+          String seekPrefix = keyPrefix;
+          TableIterator<String, ? extends KeyValue<String, OmKeyInfo>> iterator =
+              table.iterator();
+          KeyValue<String, OmKeyInfo> kv;
+          StringBuilder sb = new StringBuilder();
+    //      iterator.seek(seekPrefix);
+          int cnt = 0, cnt1 = 0;
+          while (iterator.hasNext()) {
+            cnt1++;
+            kv = iterator.next();
+            String key = kv.getKey();
+            OmKeyInfo omKeyInfo = kv.getValue();
+            // Making sure that entry in cache is not for delete key request.
+    //        LOG.warn("########## check keyName {} if prefix of {}"
+    //            , omKeyInfo.getKeyName(), seekPrefix);
+
+            if (omKeyInfo != null
+                && omKeyInfo.getKeyName().startsWith(seekPrefix)) {
+    //          cacheKeyMap.put(key, omKeyInfo);
+              if (cnt < 10) {
+                appendKeyToSb(sb, key, omKeyInfo);
+                cnt++;
+              }
+            }
+          }
+          iterator.close();
+          LOG.warn(
+              "############  print: {}, of vol: {}, bucket: {}, keyPrefix: {}. " +
+                  "10 keys of len: {} ==> {}"
+              , table.getName(), volumeName, bucketName, keyPrefix, cnt1, sb);
+        }
+    } catch (Exception e) {
+      LOG.warn("######### aaaaaaaaa error during printTable: {}", e.getMessage());
+    }
+  }
+
+  public void appendKeyToSb(StringBuilder sb, String key, OmKeyInfo kinfo) throws Exception{
+    sb.append("FullKey [").append(key).append("] => \n")
+        .append("KeyInfo name= " + kinfo.getKeyName() + ", \nobjInfo = ")
+        .append(kinfo.getObjectInfo() + ", \nisHsync = ")
+        .append(kinfo.isHsync())
+        .append(".  \n\n");
+  }
+
+  public void appendKeyToSb2(StringBuilder sb, String key, Object info) throws Exception{
+    sb.append("FullKey [").append(key).append("] => \n")
+        .append("value type = " + info.getClass().getSimpleName() + ", \nobjInfo = ")
+        .append(info)
+        .append(".  \n\n");
+  }
+
+
+  public void appendKeyToSbForBucket(StringBuilder sb, String key, Object info) throws Exception{
+//    OmBucketInfo bi = (OmBucketInfo) info;
+    sb.append("FullKey [").append(key).append("] => \n")
+        .append("value type = " + info.getClass().getSimpleName() + ", \nobjInfo = ")
+        .append(info)
+        .append(".  \n\n");
+  }
+
+
+  public void appendKeyToSbForVol(StringBuilder sb, String key, Object info) throws Exception{
+    OmVolumeArgs va = (OmVolumeArgs)info;
+    sb.append("FullKey [").append(key).append("] => \n")
+        .append("value type = " + info.getClass().getSimpleName() + ", \nobjInfo = ")
+        .append(va.getObjectInfo())
+        .append(".  \n\n");
+  }
+
+
+  public void printTableCache(TreeMap<String, OmKeyInfo> cacheKeyMap,String tableName,String volumeName,String  bucketName,String keyPrefix) {
+    StringBuilder sb = new StringBuilder();
+    int cnt1 = 0;
+    for (Map.Entry<String, OmKeyInfo>  cacheKey : cacheKeyMap.entrySet()) {
+      if (cnt1 > 9) {
+        break;
+      }
+      sb.append("FullKey [").append(cacheKey.getKey()).append("] => \n")
+          .append("KeyInfo name= " + cacheKey.getValue().getKeyName() + ", \nobjInfo = ")
+          .append(cacheKey.getValue().getObjectInfo() + ", \nisHsync = ")
+          .append(cacheKey.getValue().isHsync())
+          .append(".  \n\n");
+    }
+    LOG.warn("########## printing 10 cache of total: {} of {} of vol: {}, bucket: {}, keyPrefix: {} ==> {}"
+        , cacheKeyMap.size(), tableName, volumeName,bucketName,keyPrefix, sb);
+
   }
 
 /*

@@ -27,6 +27,27 @@ public class ListOpenKeysSubCommand implements Callable<Void> {
   private OMAdmin parent;
 
   @CommandLine.Option(
+      names = {"-v", "--volume"},
+      description = "Ozone vol name",
+      required = true
+  )
+  private String volName;
+
+  @CommandLine.Option(
+      names = {"-b", "--bucket"},
+      description = "Ozone bucket name",
+      required = true
+  )
+  private String bucketName;
+
+  @CommandLine.Option(
+      names = {"-f", "--key-prefix"},
+      description = "Ozone key prefix"
+  )
+  private String keyPrefix;
+
+
+  @CommandLine.Option(
       names = {"-id", "--service-id"},
       description = "Ozone Manager Service ID",
       required = true
@@ -38,12 +59,12 @@ public class ListOpenKeysSubCommand implements Callable<Void> {
 
   @Override
   public Void call() throws Exception {
-    String volName = "vol1";
-    String buckName = "buck1";
-    String keyPrefix = "somepre";
+//    String volName = "vol1";
+//    String buckName = "buck1";
+//    String keyPrefix = "somepre";
     try {
       ozoneManagerClient =  parent.createOmClient(omServiceId);
-      printOpenKeys(ozoneManagerClient.listOpenKeys(volName,buckName,keyPrefix));
+      printOpenKeys(ozoneManagerClient.listOpenKeys(volName,bucketName,keyPrefix));
     } catch (OzoneClientException ex) {
       System.out.printf("Error: %s", ex.getMessage());
     } finally {

@@ -86,7 +86,7 @@ public class OzoneOutputStream extends ByteArrayStreamOutput {
     outputStream.close();
   }
 
-  public void hsync() throws IOException {
+  public void hsync() throws IOException { // hhhhhhhh
     if (syncable != null) {
       if (outputStream != syncable) {
         outputStream.flush();
