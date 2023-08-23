@@ -104,6 +104,8 @@ public class OzoneOutputStream extends ByteArrayStreamOutput {
   }
 
   public void hsync() throws IOException { // hhhhhhhhhhhhh
+    enableHsync = true;
+    System.out.println("********* hello, complete setting enableHsync = " + enableHsync);
     // Disable the feature flag restores the prior behavior.
     if (!enableHsync) {
       outputStream.flush();
@@ -113,7 +115,10 @@ public class OzoneOutputStream extends ByteArrayStreamOutput {
       if (outputStream != syncable) {
         outputStream.flush();
       }
+      System.out.println("********* hello, calling syncable.hsync()...");
       syncable.hsync();
+      System.out.println("********* hello, complete call syncable.hsync()...");
+
     } else {
       throw new UnsupportedOperationException(outputStream.getClass()
           + " is not " + Syncable.class.getSimpleName());
