@@ -35,6 +35,8 @@ import org.apache.hadoop.ozone.om.snapshot.SnapshotUtils;
 import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos;
 import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.OMRequest;
 import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.SnapshotPurgeRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -48,6 +50,9 @@ import java.util.UUID;
  * This is an OM internal request. Does not need @RequireSnapshotFeatureState.
  */
 public class OMSnapshotPurgeRequest extends OMClientRequest {
+  private static final Logger LOG =
+      LoggerFactory.getLogger(OMSnapshotPurgeRequest.class);
+
 
   public OMSnapshotPurgeRequest(OMRequest omRequest) {
     super(omRequest);
@@ -91,6 +96,7 @@ public class OMSnapshotPurgeRequest extends OMClientRequest {
       // Snapshots that are purged by the SnapshotDeletingService
       // will update the next snapshot so that is can be deep cleaned
       // by the KeyDeletingService in the next run.
+      StringBuilder sb = new StringBuilder();
       for (String snapTableKey : snapshotDbKeys) {
         SnapshotInfo fromSnapshot = omMetadataManager.getSnapshotInfoTable()
             .get(snapTableKey);
@@ -104,8 +110,10 @@ public class OMSnapshotPurgeRequest extends OMClientRequest {
         updateSnapshotChainAndCache(omMetadataManager, fromSnapshot,
             trxnLogIndex, updatedPathPreviousAndGlobalSnapshots);
 
+        sb.append("snTableKey [" + snapTableKey + "], ");
         ozoneManager.getOmSnapshotManager().getSnapshotCache().invalidate(snapTableKey);
       }
+      LOG.warn("************ hello: snTableKeys = > " + sb);
 
       omClientResponse = new OMSnapshotPurgeResponse(omResponse.build(),
           snapshotDbKeys, updatedSnapInfos,

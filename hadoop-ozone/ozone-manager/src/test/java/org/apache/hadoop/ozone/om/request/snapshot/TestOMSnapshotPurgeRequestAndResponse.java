@@ -252,6 +252,8 @@ public class TestOMSnapshotPurgeRequestAndResponse {
     // Check if the entries are deleted.
     assertTrue(omMetadataManager.getSnapshotInfoTable().isEmpty());
 
+    assertTrue(omSnapshotManager.getSnapshotCache() == null);
+
     // Check if all the checkpoints are cleared.
     for (Path checkpoint : checkpointPaths) {
       assertFalse(Files.exists(checkpoint));
