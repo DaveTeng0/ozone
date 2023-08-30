@@ -103,6 +103,8 @@ public class OMSnapshotPurgeRequest extends OMClientRequest {
             trxnLogIndex, updatedSnapInfos, true);
         updateSnapshotChainAndCache(omMetadataManager, fromSnapshot,
             trxnLogIndex, updatedPathPreviousAndGlobalSnapshots);
+
+        ozoneManager.getOmSnapshotManager().getSnapshotCache().invalidateAll();
       }
 
       omClientResponse = new OMSnapshotPurgeResponse(omResponse.build(),
