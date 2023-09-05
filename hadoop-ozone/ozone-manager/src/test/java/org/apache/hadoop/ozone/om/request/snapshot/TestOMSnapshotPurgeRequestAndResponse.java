@@ -19,19 +19,15 @@
 
 package org.apache.hadoop.ozone.om.request.snapshot;
 
+import com.google.common.cache.CacheLoader;
 import org.apache.hadoop.hdds.conf.OzoneConfiguration;
 import org.apache.hadoop.hdds.utils.db.BatchOperation;
 import org.apache.hadoop.hdds.utils.db.RDBStore;
+import org.apache.hadoop.hdds.utils.db.cache.CacheKey;
+import org.apache.hadoop.hdds.utils.db.cache.CacheValue;
 import org.apache.hadoop.ozone.OzoneConfigKeys;
 import org.apache.hadoop.ozone.audit.AuditLogger;
-import org.apache.hadoop.ozone.om.IOmMetadataReader;
-import org.apache.hadoop.ozone.om.OMConfigKeys;
-import org.apache.hadoop.ozone.om.OMMetadataManager;
-import org.apache.hadoop.ozone.om.OMMetrics;
-import org.apache.hadoop.ozone.om.OmMetadataManagerImpl;
-import org.apache.hadoop.ozone.om.OmSnapshotManager;
-import org.apache.hadoop.ozone.om.OzoneManager;
-import org.apache.hadoop.ozone.om.SnapshotChainManager;
+import org.apache.hadoop.ozone.om.*;
 import org.apache.hadoop.ozone.om.helpers.SnapshotInfo;
 import org.apache.hadoop.ozone.om.ratis.utils.OzoneManagerDoubleBufferHelper;
 import org.apache.hadoop.ozone.om.request.OMRequestTestUtils;
@@ -50,19 +46,18 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.platform.commons.support.ReflectionSupport;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -73,13 +68,16 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * Tests OMSnapshotPurgeRequest class.
  */
 public class TestOMSnapshotPurgeRequestAndResponse {
+
+  private static final Logger LOG =
+      LoggerFactory.getLogger(TestOMSnapshotPurgeRequestAndResponse.class);
+
 
   private BatchOperation batchOperation;
   private List<Path> checkpointPaths = new ArrayList<>();
@@ -129,6 +127,10 @@ public class TestOMSnapshotPurgeRequestAndResponse {
     volumeName = UUID.randomUUID().toString();
     bucketName = UUID.randomUUID().toString();
     keyName = UUID.randomUUID().toString();
+//    volumeName = "vol1";
+//    bucketName = "bucket1";
+//    keyName = "test-snapshot";
+
   }
 
   /**
@@ -146,7 +148,17 @@ public class TestOMSnapshotPurgeRequestAndResponse {
     List<String> purgeSnapshots = new ArrayList<>(numSnapshotKeys);
     for (int i = 1; i <= numSnapshotKeys; i++) {
       String snapshotName = keyName + "-" + random.nextLong();
+//      String snapshotName = keyName + "-" + i;
+
       createSnapshotCheckpoint(snapshotName);
+//      ReferenceCounted mockReferenceCounted = mock(ReferenceCounted.class);
+//      OmSnapshot mockOmSnapshot = mock(OmSnapshot.class);
+//      .getMetadataManager().getStore().isClosed()
+//      OMMetadataManager omMetadataManager = mock(OMMetadataManager.class);
+//      when(omMetadataManager.getStore()).thenReturn();
+//      when(mockOmSnapshot.getMetadataManager()).thenReturn(omMetadataManager);
+//      when(mockReferenceCounted.get()).thenReturn(mockOmSnapshot);
+//      snapshotCache.getDbMap().put(snapshotName, mockReferenceCounted);
       purgeSnapshots.add(SnapshotInfo.getTableKey(volumeName,
           bucketName, snapshotName));
     }
@@ -240,8 +252,33 @@ public class TestOMSnapshotPurgeRequestAndResponse {
     omMetadataManager.getStore().commitBatchOperation(batchOperation);
   }
 
-  @Test
+//  class SnapshotCacheMock extends SnapshotCache {
+//    public SnapshotCacheMock(OmSnapshotManager omSnapshotManager,
+//                             CacheLoader<String, OmSnapshot> cacheLoader,
+//                             int cacheSizeLimit) {
+//      super(omSnapshotManager, cacheLoader, cacheSizeLimit);
+//    }
+//
+////    @Override
+//    Set<ReferenceCounted<IOmMetadataReader, SnapshotCache>>  getPendingEvictionList() {
+//      return new HashSet<>();
+//    }
+//  }
+
+
+  @Test // ttttttttttttttttttttttt
   public void testValidateAndUpdateCache() throws Exception {
+//    SnapshotCache snapshotCache = Mockito.mock(SnapshotCache.class);
+//    ReflectionSupport.invokeMethod(
+//        snapshotCache.getClass()
+//            .getDeclaredMethod("getPendingEvictionList"),
+//        doReturn(new HashSet<>()).when(snapshotCache));
+
+//    OmSnapshotManager mockOmSnapshotManager = spy(omSnapshotManager);
+//    ConcurrentHashMap<String,
+//        ReferenceCounted<IOmMetadataReader, SnapshotCache>> dbMap = new ConcurrentHashMap<>();
+//    when(snapshotCache.getDbMap()).thenReturn(dbMap);
+//    when(mockOmSnapshotManager.getSnapshotCache()).thenReturn(snapshotCache);
 
     List<String> snapshotDbKeysToPurge = createSnapshots(10);
     assertFalse(omMetadataManager.getSnapshotInfoTable().isEmpty());
@@ -251,6 +288,32 @@ public class TestOMSnapshotPurgeRequestAndResponse {
 
     // Check if the entries are deleted.
     assertTrue(omMetadataManager.getSnapshotInfoTable().isEmpty());
+
+    System.out.println("####### lalalalalala before for looping... " );
+
+//    omSnapshotManager.getSnapshotCache().get("unexist_key");
+    // test test test
+//    mockOmSnapshotManager.getSnapshotCache().getPendingEvictionList();
+
+//    assertTrue(snapshotCache.);
+
+    for(Map.Entry<String, ReferenceCounted<IOmMetadataReader, SnapshotCache>> dbEntry : mockOmSnapshotManager.getSnapshotCache().getDbMap().entrySet()) {
+      System.out.println("####### lalalalalala: " + ((OmSnapshot)(dbEntry.getValue().get())).getSnapshotTableKey());
+      LOG.error("@@@@@@@@@@ lalalalala: " + ((OmSnapshot)(dbEntry.getValue().get())).getSnapshotTableKey());
+      assertTrue(
+          ((OmSnapshot)(dbEntry.getValue().get()))
+              .getMetadataManager().getStore().isClosed()
+      );
+    }
+
+//    for (String snapshotDbKey : snapshotDbKeysToPurge) {
+//      CacheValue<SnapshotInfo>
+//          cacheValue = omMetadataManager.getSnapshotInfoTable().getCacheValue(new CacheKey<>(snapshotDbKey));
+//      System.out.println("############ cacheV_sn: " + cacheValue.getCacheValue().getTableKey());
+//      assertFalse(Objects.nonNull(cacheValue) &&
+//          Objects.nonNull(cacheValue.getCacheValue()));
+//
+//    }
 
     // Check if all the checkpoints are cleared.
     for (Path checkpoint : checkpointPaths) {

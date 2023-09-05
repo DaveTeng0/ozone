@@ -62,8 +62,7 @@ import static org.apache.hadoop.ozone.OzoneConfigKeys.OZONE_BLOCK_DELETING_SERVI
 import static org.apache.hadoop.ozone.om.OmSnapshotManager.getSnapshotPrefix;
 import static org.apache.hadoop.ozone.OzoneConfigKeys.OZONE_SNAPSHOT_DELETING_SERVICE_INTERVAL;
 import static org.apache.hadoop.ozone.OzoneConfigKeys.OZONE_SNAPSHOT_DELETING_SERVICE_TIMEOUT;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test Snapshot Deleting Service.
@@ -188,6 +187,12 @@ public class TestSnapshotDeletingService {
     assertTableRowCount(deletedTable, 0);
 
     verifySnapshotChain(delSnapInfo, null);
+
+
+    // snapshot cache will be invalidated once snapshot gets purged.
+    assertTrue(((OmSnapshot)(om.getOmSnapshotManager().getSnapshotCache()
+        .getDbMap().get("bucket2snap1").get())).getMetadataManager()
+        .getStore().isClosed());
   }
 
   @SuppressWarnings("checkstyle:MethodLength")
