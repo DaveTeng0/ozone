@@ -19,15 +19,25 @@
 
 package org.apache.hadoop.ozone.om.request.snapshot;
 
-import com.google.common.cache.CacheLoader;
+//import com.google.common.cache.CacheLoader;
 import org.apache.hadoop.hdds.conf.OzoneConfiguration;
 import org.apache.hadoop.hdds.utils.db.BatchOperation;
 import org.apache.hadoop.hdds.utils.db.RDBStore;
-import org.apache.hadoop.hdds.utils.db.cache.CacheKey;
-import org.apache.hadoop.hdds.utils.db.cache.CacheValue;
+//import org.apache.hadoop.hdds.utils.db.cache.CacheKey;
+//import org.apache.hadoop.hdds.utils.db.cache.CacheValue;
 import org.apache.hadoop.ozone.OzoneConfigKeys;
 import org.apache.hadoop.ozone.audit.AuditLogger;
-import org.apache.hadoop.ozone.om.*;
+//import org.apache.hadoop.ozone.om.*;
+import org.apache.hadoop.ozone.om.OmSnapshotManager;
+import org.apache.hadoop.ozone.om.SnapshotChainManager;
+import org.apache.hadoop.ozone.om.OzoneManager;
+import org.apache.hadoop.ozone.om.OMMetrics;
+import org.apache.hadoop.ozone.om.OMMetadataManager;
+import org.apache.hadoop.ozone.om.OMConfigKeys;
+import org.apache.hadoop.ozone.om.OmMetadataManagerImpl;
+import org.apache.hadoop.ozone.om.IOmMetadataReader;
+
+
 import org.apache.hadoop.ozone.om.helpers.SnapshotInfo;
 import org.apache.hadoop.ozone.om.ratis.utils.OzoneManagerDoubleBufferHelper;
 import org.apache.hadoop.ozone.om.request.OMRequestTestUtils;
@@ -46,7 +56,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.junit.platform.commons.support.ReflectionSupport;
+//import org.junit.platform.commons.support.ReflectionSupport;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,8 +66,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+//import java.util.*;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.UUID;
+import java.util.Random;
+import java.util.Collections;
+import java.util.Map;
+//import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -68,8 +84,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
-
+//import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.mock;
 /**
  * Tests OMSnapshotPurgeRequest class.
  */
@@ -260,7 +277,8 @@ public class TestOMSnapshotPurgeRequestAndResponse {
 //    }
 //
 ////    @Override
-//    Set<ReferenceCounted<IOmMetadataReader, SnapshotCache>>  getPendingEvictionList() {
+//    Set<ReferenceCounted<IOmMetadataReader, SnapshotCache>>
+//    getPendingEvictionList() {
 //      return new HashSet<>();
 //    }
 //  }
@@ -276,7 +294,8 @@ public class TestOMSnapshotPurgeRequestAndResponse {
 
 //    OmSnapshotManager mockOmSnapshotManager = spy(omSnapshotManager);
 //    ConcurrentHashMap<String,
-//        ReferenceCounted<IOmMetadataReader, SnapshotCache>> dbMap = new ConcurrentHashMap<>();
+//        ReferenceCounted<IOmMetadataReader, SnapshotCache>> dbMap
+//        = new ConcurrentHashMap<>();
 //    when(snapshotCache.getDbMap()).thenReturn(dbMap);
 //    when(mockOmSnapshotManager.getSnapshotCache()).thenReturn(snapshotCache);
 
@@ -289,7 +308,7 @@ public class TestOMSnapshotPurgeRequestAndResponse {
     // Check if the entries are deleted.
     assertTrue(omMetadataManager.getSnapshotInfoTable().isEmpty());
 
-    System.out.println("####### lalalalalala before for looping... " );
+    System.out.println("####### lalalalalala before for looping... ");
 
 //    omSnapshotManager.getSnapshotCache().get("unexist_key");
     // test test test
@@ -297,9 +316,13 @@ public class TestOMSnapshotPurgeRequestAndResponse {
 
 //    assertTrue(snapshotCache.);
 
-//    for(Map.Entry<String, ReferenceCounted<IOmMetadataReader, SnapshotCache>> dbEntry : omSnapshotManager.getSnapshotCache().getDbMap().entrySet()) {
-//      System.out.println("####### lalalalalala: " + ((OmSnapshot)(dbEntry.getValue().get())).getSnapshotTableKey());
-//      LOG.error("@@@@@@@@@@ lalalalala: " + ((OmSnapshot)(dbEntry.getValue().get())).getSnapshotTableKey());
+//    for(Map.Entry<String, ReferenceCounted<IOmMetadataReader,
+//    SnapshotCache>> dbEntry : omSnapshotManager.getSnapshotCache()
+//    .getDbMap().entrySet()) {
+//      System.out.println("####### lalalalalala: " +
+//      ((OmSnapshot)(dbEntry.getValue().get())).getSnapshotTableKey());
+//      LOG.error("@@@@@@@@@@ lalalalala: " +
+//      ((OmSnapshot)(dbEntry.getValue().get())).getSnapshotTableKey());
 //      assertTrue(
 //          ((OmSnapshot)(dbEntry.getValue().get()))
 //              .getMetadataManager().getStore().isClosed()
@@ -310,8 +333,10 @@ public class TestOMSnapshotPurgeRequestAndResponse {
 
 //    for (String snapshotDbKey : snapshotDbKeysToPurge) {
 //      CacheValue<SnapshotInfo>
-//          cacheValue = omMetadataManager.getSnapshotInfoTable().getCacheValue(new CacheKey<>(snapshotDbKey));
-//      System.out.println("############ cacheV_sn: " + cacheValue.getCacheValue().getTableKey());
+//          cacheValue = omMetadataManager.getSnapshotInfoTable()
+//          .getCacheValue(new CacheKey<>(snapshotDbKey));
+//      System.out.println("############ cacheV_sn: "
+//      + cacheValue.getCacheValue().getTableKey());
 //      assertFalse(Objects.nonNull(cacheValue) &&
 //          Objects.nonNull(cacheValue.getCacheValue()));
 //

@@ -45,7 +45,7 @@ import org.apache.ozone.test.tag.Flaky;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.commons.support.ReflectionSupport;
+//import org.junit.platform.commons.support.ReflectionSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,7 +66,10 @@ import static org.apache.hadoop.ozone.OzoneConfigKeys.OZONE_BLOCK_DELETING_SERVI
 import static org.apache.hadoop.ozone.om.OmSnapshotManager.getSnapshotPrefix;
 import static org.apache.hadoop.ozone.OzoneConfigKeys.OZONE_SNAPSHOT_DELETING_SERVICE_INTERVAL;
 import static org.apache.hadoop.ozone.OzoneConfigKeys.OZONE_SNAPSHOT_DELETING_SERVICE_TIMEOUT;
-import static org.junit.jupiter.api.Assertions.*;
+//import static org.junit.jupiter.api.Assertions.;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test Snapshot Deleting Service.
@@ -201,7 +204,8 @@ public class TestSnapshotDeletingService {
 //    );
 
     SnapshotCache snapshotCache = om.getOmSnapshotManager().getSnapshotCache();
-    Method getDbMapMethod = snapshotCache.getClass().getDeclaredMethod("getDbMap");
+    Method getDbMapMethod = snapshotCache.getClass()
+        .getDeclaredMethod("getDbMap");
     getDbMapMethod.setAccessible(true);
     ConcurrentHashMap<String,
         ReferenceCounted<IOmMetadataReader, SnapshotCache>> dbMap =
@@ -209,10 +213,12 @@ public class TestSnapshotDeletingService {
             ReferenceCounted<IOmMetadataReader,
                 SnapshotCache>>) getDbMapMethod.invoke(snapshotCache);
 
-    assertTrue(((OmSnapshot)(dbMap.get("bucket2snap1").get())).getMetadataManager().getStore().isClosed());
+    assertTrue(((OmSnapshot)(dbMap.get("bucket2snap1").get()))
+        .getMetadataManager().getStore().isClosed());
 
 
-    Method getPendingEvictionListMethod = snapshotCache.getClass().getDeclaredMethod("getPendingEvictionList");
+    Method getPendingEvictionListMethod =
+        snapshotCache.getClass().getDeclaredMethod("getPendingEvictionList");
     getPendingEvictionListMethod.setAccessible(true);
     Set<ReferenceCounted<
         IOmMetadataReader, SnapshotCache>> pendingEvictionList =

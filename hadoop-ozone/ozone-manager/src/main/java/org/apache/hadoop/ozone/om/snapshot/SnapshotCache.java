@@ -100,6 +100,10 @@ public class SnapshotCache implements ReferenceCountedCallback {
    * @param key DB snapshot table key
    */
   public void invalidate(String key) throws IOException {
+    dbMap.forEach((k, v) -> {
+      LOG.warn("********* dddd k[" + k + "] = " + v.getTotalRefCount());
+    });
+
     dbMap.computeIfPresent(key, (k, v) -> {
       pendingEvictionList.remove(v);
       try {

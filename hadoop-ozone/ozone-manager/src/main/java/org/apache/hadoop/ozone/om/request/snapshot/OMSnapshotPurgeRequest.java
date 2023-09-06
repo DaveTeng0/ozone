@@ -35,6 +35,8 @@ import org.apache.hadoop.ozone.om.snapshot.SnapshotUtils;
 import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos;
 import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.OMRequest;
 import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.SnapshotPurgeRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -48,6 +50,8 @@ import java.util.UUID;
  * This is an OM internal request. Does not need @RequireSnapshotFeatureState.
  */
 public class OMSnapshotPurgeRequest extends OMClientRequest {
+  private static final Logger LOG =
+      LoggerFactory.getLogger(OMSnapshotPurgeRequest.class);
 
   public OMSnapshotPurgeRequest(OMRequest omRequest) {
     super(omRequest);
@@ -87,7 +91,7 @@ public class OMSnapshotPurgeRequest extends OMClientRequest {
         updateSnapshotInfoAndCache(snapInfo, omMetadataManager,
             trxnLogIndex, updatedSnapInfos, false);
       }
-
+      StringBuilder sb = new StringBuilder();
       // Snapshots that are purged by the SnapshotDeletingService
       // will update the next snapshot so that is can be deep cleaned
       // by the KeyDeletingService in the next run.
@@ -103,7 +107,16 @@ public class OMSnapshotPurgeRequest extends OMClientRequest {
             trxnLogIndex, updatedSnapInfos, true);
         updateSnapshotChainAndCache(omMetadataManager, fromSnapshot,
             trxnLogIndex, updatedPathPreviousAndGlobalSnapshots);
+        LOG.warn("************ hello world3: sn invalidating... ");
+
+        sb.append("snTableKey [" + fromSnapshot.getVolumeName() + " -> "
+            + fromSnapshot.getBucketName() + "] =  " + snapTableKey + ", ");
+        ozoneManager.getOmSnapshotManager().getSnapshotCache()
+            .invalidate(snapTableKey);
       }
+//      ozoneManager.getOmSnapshotManager().getSnapshotCache().invalidateAll();
+
+      LOG.warn("************ hello world2: snTableKeys = > " + sb);
 
       omClientResponse = new OMSnapshotPurgeResponse(omResponse.build(),
           snapshotDbKeys, updatedSnapInfos,
