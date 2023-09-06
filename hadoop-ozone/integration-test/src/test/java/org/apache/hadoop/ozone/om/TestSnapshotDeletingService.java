@@ -45,14 +45,18 @@ import org.apache.ozone.test.tag.Flaky;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.platform.commons.support.ReflectionSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -190,9 +194,31 @@ public class TestSnapshotDeletingService {
 
 
     // snapshot cache will be invalidated once snapshot gets purged.
-    assertTrue(((OmSnapshot)(om.getOmSnapshotManager().getSnapshotCache()
-        .getDbMap().get("bucket2snap1").get())).getMetadataManager()
-        .getStore().isClosed());
+//    assertTrue(
+//        ((OmSnapshot)(om.getOmSnapshotManager().getSnapshotCache()
+//        .getDbMap().get("bucket2snap1").get()))
+//            .getMetadataManager().getStore().isClosed()
+//    );
+
+    SnapshotCache snapshotCache = om.getOmSnapshotManager().getSnapshotCache();
+    Method getDbMapMethod = snapshotCache.getClass().getDeclaredMethod("getDbMap");
+    getDbMapMethod.setAccessible(true);
+    ConcurrentHashMap<String,
+        ReferenceCounted<IOmMetadataReader, SnapshotCache>> dbMap =
+        (ConcurrentHashMap<String,
+            ReferenceCounted<IOmMetadataReader,
+                SnapshotCache>>) getDbMapMethod.invoke(snapshotCache);
+
+    assertTrue(((OmSnapshot)(dbMap.get("bucket2snap1").get())).getMetadataManager().getStore().isClosed());
+
+
+    Method getPendingEvictionListMethod = snapshotCache.getClass().getDeclaredMethod("getPendingEvictionList");
+    getPendingEvictionListMethod.setAccessible(true);
+    Set<ReferenceCounted<
+        IOmMetadataReader, SnapshotCache>> pendingEvictionList =
+        (Set<ReferenceCounted<IOmMetadataReader, SnapshotCache>>)
+            getPendingEvictionListMethod.invoke(snapshotCache);
+    assertTrue(pendingEvictionList.isEmpty());
   }
 
   @SuppressWarnings("checkstyle:MethodLength")

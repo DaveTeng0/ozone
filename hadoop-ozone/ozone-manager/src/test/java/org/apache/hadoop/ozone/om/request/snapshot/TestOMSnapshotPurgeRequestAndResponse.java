@@ -297,7 +297,7 @@ public class TestOMSnapshotPurgeRequestAndResponse {
 
 //    assertTrue(snapshotCache.);
 
-//    for(Map.Entry<String, ReferenceCounted<IOmMetadataReader, SnapshotCache>> dbEntry : mockOmSnapshotManager.getSnapshotCache().getDbMap().entrySet()) {
+//    for(Map.Entry<String, ReferenceCounted<IOmMetadataReader, SnapshotCache>> dbEntry : omSnapshotManager.getSnapshotCache().getDbMap().entrySet()) {
 //      System.out.println("####### lalalalalala: " + ((OmSnapshot)(dbEntry.getValue().get())).getSnapshotTableKey());
 //      LOG.error("@@@@@@@@@@ lalalalala: " + ((OmSnapshot)(dbEntry.getValue().get())).getSnapshotTableKey());
 //      assertTrue(
