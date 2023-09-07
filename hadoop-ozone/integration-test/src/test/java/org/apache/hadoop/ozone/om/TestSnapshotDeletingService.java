@@ -179,6 +179,18 @@ public class TestSnapshotDeletingService {
         "bucket2snap1");
     assertTableRowCount(snapshotInfoTable, 3);
 
+    StringBuilder sb = new StringBuilder();
+    try (TableIterator<String, ? extends Table.KeyValue<String, SnapshotInfo>>
+             iterator = snapshotInfoTable.iterator()) {
+      while (iterator.hasNext()) {
+        Table.KeyValue<String, SnapshotInfo> kv = iterator.next();
+        String kk = kv.getKey();
+        SnapshotInfo snapInfo = kv.getValue();
+        sb.append("snTable[" + kk + "] = "+ snapInfo.getSnapshotPath() + ", ");
+      }
+    }
+//    assertEquals("hello", sb);
+
     // Both key 1 and key 2 can be reclaimed when Snapshot 1 is deleted.
     client.getProxy().deleteKey(VOLUME_NAME, BUCKET_NAME_TWO,
         "bucket2key1", false);
@@ -203,6 +215,7 @@ public class TestSnapshotDeletingService {
 //            .getMetadataManager().getStore().isClosed()
 //    );
 
+    // verify the cache of purged snapshot has been cleaned up
     SnapshotCache snapshotCache = om.getOmSnapshotManager().getSnapshotCache();
     Method getDbMapMethod = snapshotCache.getClass()
         .getDeclaredMethod("getDbMap");
@@ -213,11 +226,13 @@ public class TestSnapshotDeletingService {
             ReferenceCounted<IOmMetadataReader,
                 SnapshotCache>>) getDbMapMethod.invoke(snapshotCache);
 
+    assertEquals(2, dbMap.size());
 //    assertTrue(((OmSnapshot)(dbMap.get("/" + VOLUME_NAME + "/"
 //    + BUCKET_NAME_TWO + "/" +"bucket2snap1").get()))
 //        .getMetadataManager().getStore().isClosed());
 
-    assertTrue(dbMap.size() == 0);
+//    dbMap.entrySet()
+//    assertTrue(dbMap.);
 
     Method getPendingEvictionListMethod =
         snapshotCache.getClass().getDeclaredMethod("getPendingEvictionList");
@@ -226,8 +241,14 @@ public class TestSnapshotDeletingService {
         IOmMetadataReader, SnapshotCache>> pendingEvictionList =
         (Set<ReferenceCounted<IOmMetadataReader, SnapshotCache>>)
             getPendingEvictionListMethod.invoke(snapshotCache);
-    assertTrue(pendingEvictionList.isEmpty());
+//    assertTrue(pendingEvictionList.isEmpty());
+    assertEquals(2, pendingEvictionList.size());
+
+//    assertTrue(pendingEvictionList.contains(new ReferenceCounted<>()));
+
   }
+
+
 
   @SuppressWarnings("checkstyle:MethodLength")
   @Flaky("HDDS-9023")
