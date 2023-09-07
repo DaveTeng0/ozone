@@ -213,9 +213,11 @@ public class TestSnapshotDeletingService {
             ReferenceCounted<IOmMetadataReader,
                 SnapshotCache>>) getDbMapMethod.invoke(snapshotCache);
 
-    assertTrue(((OmSnapshot)(dbMap.get("/" + VOLUME_NAME + "/" + BUCKET_NAME_TWO + "/" +"bucket2snap1").get()))
-        .getMetadataManager().getStore().isClosed());
+//    assertTrue(((OmSnapshot)(dbMap.get("/" + VOLUME_NAME + "/"
+//    + BUCKET_NAME_TWO + "/" +"bucket2snap1").get()))
+//        .getMetadataManager().getStore().isClosed());
 
+    assertTrue(dbMap.size() == 0);
 
     Method getPendingEvictionListMethod =
         snapshotCache.getClass().getDeclaredMethod("getPendingEvictionList");
