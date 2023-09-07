@@ -213,7 +213,7 @@ public class TestSnapshotDeletingService {
             ReferenceCounted<IOmMetadataReader,
                 SnapshotCache>>) getDbMapMethod.invoke(snapshotCache);
 
-    assertTrue(((OmSnapshot)(dbMap.get("bucket2snap1").get()))
+    assertTrue(((OmSnapshot)(dbMap.get("/" + VOLUME_NAME + "/" + BUCKET_NAME_TWO + "/" +"bucket2snap1").get()))
         .getMetadataManager().getStore().isClosed());
 
 
