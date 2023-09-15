@@ -63,6 +63,10 @@ public class SimpleContainerDownloader implements ContainerDownloader {
       long containerId, List<DatanodeDetails> sourceDatanodes,
       Path downloadDir, CopyContainerCompression compression) {
 
+    String nameofCurrMethod = Thread.currentThread()
+        .getStackTrace()[1]
+        .getMethodName();
+
     if (downloadDir == null) {
       downloadDir = Paths.get(System.getProperty("java.io.tmpdir"))
               .resolve(ContainerImporter.CONTAINER_COPY_DIR);
@@ -70,8 +74,12 @@ public class SimpleContainerDownloader implements ContainerDownloader {
 
     final List<DatanodeDetails> shuffledDatanodes =
         shuffleDatanodes(sourceDatanodes);
+    LOG.error("********** hi, " + this.getClass().getSimpleName()
+        + ", " + nameofCurrMethod + ". total size(shuffledDatanodes) = "
+        + shuffledDatanodes.size());
 
     for (int i = 0; i < shuffledDatanodes.size(); i++) {
+      LOG.error("********* shuffledDatanodes idx = " + i);
       DatanodeDetails datanode = shuffledDatanodes.get(i);
       GrpcReplicationClient client = null;
       try {
@@ -96,6 +104,8 @@ public class SimpleContainerDownloader implements ContainerDownloader {
   private static void logError(Exception e,
       long containerId, DatanodeDetails datanode, int datanodeIndex,
       int shuffledDatanodesSize) {
+    LOG.error("********* DatanodeDetails idx = " + datanodeIndex);
+
     StringBuilder sb =
         new StringBuilder("Error on replicating container: {} from {}. ");
     if (datanodeIndex < shuffledDatanodesSize - 1) {
