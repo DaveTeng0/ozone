@@ -47,6 +47,7 @@ public class CreateSnapshot {
   private String bucket;
 
   private int start;
+  private int snapshot_start_idx;
   byte[] keyContent;
   private int numberKeysPerSnapshot;
   private int numberOfSnapshot;
@@ -60,10 +61,11 @@ public class CreateSnapshot {
   public CreateSnapshot(String volume, String bucket,
                         int numberKeysPerSnapshot,
                         int numberOfSnapshot, int threadCnt,
-                        int numberOfOpsPerThread, int start) throws IOException {
+                        int numberOfOpsPerThread, int start, int snapshot_start_idx) throws IOException {
     this.volume = volume;
     this.bucket = bucket;
     this.start = start;
+    this.snapshot_start_idx = snapshot_start_idx;
     // executorService = new ThreadPoolExecutor(threadCnt,
     //     threadCnt, 10, TimeUnit.SECONDS,
     //     new ArrayBlockingQueue<>(numberKeysPerSnapshot), new ThreadFactoryBuilder()
@@ -84,7 +86,18 @@ public class CreateSnapshot {
 
 
   public void run() throws IOException, OzoneClientException {
-    this.ozoneAddress = new OzoneAddress("o3://ozone1/");
+
+    Map<String, String> envVariables
+            = System.getenv();
+    if (envVariables.get("CREATE_SN") != null) {
+      LOG.info("hello_world. ");
+      return;
+    }
+
+    // String ozone_svc_id = "ozone";
+    String ozone_svc_id = "ozone1";
+
+    this.ozoneAddress = new OzoneAddress("o3://" + ozone_svc_id + "/");
     this.ozoneConfiguration = new OzoneConfiguration();
     LOG.info("Creating ozone client");
     try (OzoneClient ozoneClient = ozoneAddress.createClient(ozoneConfiguration)){
@@ -107,18 +120,21 @@ public class CreateSnapshot {
       OzoneBucket ozoneBucket = volume1.getBucket(bucket);
       long curKeyIdx = start;
 
-      for (int snapCnt = 0; snapCnt < numberOfSnapshot; snapCnt ++) {
+      // for (int snapCnt = snapshot_start_idx; snapCnt < numberOfSnapshot; snapCnt ++) {
+      int cur_created_sn_cnt = 0;
+      int cur_creating_sn_idx = snapshot_start_idx;
+      while (cur_created_sn_cnt < numberOfSnapshot) {
           LOG.info("curKeyIdx: {}", curKeyIdx);
         // if (curKeyIdx >= start) {
           createKeysInParallel(ozoneBucket, curKeyIdx, curKeyIdx + numberKeysPerSnapshot);
           
-          LOG.info("Creating Snapshot snap{}", snapCnt);
+          LOG.info("Creating Snapshot snap{}", cur_creating_sn_idx);
           try {
             ozoneClient.getObjectStore().createSnapshot(volume, bucket,
-            String.format("snap%d", snapCnt));
+            String.format("snap%d", cur_creating_sn_idx));
           }catch(Exception e) { 
             if (e.getMessage().contains("Snapshot already exists")) {
-              LOG.info("snap{} already exist", snapCnt);
+              LOG.info("snap{} already exist", cur_creating_sn_idx);
               // continue;
             }else{
               throw e;
@@ -128,6 +144,8 @@ public class CreateSnapshot {
         curKeyIdx += numberKeysPerSnapshot;
         // LOG.info("numberKeysPerSnapshot: {}. Next round curKeyIdx= {}",
         //  numberKeysPerSnapshot, curKeyIdx);
+        cur_creating_sn_idx++;
+        cur_created_sn_cnt++;
       }
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
@@ -185,6 +203,9 @@ public class CreateSnapshot {
     new CreateSnapshot(args[0], args[1], Integer.parseInt(args[2]),
         Integer.parseInt(args[3]), Integer.parseInt(args[4]),
         Integer.parseInt(args[5]),
-        Integer.parseInt(args.length == 7 ? args[6] : "0")).run();
+        // Integer.parseInt(args.length == 7 ? args[6] : "0"))
+        Integer.parseInt(args[6]),
+        Integer.parseInt(args[7]))
+        .run();
   }
 }

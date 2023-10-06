@@ -35,7 +35,9 @@
             <manifest>
               <addClasspath>true</addClasspath>
               <classpathPrefix>lib/</classpathPrefix>
+              <!--mainClass>WriteHsyncKey</mainClass-->
               <mainClass>CreateSnapshot</mainClass>
+
             </manifest>
           </archive>
         </configuration>
