@@ -301,7 +301,7 @@ public final class ContainerProtocolCalls  {
             .setEof(eof);
     final String id = pipeline.getFirstNode().getUuidString();
     ContainerCommandRequestProto.Builder builder =
-        ContainerCommandRequestProto.newBuilder().setCmdType(Type.PutBlock)
+        ContainerCommandRequestProto.newBuilder().setCmdType(Type.PutBlock) // send to om? what happen on scm side?
             .setContainerID(containerBlockData.getBlockID().getContainerID())
             .setDatanodeUuid(id)
             .setPutBlock(createBlockRequest);
@@ -437,14 +437,14 @@ public final class ContainerProtocolCalls  {
                 .setBlockCommitSequenceId(blockID.getBlockCommitSequenceId())
                 .setReplicaIndex(replicationIndex)
                 .build())
-            .setChunkData(chunk)
+            .setChunkData(chunk) // this is actually chunk's metadata ?
             .setData(data);
     String id = xceiverClient.getPipeline().getFirstNode().getUuidString();
     ContainerCommandRequestProto.Builder builder =
         ContainerCommandRequestProto.newBuilder()
-            .setCmdType(Type.WriteChunk)
+            .setCmdType(Type.WriteChunk) // call to DN //哈哈哈哈哈
             .setContainerID(blockID.getContainerID())
-            .setDatanodeUuid(id)
+            .setDatanodeUuid(id) // DN uuid
             .setWriteChunk(writeChunkRequest);
     if (token != null) {
       builder.setEncodedToken(token.encodeToUrlString());

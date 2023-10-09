@@ -127,7 +127,7 @@ public final class ScmBlockLocationProtocolServerSideTranslatorPB
 
     try {
       switch (request.getCmdType()) {
-      case AllocateScmBlock:
+      case AllocateScmBlock: //nbnbnbnbnbnbnbnb
         if (scm.getLayoutVersionManager().needsFinalization() &&
             !scm.getLayoutVersionManager()
                 .isAllowed(HDDSLayoutFeature.ERASURE_CODED_STORAGE_SUPPORT)

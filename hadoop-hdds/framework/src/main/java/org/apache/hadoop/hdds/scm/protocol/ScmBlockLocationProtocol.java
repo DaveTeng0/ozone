@@ -41,7 +41,7 @@ import java.util.concurrent.TimeoutException;
  */
 @KerberosInfo(serverPrincipal = ScmConfig.ConfigStrings
       .HDDS_SCM_KERBEROS_PRINCIPAL_KEY)
-public interface ScmBlockLocationProtocol extends Closeable {
+public interface ScmBlockLocationProtocol extends Closeable { /// kkkkkkkkkkkkkkkkkkkkkkk
 
   @SuppressWarnings("checkstyle:ConstantName")
   /**

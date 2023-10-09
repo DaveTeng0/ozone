@@ -39,6 +39,7 @@ import org.apache.hadoop.hdds.scm.ScmConfigKeys;
 import org.apache.hadoop.hdds.scm.container.ContainerID;
 import org.apache.hadoop.hdds.scm.container.ContainerInfo;
 import org.apache.hadoop.hdds.scm.pipeline.Pipeline;
+import org.apache.hadoop.hdds.scm.storage.BlockOutputStream;
 import org.apache.hadoop.hdds.utils.IOUtils;
 import org.apache.hadoop.net.DNSToSwitchMapping;
 import org.apache.hadoop.net.NetUtils;
@@ -49,9 +50,7 @@ import org.apache.hadoop.ozone.OzoneConsts;
 import org.apache.hadoop.ozone.client.ObjectStore;
 import org.apache.hadoop.ozone.client.OzoneClient;
 import org.apache.hadoop.ozone.client.OzoneClientFactory;
-import org.apache.hadoop.ozone.client.io.BlockOutputStreamEntry;
-import org.apache.hadoop.ozone.client.io.KeyOutputStream;
-import org.apache.hadoop.ozone.client.io.OzoneOutputStream;
+import org.apache.hadoop.ozone.client.io.*;
 import org.apache.hadoop.ozone.container.ContainerTestHelper;
 import org.apache.hadoop.ozone.container.TestHelper;
 import org.apache.hadoop.ozone.container.common.helpers.BlockData;
@@ -67,17 +66,24 @@ import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.NET_TOPOLOGY_NO
 import static org.apache.hadoop.hdds.protocol.proto.HddsProtos.ReplicationFactor.THREE;
 import static org.apache.hadoop.hdds.scm.ScmConfigKeys.OZONE_SCM_STALENODE_INTERVAL;
 
+import org.apache.ozone.test.TestClock;
 import org.apache.ozone.test.tag.Flaky;
 import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Tests Exception handling by Ozone Client.
  */
 @Timeout(300)
 public class TestFailureHandlingByClient {
+
+  private static final Logger LOG =
+      LoggerFactory.getLogger(TestFailureHandlingByClient.class);
+
 
   private MiniOzoneCluster cluster;
   private OzoneConfiguration conf;
@@ -108,6 +114,10 @@ public class TestFailureHandlingByClient {
     ratisClientConfig.setWatchRequestTimeout(Duration.ofSeconds(30));
     conf.setFromObject(ratisClientConfig);
 
+//    EClientConfig ecClientConfig =
+//        conf.getObject(RatisClientConfig.class);
+
+
     conf.setTimeDuration(
         OzoneConfigKeys.DFS_RATIS_LEADER_ELECTION_MINIMUM_TIMEOUT_DURATION_KEY,
         1, TimeUnit.SECONDS);
@@ -128,6 +138,7 @@ public class TestFailureHandlingByClient {
 
     OzoneClientConfig clientConfig = conf.getObject(OzoneClientConfig.class);
     clientConfig.setStreamBufferFlushDelay(false);
+    clientConfig.setExcludeNodesExpiryTime( 300 * 1000); //expire time 300 secs
     conf.setFromObject(clientConfig);
 
     conf.setQuietMode(false);
@@ -158,6 +169,7 @@ public class TestFailureHandlingByClient {
    */
   @AfterEach
   public void shutdown() {
+    System.out.println("******** yayayayaya_shutdown_mini_cluster");
     IOUtils.closeQuietly(client);
     if (cluster != null) {
       cluster.shutdown();
@@ -208,6 +220,128 @@ public class TestFailureHandlingByClient {
     // Verify that the block information is updated correctly in the DB on
     // failures
     testBlockCountOnFailures(keyInfo);
+  }
+
+
+
+  @Test
+  public void testBlockWritesWithDnFailuresOfRemovingExpireDnFromExcludeList_nnnnnnnnn() throws Exception { // hhhhhhhhhhhhhhhhhhhhhhhhhh
+    try {
+      startCluster();
+//    String keyName = UUID.randomUUID().toString();
+      String keyName = "hello_World_name";
+      OzoneOutputStream key = createKey(keyName, ReplicationType.RATIS, 0);
+//    OzoneOutputStream key = createKey(keyName, ReplicationType.EC, 0);
+
+//    LOG.warn("*********** bbbbb key.excludeListExpireTime = " + ((KeyOutputStream)key.getOutputStream()).getExcludeList().getExpiryTime());
+//      byte[] data = ContainerTestHelper.getFixedLengthString(
+//          keyString, 2 * chunkSize + chunkSize / 2).getBytes(UTF_8);
+    byte[] data = "1234567".getBytes(UTF_8);
+      key.write(data);
+      System.out.println("****** fffffff1 " +
+          ((KeyOutputStream) key.getOutputStream()).getStreamEntries().get(0)
+              .getClass().getSimpleName()
+          + ",,,,, " + key);
+//    key.close();
+
+//    Thread.sleep(3000);
+//    ((ECKeyOutputStream) key.getOutputStream()).flush();
+
+      // get the name of a valid container
+      Assert.assertTrue(key.getOutputStream() instanceof KeyOutputStream);
+      KeyOutputStream groupOutputStream =
+          (KeyOutputStream) key.getOutputStream();
+      List<OmKeyLocationInfo> locationInfoList =
+          groupOutputStream.getLocationInfoList();
+
+//    Assert.assertTrue(locationInfoList.size() == 1);
+      long containerId = locationInfoList.get(0).getContainerID();
+      ContainerInfo container = cluster.getStorageContainerManager()
+          .getContainerManager()
+          .getContainer(ContainerID.valueOf(containerId));
+      Pipeline pipeline =
+          cluster.getStorageContainerManager().getPipelineManager()
+              .getPipeline(container.getPipelineID());
+      List<DatanodeDetails> datanodes = pipeline.getNodes();
+      StringBuilder sbDndts = new StringBuilder();
+      int dncnt = 0;
+      for (DatanodeDetails dndts : datanodes) {
+        sbDndts.append(
+            "datanode[" + dncnt + "] = " + dndts.toDebugString() + ", ");
+        dncnt++;
+      }
+      LOG.warn(
+          "******** aaa5: SIZE of datanodes [" + datanodes.size() + "] ==> " +
+              sbDndts);
+
+      cluster.shutdownHddsDatanode(datanodes.get(0));
+      cluster.shutdownHddsDatanode(datanodes.get(1));
+//    cluster.shutdownHddsDatanode(datanodes.get(2));
+
+      // The write will fail but exception will be handled and length will be
+      // updated correctly in OzoneManager once the steam is closed
+//    key.close();
+      key.flush();
+      //get the name of a valid container
+      OmKeyArgs keyArgs = new OmKeyArgs.Builder().setVolumeName(volumeName)
+          .setBucketName(bucketName)
+          .setReplicationConfig(RatisReplicationConfig.getInstance(THREE))
+          .setKeyName(keyName)
+          .build();
+
+      // when create a new block, will data migrated from old DN to new DN,
+      // or client rewrite the whole keys to new DN
+//    OmKeyInfo keyInfo = cluster.getOzoneManager().lookupKey(keyArgs);
+//
+//    Assert.assertEquals(data.length, keyInfo.getDataSize());
+//    validateData(keyName, data);
+
+      // Verify that the block information is updated correctly in the DB on
+      // failures
+//    testBlockCountOnFailures(keyInfo);
+
+//    ((KeyOutputStream) key.getOutputStream()).getStreamEntries().get(0).
+
+      StringBuilder sb = new StringBuilder();
+      groupOutputStream.getStreamEntries()
+          .forEach(s -> {
+            BlockOutputStream bl = (BlockOutputStream) s.getOutputStream();
+//            sb.append("******* ooooooooo1 " + bl + ", ")
+//                .append(bl.getBlockID() + ", ")
+//                .append(bl.getFailedServers()).append(",,,,,,,,,,,, ");
+          });
+      System.out.println("********** nnnnnnnnnnnn1: " + sb);
+      System.out.println("********** nnnnnnnnnnnn2: size = " +
+          groupOutputStream.getStreamEntries().size());
+
+      if (true) {
+        throw new RuntimeException("hello_w_excep");
+      }
+
+      Assert.assertEquals(3,
+          groupOutputStream.getExcludeList().getDatanodes().size());
+
+      /*
+      key.flush();
+      ((CustomClock)groupOutputStream.getExcludeList().getClock()).fastForward(400 * 1000);
+      Assert.assertEquals(3,
+          groupOutputStream.getExcludeList().getDatanodes().size());
+
+
+       */
+
+//      cluster.restartHddsDatanode(datanodes.get(0), true); // restart DN not working, will time out
+//      cluster.restartHddsDatanode(datanodes.get(1), true);
+//      String keyName2 = "hello_w_2";
+//      OzoneOutputStream key2 = createKey(keyName2, ReplicationType.RATIS, 0);
+//      byte[] data2 = ContainerTestHelper.getFixedLengthString(
+//          keyString, 2 * chunkSize + chunkSize / 2).getBytes(UTF_8);
+//      key2.write(data2);
+//      Assert.assertEquals(0,
+//          groupOutputStream.getExcludeList().getDatanodes().size());
+    } finally {
+//      shutdown();
+    }
   }
 
   /**
@@ -331,6 +465,7 @@ public class TestFailureHandlingByClient {
         cluster.getStorageContainerManager().getPipelineManager()
             .getPipeline(container.getPipelineID());
     List<DatanodeDetails> datanodes = pipeline.getNodes();
+    System.out.println("********* aaaaaaaaa: " + cluster.getHddsDatanodes().size());
 
     cluster.shutdownHddsDatanode(datanodes.get(0));
     cluster.shutdownHddsDatanode(datanodes.get(1));

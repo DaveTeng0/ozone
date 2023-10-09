@@ -301,7 +301,7 @@ public class BlockInputStream extends BlockExtendedInputStream {
   }
 
   @Override
-  protected synchronized int readWithStrategy(ByteReaderStrategy strategy)
+  protected synchronized int readWithStrategy(ByteReaderStrategy strategy) //hhhhhhhhhhhh
       throws IOException {
     Preconditions.checkArgument(strategy != null);
     if (!initialized) {

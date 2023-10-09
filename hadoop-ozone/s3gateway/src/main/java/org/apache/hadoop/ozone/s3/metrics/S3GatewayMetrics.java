@@ -252,7 +252,7 @@ public final class S3GatewayMetrics implements MetricsSource {
    *
    * @return S3GatewayMetrics
    */
-  public static synchronized S3GatewayMetrics create() {
+  public static synchronized S3GatewayMetrics create() { // hhhhhhhhhhh
     if (instance != null) {
       return instance;
     }

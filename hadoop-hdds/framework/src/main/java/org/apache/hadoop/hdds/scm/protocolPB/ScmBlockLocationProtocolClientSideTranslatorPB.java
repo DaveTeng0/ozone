@@ -187,7 +187,7 @@ public final class ScmBlockLocationProtocolClientSideTranslatorPB
     AllocateScmBlockRequestProto request = requestBuilder.build();
 
     SCMBlockLocationRequest wrapper = createSCMBlockRequest(
-        Type.AllocateScmBlock)
+        Type.AllocateScmBlock) // hhhhhhhhhhhhhh
         .setAllocateScmBlockRequest(request)
         .build();
 

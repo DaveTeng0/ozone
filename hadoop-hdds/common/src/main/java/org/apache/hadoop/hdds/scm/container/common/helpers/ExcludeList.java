@@ -21,15 +21,12 @@ import org.apache.hadoop.hdds.protocol.DatanodeDetails;
 import org.apache.hadoop.hdds.protocol.proto.HddsProtos;
 import org.apache.hadoop.hdds.scm.container.ContainerID;
 import org.apache.hadoop.hdds.scm.pipeline.PipelineID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Clock;
 import java.time.ZoneOffset;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -37,6 +34,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * to be handed over to SCM when block allocation request comes.
  */
 public class ExcludeList {
+  private static final Logger LOG =
+      LoggerFactory.getLogger(ExcludeList.class);
 
   private final Map<DatanodeDetails, Long> datanodes;
   private final Set<ContainerID> containerIds;
@@ -46,6 +45,8 @@ public class ExcludeList {
 
 
   public ExcludeList() {
+    LOG.warn("********* aa4 ExcludeList() with expiryTime = " + expiryTime);
+
     datanodes = new ConcurrentHashMap<>();
     containerIds = new HashSet<>();
     pipelineIds = new HashSet<>();
@@ -64,6 +65,16 @@ public class ExcludeList {
 
   public Set<DatanodeDetails> getDatanodes() {
     Set<DatanodeDetails> dns = new HashSet<>();
+//    LOG.warn("********* aa2 getDatanodes() with expiryTime = " + expiryTime);
+
+    LOG.warn("********* aa2.5 datanodes.entrySet().size = " + datanodes.entrySet().size());
+
+    Arrays.stream(Thread.currentThread().getStackTrace())
+        .forEach(s -> System.out.println(
+            "\tat " + s.getClassName() + "." + s.getMethodName() + "(" + s.getFileName() + ":" + s
+                .getLineNumber() + ")"));
+
+
     if (expiryTime > 0) {
       Iterator<Map.Entry<DatanodeDetails, Long>> iterator =
           datanodes.entrySet().iterator();
@@ -79,14 +90,17 @@ public class ExcludeList {
     } else {
       dns = datanodes.keySet();
     }
+    LOG.warn("********* aa2.6 getDatanodes() dns keySet size = " + datanodes.entrySet().size());
+
     return dns;
   }
 
   public void addDatanodes(Collection<DatanodeDetails> dns) {
-    dns.forEach(dn -> addDatanode(dn));
+    dns.forEach(dn -> addDatanode(dn)); // hhhhhhhhhhh write integration test for RATIS key write with datanode expiried time
   }
 
   public void addDatanode(DatanodeDetails dn) {
+    LOG.warn("********* aaaaa5 adding dn with expiryTime = " + expiryTime);
     datanodes.put(dn, clock.millis() + expiryTime);
   }
 
@@ -151,4 +165,11 @@ public class ExcludeList {
         '}';
   }
 
+  public long getExpiryTime() {
+    return expiryTime;
+  }
+
+  public Clock getClock() {
+    return clock;
+  }
 }

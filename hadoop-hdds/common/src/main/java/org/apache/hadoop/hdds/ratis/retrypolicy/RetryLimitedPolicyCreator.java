@@ -24,6 +24,7 @@ import org.apache.ratis.retry.RetryPolicies;
 import org.apache.ratis.retry.RetryPolicy;
 import org.apache.ratis.util.TimeDuration;
 
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -42,6 +43,13 @@ public class RetryLimitedPolicyCreator implements RetryPolicyCreator {
         TimeDuration.valueOf(retryInterval, TimeUnit.MILLISECONDS);
     RetryPolicy retryPolicy = RetryPolicies
         .retryUpToMaximumCountWithFixedSleep(maxRetryCount, sleepDuration);
+    System.out.println("---------start b01 ------");
+
+    Arrays.stream(Thread.currentThread().getStackTrace()).forEach(s -> System.out.println(
+        "\tat " + s.getClassName() + "." + s.getMethodName() + "(" + s.getFileName() + ":" + s
+            .getLineNumber() + ")"));
+    System.out.println("---------end b01------");
+
     return retryPolicy;
   }
 }

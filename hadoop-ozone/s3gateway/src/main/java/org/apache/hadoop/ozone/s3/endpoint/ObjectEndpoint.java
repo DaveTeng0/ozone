@@ -442,7 +442,7 @@ public class ObjectEndpoint extends EndpointBase {
         }
       }
       addLastModifiedDate(responseBuilder, keyDetails);
-      getMetrics().updateGetKeyMetadataStats(startNanos);
+      getMetrics().updateGetKeyMetadataStats(startNanos); //hhhhhhhhhhhhhhhh
       return responseBuilder.build();
     } catch (OMException ex) {
       auditSuccess = false;

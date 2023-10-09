@@ -20,10 +20,7 @@ package org.apache.hadoop.ozone.client.io;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -41,6 +38,7 @@ import org.apache.hadoop.hdds.scm.container.common.helpers.ExcludeList;
 import org.apache.hadoop.hdds.scm.container.common.helpers.StorageContainerException;
 import org.apache.hadoop.hdds.scm.pipeline.Pipeline;
 import org.apache.hadoop.hdds.scm.pipeline.PipelineID;
+import org.apache.hadoop.hdds.scm.storage.ECBlockOutputStream;
 import org.apache.hadoop.io.retry.RetryPolicies;
 import org.apache.hadoop.io.retry.RetryPolicy;
 import org.apache.hadoop.ozone.om.helpers.OmKeyLocationInfo;
@@ -219,24 +217,36 @@ public class KeyOutputStream extends OutputStream implements Syncable {
     writeOffset += len;
   }
 
-  private void handleWrite(byte[] b, int off, long len, boolean retry)
+  private void handleWrite(byte[] b, int off, long len, boolean retry) // hhhhhhhhhhhhh
       throws IOException {
+
+        System.out.println("********* jjjjjjjjj3 off: "+ off + ", len: " + len + ", retry: " + retry);
+
     while (len > 0) {
       try {
         BlockOutputStreamEntry current =
             blockOutputStreamEntryPool.allocateBlockIfNeeded();
+
+
+        System.out.println("********** jjjjjjjjjj2 blockOutputStreamEntryPool size = " + blockOutputStreamEntryPool.getStreamEntries().size());
+
         // length(len) will be in int range if the call is happening through
         // write API of blockOutputStream. Length can be in long range if it
         // comes via Exception path.
         int expectedWriteLen = Math.min((int) len,
                 (int) current.getRemaining());
         long currentPos = current.getWrittenDataLength();
+        System.out.println("********** jjjjjjjjjj4 current.getRemaining(): "
+            + current.getRemaining() + ", len: " + len + ", expectedWriteLen: " + expectedWriteLen
+            + ", currentPos: " + currentPos);
         // writeLen will be updated based on whether the write was succeeded
         // or if it sees an exception, how much the actual write was
         // acknowledged.
         int writtenLength =
                 writeToOutputStream(current, retry, len, b, expectedWriteLen,
                 off, currentPos);
+        System.out.println("*********** jjjjjjjjj5 writtenLength: " + writtenLength
+          + ", current.getRemaining(): " + current.getRemaining());
         if (current.getRemaining() <= 0) {
           // since the current block is already written close the stream.
           handleFlushOrClose(StreamAction.FULL);
@@ -254,7 +264,7 @@ public class KeyOutputStream extends OutputStream implements Syncable {
       boolean retry, long len, byte[] b, int writeLen, int off, long currentPos)
       throws IOException {
     try {
-      if (retry) {
+      if (retry) { // ?? so write-key wont retry if retry == false?
         current.writeOnRetry(len);
       } else {
         current.write(b, off, writeLen);
@@ -277,10 +287,29 @@ public class KeyOutputStream extends OutputStream implements Syncable {
         offset += writeLen;
       }
       LOG.debug("writeLen {}, total len {}", writeLen, len);
+
+//      current.streamsWithWriteFailure();
+//      excludePipelineAndFailedDN_tttttt(current.getPipeline(), failedStreams);
+
       handleException(current, ioe);
     }
     return writeLen;
   }
+
+  public void excludePipelineAndFailedDN_tttttt(Pipeline pipeline, List<ECBlockOutputStream> failedStreams) {
+
+      // Exclude the failed pipeline
+      blockOutputStreamEntryPool.getExcludeList().addPipeline(pipeline.getId());
+
+      // If the failure is NOT caused by other reasons (e.g. container full),
+      // we assume it is caused by DN failure and exclude the failed DN.
+      failedStreams.stream()
+          .filter(s -> !checkIfContainerToExclude(
+              HddsClientUtils.checkForException(s.getIoException())))
+          .forEach(s -> blockOutputStreamEntryPool.getExcludeList()
+              .addDatanode(s.getDatanodeDetails())); // hhhhhhhhhhhh
+
+    }
 
   /**
    * It performs following actions :
@@ -294,6 +323,19 @@ public class KeyOutputStream extends OutputStream implements Syncable {
    */
   private void handleException(BlockOutputStreamEntry streamEntry,
       IOException exception) throws IOException {
+    if (1 == 1) {
+//      String fullStackTrace = org.apache.commons.lang.exception.ExceptionUtils.getFullStackTrace(e);
+      System.out.println("*********");
+      System.out.println("****** ccccc2: " + exception);
+      System.out.println("******** start trace ***************");
+      Arrays.stream(Thread.currentThread().getStackTrace())
+          .forEach(s -> System.out.println(
+          "\tat " + s.getClassName() + "." + s.getMethodName() + "(" + s.getFileName() + ":" + s
+              .getLineNumber() + ")"));
+      System.out.println("********* end trace **************");
+//      throw new RuntimeException("hello_world");
+    }
+
     Throwable t = HddsClientUtils.checkForException(exception);
     Preconditions.checkNotNull(t);
     boolean retryFailure = checkForRetryFailure(t);
@@ -326,8 +368,10 @@ public class KeyOutputStream extends OutputStream implements Syncable {
     Collection<DatanodeDetails> failedServers = streamEntry.getFailedServers();
     Preconditions.checkNotNull(failedServers);
     ExcludeList excludeList = blockOutputStreamEntryPool.getExcludeList();
+
+    System.out.println("****** ccccc1: " + failedServers.size());
     if (!failedServers.isEmpty()) {
-      excludeList.addDatanodes(failedServers);
+      excludeList.addDatanodes(failedServers); // hhhhhhhhh
     }
 
     // if the container needs to be excluded , add the container to the
@@ -373,12 +417,16 @@ public class KeyOutputStream extends OutputStream implements Syncable {
     closed = true;
   }
 
-  private void handleRetry(IOException exception, long len) throws IOException {
+  private void handleRetry(IOException exception, long len) throws IOException { /// hhhhhhhhhh
     RetryPolicy retryPolicy = retryPolicyMap
         .get(HddsClientUtils.checkForException(exception).getClass());
     if (retryPolicy == null) {
       retryPolicy = retryPolicyMap.get(Exception.class);
     }
+    System.out.println("******* jjjjjjjj1 " + retryPolicy.getClass().getSimpleName()
+        + ", " + retryPolicy );
+
+
     RetryPolicy.RetryAction action = null;
     try {
       action = retryPolicy.shouldRetry(exception, retryCount, 0, true);
@@ -488,6 +536,8 @@ public class KeyOutputStream extends OutputStream implements Syncable {
   @SuppressWarnings("squid:S1141")
   private void handleFlushOrClose(StreamAction op) throws IOException {
     if (!blockOutputStreamEntryPool.isEmpty()) {
+//      System.out.println("******* ddddd1 " + this.getExcludeList().);
+
       while (true) {
         try {
           BlockOutputStreamEntry entry =
@@ -496,6 +546,7 @@ public class KeyOutputStream extends OutputStream implements Syncable {
             try {
               handleStreamAction(entry, op);
             } catch (IOException ioe) {
+//              ((KeyOutputStream)entry.getOutputStream()).
               handleException(entry, ioe);
               continue;
             }
@@ -512,6 +563,7 @@ public class KeyOutputStream extends OutputStream implements Syncable {
   private void handleStreamAction(BlockOutputStreamEntry entry,
                                   StreamAction op) throws IOException {
     Collection<DatanodeDetails> failedServers = entry.getFailedServers();
+    System.out.println("********** ddddd1 failedServers size: " + failedServers.size() + ", op = " + op);
     // failed servers can be null in case there is no data written in
     // the stream
     if (!failedServers.isEmpty()) {
@@ -550,7 +602,7 @@ public class KeyOutputStream extends OutputStream implements Syncable {
     }
     closed = true;
     try {
-      handleFlushOrClose(StreamAction.CLOSE);
+      handleFlushOrClose(StreamAction.CLOSE); //// hhhhhhhh
       if (!isException) {
         Preconditions.checkArgument(writeOffset == offset);
       }
@@ -568,6 +620,7 @@ public class KeyOutputStream extends OutputStream implements Syncable {
   @VisibleForTesting
   public ExcludeList getExcludeList() {
     return blockOutputStreamEntryPool.getExcludeList();
+//    blockOutputStreamEntryPool.
   }
 
   /**

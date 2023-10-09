@@ -19,6 +19,11 @@
 package org.apache.hadoop.ozone.client.io;
 
 import java.io.IOException;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.temporal.TemporalAmount;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
@@ -43,6 +48,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 /**
  * A BlockOutputStreamEntryPool manages the communication with OM during writing
@@ -82,6 +88,9 @@ public class BlockOutputStreamEntryPool {
   private final ExcludeList excludeList;
   private final ContainerClientMetrics clientMetrics;
 
+//  public Clock testClock = Clock.system(ZoneOffset.UTC);
+public Clock testClock = new CustomClock(Instant.now(), ZoneOffset.UTC);
+
   @SuppressWarnings({"parameternumber", "squid:S00107"})
   public BlockOutputStreamEntryPool(
       OzoneClientConfig config,
@@ -93,6 +102,8 @@ public class BlockOutputStreamEntryPool {
       XceiverClientFactory xceiverClientFactory, long openID,
       ContainerClientMetrics clientMetrics
   ) {
+    System.out.println("********* kkkkkkkkk2 ");
+
     this.config = config;
     this.xceiverClientFactory = xceiverClientFactory;
     streamEntries = new ArrayList<>();
@@ -105,7 +116,7 @@ public class BlockOutputStreamEntryPool {
         .setMultipartUploadPartNumber(partNumber).build();
     this.requestID = requestId;
     this.openID = openID;
-    this.excludeList = createExcludeList();
+    this.excludeList = createExcludeList(); // hhhhhhhhhhh
 
     this.bufferPool =
         new BufferPool(config.getStreamBufferSize(),
@@ -116,11 +127,25 @@ public class BlockOutputStreamEntryPool {
     this.clientMetrics = clientMetrics;
   }
 
-  ExcludeList createExcludeList() {
+  ExcludeList createExcludeList_old() {
     return new ExcludeList();
   }
 
+  ExcludeList createExcludeList() {
+//    return new ExcludeList(getConfig().getExcludeNodesExpiryTime(),
+//        Clock.system(ZoneOffset.UTC));
+    return new ExcludeList(getConfig().getExcludeNodesExpiryTime(),
+        testClock);
+
+  }
+
+  public Clock getTestClock() {
+    return testClock;
+  }
+
+
   BlockOutputStreamEntryPool(ContainerClientMetrics clientMetrics) {
+    System.out.println("******** kkkkkkkk1 ");
     streamEntries = new ArrayList<>();
     omClient = null;
     keyArgs = null;
@@ -190,7 +215,9 @@ public class BlockOutputStreamEntryPool {
 
   private void addKeyLocationInfo(OmKeyLocationInfo subKeyInfo) {
     Preconditions.checkNotNull(subKeyInfo.getPipeline());
-    streamEntries.add(createStreamEntry(subKeyInfo));
+    streamEntries.add(createStreamEntry(subKeyInfo)); // here add new streamEntry
+
+    System.out.println("********** lllllllll1 "+ subKeyInfo);
   }
 
   /**
@@ -387,6 +414,8 @@ public class BlockOutputStreamEntryPool {
       // a. If the stream gets full
       // b. it has encountered an exception
       currentStreamIndex++;
+      System.out.println("*********** ininininininin currentStreamIndex: " + currentStreamIndex);
+
     }
     if (streamEntries.size() <= currentStreamIndex) {
       Preconditions.checkNotNull(omClient);
@@ -428,4 +457,8 @@ public class BlockOutputStreamEntryPool {
   boolean isEmpty() {
     return streamEntries.isEmpty();
   }
+
+
 }
+
+

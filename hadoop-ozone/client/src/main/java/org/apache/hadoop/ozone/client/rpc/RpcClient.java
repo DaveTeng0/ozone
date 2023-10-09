@@ -2208,7 +2208,7 @@ public class RpcClient implements ClientProtocol {
   private OzoneOutputStream createOutputStream(OpenKeySession openKey)
       throws IOException {
     KeyOutputStream keyOutputStream = createKeyOutputStream(openKey)
-        .build();
+        .build(); // hhhhhhhhhhhhhh
     return createOutputStream(openKey, keyOutputStream);
   }
 
@@ -2263,7 +2263,7 @@ public class RpcClient implements ClientProtocol {
     ReplicationConfig replicationConfig =
         openKey.getKeyInfo().getReplicationConfig();
     if (replicationConfig.getReplicationType() ==
-        HddsProtos.ReplicationType.EC) {
+        HddsProtos.ReplicationType.EC) { // hhhhhhhhhhhhhhh
       builder = new ECKeyOutputStream.Builder()
           .setReplicationConfig((ECReplicationConfig) replicationConfig)
           .setByteBufferPool(byteBufferPool);

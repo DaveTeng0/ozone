@@ -65,7 +65,7 @@ public final class SnapshotUtils {
     try {
       snapshotInfo = ozoneManager.getMetadataManager()
           .getSnapshotInfoTable()
-          .get(snapshotKey);
+          .get(snapshotKey); // hhhhhhhhhhhhhhh
     } catch (IOException e) {
       LOG.error("Snapshot '{}' is not found.", snapshotKey, e);
       throw e;

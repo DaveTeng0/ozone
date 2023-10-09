@@ -437,7 +437,7 @@ public final class HddsUtils {
     case GetCommittedBlockLength:
       return true;
     case CloseContainer:
-    case WriteChunk:
+    case WriteChunk: ////// hhhhhhhhhh
     case UpdateContainer:
     case CompactChunk:
     case CreateContainer:
@@ -560,7 +560,7 @@ public final class HddsUtils {
         blockID = msg.getReadChunk().getBlockID();
       }
       break;
-    case WriteChunk:
+    case WriteChunk: // hhhhhhhhhh
       if (msg.hasWriteChunk()) {
         blockID = msg.getWriteChunk().getBlockID();
       }

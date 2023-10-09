@@ -42,6 +42,7 @@ import org.apache.hadoop.ozone.om.snapshot.ReferenceCounted;
 import org.apache.hadoop.ozone.om.snapshot.SnapshotCache;
 import org.apache.ozone.test.GenericTestUtils;
 import org.apache.ozone.test.tag.Flaky;
+import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -90,7 +91,7 @@ public class TestSnapshotDeletingService {
   private static final String BUCKET_NAME_ONE = "bucket1";
   private static final String BUCKET_NAME_TWO = "bucket2";
 
-  @BeforeEach
+//  @BeforeEach
   public void setup() throws Exception {
     OzoneConfiguration conf = new OzoneConfiguration();
     conf.setStorageSize(OzoneConfigKeys.OZONE_SCM_BLOCK_SIZE,
@@ -119,7 +120,7 @@ public class TestSnapshotDeletingService {
         client, VOLUME_NAME, BUCKET_NAME_ONE, BucketLayout.DEFAULT);
   }
 
-  @AfterEach
+//  @AfterEach
   public void teardown() {
     IOUtils.closeQuietly(client);
     if (cluster != null) {
@@ -248,6 +249,45 @@ public class TestSnapshotDeletingService {
 
   }
 
+  @org.junit.Test(expected = IllegalArgumentException.class)
+  public void testVerifyCommandString() {
+    String[] cmds = {
+        "test;echo'test'", "test \"$env\",", "test | test2", "test & test2",
+        "test > file1", "test < file2", "test # test2", "test `test2`", "!test"};
+    for(String cmd : cmds) {
+      verifyCommandString(cmd);
+    }
+  }
+
+  @org.junit.Test
+  public void testVerifyCommandStringWhiteList() {
+    String[] cmds = {
+        "kinit -kt /run/cloudera-scm-agent/process/37-cloudera-mgmt-SERVICEMONITOR/cmon.keytab hue/dteng-cm4-1.dteng-cm4.root.hwx.site@ROOT.HWX.SITE -c cmon-krb5cc-ozone-canary",
+        "ozone sh key ls s3v/cloudera-health-monitoring-ozone-basic-canary-bucket",
+        "ozone fs  -rm -skipTrash ofs://ozone1/s3v/cloudera-health-monitoring-ozone-basic-canary-bucket/cloudera-health-monitoring-ozone-basic-canary-key"
+};
+    for(String cmd : cmds) {
+//      assertTrue(verifyCommandString(cmd));
+      try {
+        verifyCommandString(cmd);
+      } catch (Exception e) {
+        Assert.fail("Should not have thrown any exception");
+      }
+
+    }
+  }
+
+  protected static boolean verifyCommandString(String cmd) {
+//    String pattern = ".*[;$\\|&()$><'\"#]+.*";
+    String validCmdCharactersPattern = "[\\w\\s-\\.@/:]+";
+    if (!cmd.matches(validCmdCharactersPattern)) {
+      LOG.warn("********** hello_1: parsing cmd but found it contains unsupported characters: " + validCmdCharactersPattern
+          + ".  with cmd: " + cmd);
+      throw new IllegalArgumentException(
+          "Kerberos kinit command doesn't match expected pattern.");
+    }
+    return true;
+  }
 
 
   @SuppressWarnings("checkstyle:MethodLength")

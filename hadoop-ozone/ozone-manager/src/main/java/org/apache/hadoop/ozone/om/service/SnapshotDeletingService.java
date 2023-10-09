@@ -462,7 +462,7 @@ public class SnapshotDeletingService extends AbstractKeyDeletingService {
             .build();
 
         OMRequest omRequest = OMRequest.newBuilder()
-            .setCmdType(Type.SnapshotPurge)
+            .setCmdType(Type.SnapshotPurge) // hhhhhhhhhhh
             .setSnapshotPurgeRequest(snapshotPurgeRequest)
             .setClientId(clientId.toString())
             .build();

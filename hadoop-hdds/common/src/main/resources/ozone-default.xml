@@ -1087,7 +1087,7 @@
     </description>
   </property>
   <property>
-    <name>hdds.heartbeat.interval</name>
+    <name>hdds.heartbeat.interval</name> <!-- hhhhhhhhhhhhhh -->
     <value>30s</value>
     <tag>OZONE, MANAGEMENT</tag>
     <description>

@@ -310,7 +310,7 @@ public class TestOMSnapshotPurgeRequestAndResponse {
 
     System.out.println("####### lalalalalala before for looping... ");
 
-//    omSnapshotManager.getSnapshotCache().get("unexist_key");
+    omSnapshotManager.getSnapshotCache().get("unexist_key");
     // test test test
 //    mockOmSnapshotManager.getSnapshotCache().getPendingEvictionList();
 

@@ -19,10 +19,7 @@ package org.apache.hadoop.ozone.om.protocolPB;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
@@ -734,6 +731,16 @@ public final class OzoneManagerProtocolClientSideTranslatorPB
   @Override
   public OmKeyLocationInfo allocateBlock(OmKeyArgs args, long clientId,
       ExcludeList excludeList) throws IOException {
+
+    System.out.println("********* alalalalalala start ");
+    Arrays.stream(Thread.currentThread().getStackTrace())
+        .forEach(s -> System.out.println(
+            "\tat " + s.getClassName() + "." + s.getMethodName() + "(" + s.getFileName() + ":" + s
+                .getLineNumber() + ")"));
+
+    System.out.println("********* alalalalalala end ");
+
+
     AllocateBlockRequest.Builder req = AllocateBlockRequest.newBuilder();
     KeyArgs.Builder keyArgs = KeyArgs.newBuilder()
         .setVolumeName(args.getVolumeName())
@@ -757,7 +764,7 @@ public final class OzoneManagerProtocolClientSideTranslatorPB
     req.setExcludeList(excludeList.getProtoBuf());
 
 
-    OMRequest omRequest = createOMRequest(Type.AllocateBlock)
+    OMRequest omRequest = createOMRequest(Type.AllocateBlock) /// alalalalalalalalalalalalala
         .setAllocateBlockRequest(req)
         .build();
 

@@ -124,7 +124,7 @@ import static org.apache.hadoop.hdds.utils.HddsServerUtil.getRemoteUser;
  * The RPC server that listens to requests from clients.
  */
 public class SCMClientProtocolServer implements
-    StorageContainerLocationProtocol, Auditor {
+    StorageContainerLocationProtocol, Auditor { // kkkkkkkkkkkkkkkkkkkkkkk
   private static final Logger LOG =
       LoggerFactory.getLogger(SCMClientProtocolServer.class);
   private static final AuditLogger AUDIT =

@@ -373,6 +373,7 @@ public class BlockDataStreamOutput implements ByteBufferStreamOutput {
    * @throws IOException IOException in case watch gets timed out
    */
   private void watchForCommit(boolean bufferFull) throws IOException {
+    System.out.println("********* mmmmmmmmmmmmmmm1");
     checkOpen();
     try {
       XceiverClientReply reply = bufferFull ?
@@ -436,7 +437,7 @@ public class BlockDataStreamOutput implements ByteBufferStreamOutput {
     try {
       XceiverClientReply asyncReply =
           putBlockAsync(xceiverClient, blockData, close, token);
-      final CompletableFuture<ContainerCommandResponseProto> flushFuture
+      final CompletableFuture<ContainerCommandResponseProto> flushFuture // hhhhhhhhh
           = asyncReply.getResponse().thenApplyAsync(e -> {
             try {
               validateResponse(e);

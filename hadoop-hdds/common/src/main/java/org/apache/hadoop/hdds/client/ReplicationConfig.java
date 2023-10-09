@@ -49,6 +49,8 @@ public interface ReplicationConfig {
       return RatisReplicationConfig.getInstance(factor);
     case STAND_ALONE:
       return StandaloneReplicationConfig.getInstance(factor);
+    case EC:
+      return new ECReplicationConfig("rs-3-2-1024k");
     default:
       throw new UnsupportedOperationException(
           "Not supported replication: " + type);

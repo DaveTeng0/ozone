@@ -189,6 +189,15 @@ public class OzoneClientConfig {
       tags = ConfigTag.CLIENT)
   private long excludeNodesExpiryTime = 10 * 60 * 1000;
 
+
+  @Config(key = "exclude.nodes.ratis.expiry.time",
+      defaultValue = "600000",
+      description = "Time after which an excluded node is reconsidered for" +
+          " writes in ratis. If the value is zero, the node is excluded for the" +
+          " life of the client",
+      tags = ConfigTag.CLIENT)
+  private long ratisKeyExcludeNodesExpiryTime = 10 * 60 * 1000;
+
   @Config(key = "ec.reconstruct.stripe.read.pool.limit",
       defaultValue = "30",
       description = "Thread pool max size for parallelly read" +
@@ -348,6 +357,10 @@ public class OzoneClientConfig {
 
   public long getExcludeNodesExpiryTime() {
     return excludeNodesExpiryTime;
+  }
+
+  public void setExcludeNodesExpiryTime(long expiryTime) {
+    excludeNodesExpiryTime = expiryTime;
   }
 
   public int getBufferIncrement() {

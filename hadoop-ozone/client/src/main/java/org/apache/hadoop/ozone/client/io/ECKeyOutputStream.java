@@ -279,7 +279,7 @@ public final class ECKeyOutputStream extends KeyOutputStream {
     return StripeWriteStatus.SUCCESS;
   }
 
-  private void excludePipelineAndFailedDN(Pipeline pipeline,
+  private void excludePipelineAndFailedDN(Pipeline pipeline, // hhhhhhhhh
       List<ECBlockOutputStream> failedStreams) {
 
     // Exclude the failed pipeline
@@ -291,7 +291,11 @@ public final class ECKeyOutputStream extends KeyOutputStream {
         .filter(s -> !checkIfContainerToExclude(
             HddsClientUtils.checkForException(s.getIoException())))
         .forEach(s -> blockOutputStreamEntryPool.getExcludeList()
-            .addDatanode(s.getDatanodeDetails()));
+            .addDatanode(s.getDatanodeDetails())); // hhhhhhhhhhhh
+
+    if (1 == 1) {
+      throw new RuntimeException("hello_w_3");
+    }
   }
 
   @Override

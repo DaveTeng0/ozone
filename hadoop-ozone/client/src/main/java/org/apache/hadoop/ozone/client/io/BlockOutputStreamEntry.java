@@ -19,6 +19,7 @@ package org.apache.hadoop.ozone.client.io;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -36,6 +37,7 @@ import org.apache.hadoop.hdds.security.token.OzoneBlockTokenIdentifier;
 import org.apache.hadoop.security.token.Token;
 
 import com.google.common.annotations.VisibleForTesting;
+import org.apache.ratis.util.LogUtils;
 
 /**
  * A BlockOutputStreamEntry manages the data writes into the DataNodes.
@@ -155,6 +157,7 @@ public class BlockOutputStreamEntry extends OutputStream {
   @Override
   public void close() throws IOException {
     if (isInitialized()) {
+      System.out.println("************* eeeee1 " + this.getClass().getSimpleName() + " isInitialized!");;
       getOutputStream().close();
       // after closing the chunkOutPutStream, blockId would have been
       // reconstructed with updated bcsId
@@ -217,6 +220,19 @@ public class BlockOutputStreamEntry extends OutputStream {
 
   Collection<DatanodeDetails> getFailedServers() {
     if (isInitialized()) {
+      String methodName = new Object() {}
+          .getClass()
+          .getEnclosingMethod()
+          .getName();
+      System.out.println("****** ababababa " + this.getClass().getSimpleName() + " : " + methodName);
+
+      System.out.println("******** start trace 2 ***************");
+      Arrays.stream(Thread.currentThread().getStackTrace())
+          .forEach(s -> System.out.println(
+              "\tat " + s.getClassName() + "." + s.getMethodName() + "(" + s.getFileName() + ":" + s
+                  .getLineNumber() + ")"));
+      System.out.println("********* end trace 2 **************");
+
       BlockOutputStream out = (BlockOutputStream) getOutputStream();
       return out.getFailedServers();
     }

@@ -20,6 +20,7 @@ package org.apache.hadoop.hdds.scm.storage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -204,6 +205,21 @@ public class BlockOutputStream extends OutputStream {
   }
 
   public List<DatanodeDetails> getFailedServers() {
+
+    System.out.println("--------start -------");
+    Arrays.stream(Thread.currentThread().getStackTrace()).forEach(s -> System.out.println(
+        "\tat " + s.getClassName() + "." + s.getMethodName() + "(" + s.getFileName() + ":" + s
+            .getLineNumber() + ")"));
+    System.out.println("---------end ------");
+
+    String curMethod = new Object() {}
+        .getClass()
+        .getEnclosingMethod()
+        .getName();
+    LOG.warn("******** iiiiiii1 " + this + "@ thread ["
+        + Thread.currentThread().getId() + "__" + Thread.currentThread().getName() + "__"
+        +  Thread.currentThread() + "] " + this + ", "
+        + curMethod + ", returns failedServers size: " + failedServers.size());
     return failedServers;
   }
 
@@ -411,13 +427,18 @@ public class BlockOutputStream extends OutputStream {
    *              its called as part flush/close
    * @throws IOException IOException in case watch gets timed out
    */
-  private void watchForCommit(boolean bufferFull) throws IOException {
+  private void watchForCommit(boolean bufferFull) throws IOException { // hhhhh
     checkOpen();
     try {
       final XceiverClientReply reply = sendWatchForCommit(bufferFull);
+      System.out.println("******** hhhhhhh1");
       if (reply != null) {
+        System.out.println("******** hhhhhhh2");
+
         List<DatanodeDetails> dnList = reply.getDatanodes();
         if (!dnList.isEmpty()) {
+          System.out.println("******** hhhhhhh3");
+
           Pipeline pipe = xceiverClient.getPipeline();
 
           LOG.warn("Failed to commit BlockId {} on {}. Failed nodes: {}",
@@ -456,7 +477,7 @@ public class BlockOutputStream extends OutputStream {
     }
 
     CompletableFuture<ContainerProtos.
-        ContainerCommandResponseProto> flushFuture = null;
+        ContainerCommandResponseProto> flushFuture = null; // hhhhhhhhhh
     try {
       BlockData blockData = containerBlockData.build();
       XceiverClientReply asyncReply =
@@ -541,19 +562,41 @@ public class BlockOutputStream extends OutputStream {
    * @param close whether the flush is happening as part of closing the stream
    */
   protected void handleFlush(boolean close) throws IOException {
+    System.out.println("***** stack trace 3 start ***** " + this);
+    if (1 == 1) {
+      Arrays.stream(Thread.currentThread().getStackTrace()).forEach(s -> System.out.println(
+          "\tat " + s.getClassName() + "." + s.getMethodName() + "(" + s.getFileName() + ":" + s
+              .getLineNumber() + ")"));
+
+//      throw new RuntimeException("hello_w_2");
+    }
+    System.out.println("***** stack trace 3 end *****" + this);
     try {
       handleFlushInternal(close);
     } catch (ExecutionException e) {
+      failedServers.addAll(getPipeline().getNodes());
+      System.out.println("********** eeeeeee2.5 failedServers size: " + failedServers.size());
+
+
+//      this.blockOutputStreamEntryPool.getExcludeList()
+//          .addDatanode(s.getDatanodeDetails()
+
       handleExecutionException(e);
     } catch (InterruptedException ex) {
+      System.out.println("****** eeeee3");
+
       Thread.currentThread().interrupt();
       handleInterruptedException(ex, true);
     } catch (Throwable e) {
+      System.out.println("****** eeeee4");
+
       String msg = "Failed to flush. error: " + e.getMessage();
       LOG.error(msg, e);
       throw e;
     } finally {
       if (close) {
+        System.out.println("****** eeeee5");
+
         cleanup(false);
       }
     }
@@ -564,6 +607,8 @@ public class BlockOutputStream extends OutputStream {
     checkOpen();
     // flush the last chunk data residing on the currentBuffer
     if (totalDataFlushedLength < writtenDataLength) {
+      System.out.println("********** gggggg1");
+
       refreshCurrentBuffer();
       Preconditions.checkArgument(currentBuffer.position() > 0);
       if (currentBuffer.hasRemaining()) {
@@ -575,18 +620,27 @@ public class BlockOutputStream extends OutputStream {
       updateFlushLength();
       executePutBlock(close, false);
     } else if (close) {
+      System.out.println("********** gggggg3");
+
       // forcing an "empty" putBlock if stream is being closed without new
       // data since latest flush - we need to send the "EOF" flag
       executePutBlock(true, true);
     }
+    System.out.println("********** gggggg2");
     waitOnFlushFutures();
+    System.out.println("********** gggggg4");
+
     watchForCommit(false);
+    System.out.println("********** gggggg5");
+
     // just check again if the exception is hit while waiting for the
     // futures to ensure flush has indeed succeeded
 
     // irrespective of whether the commitIndex2flushedDataMap is empty
     // or not, ensure there is no exception set
     checkOpen();
+    System.out.println("********** gggggg6");
+
   }
 
   @Override

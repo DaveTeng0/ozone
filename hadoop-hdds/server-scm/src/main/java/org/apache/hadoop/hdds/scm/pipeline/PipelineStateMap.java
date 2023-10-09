@@ -288,7 +288,7 @@ class PipelineStateMap {
       Pipeline pipeline = iter.next();
       if (!pipeline.getReplicationConfig().equals(replicationConfig) ||
           pipeline.getPipelineState() != state ||
-          excludePipelines.contains(pipeline.getId())) {
+          excludePipelines.contains(pipeline.getId())) { // currently pipelineID will be used to remove pipeline, DN-ID is not used???
         iter.remove();
       } else {
         for (DatanodeDetails dn : pipeline.getNodes()) {

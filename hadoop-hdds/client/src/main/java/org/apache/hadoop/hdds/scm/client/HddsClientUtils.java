@@ -23,6 +23,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -291,9 +292,17 @@ public final class HddsClientUtils {
 
   public static RetryPolicy createRetryPolicy(int maxRetryCount,
       long retryInterval) {
+    System.out.println("---------start a01 ------");
+
+    Arrays.stream(Thread.currentThread().getStackTrace()).forEach(s -> System.out.println(
+        "\tat " + s.getClassName() + "." + s.getMethodName() + "(" + s.getFileName() + ":" + s
+            .getLineNumber() + ")"));
+    System.out.println("---------end a01------");
+
+
     // retry with fixed sleep between retries
     return RetryPolicies.retryUpToMaximumCountWithFixedSleep(
-        maxRetryCount, retryInterval, TimeUnit.MILLISECONDS);
+        1, retryInterval, TimeUnit.MILLISECONDS);
   }
 
   public static Map<Class<? extends Throwable>,
