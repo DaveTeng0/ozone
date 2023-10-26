@@ -39,6 +39,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hdds.client.ContainerBlockID;
 import org.apache.hadoop.hdds.client.ECReplicationConfig;
 import org.apache.hadoop.hdds.client.ReplicationConfig;
+import org.apache.hadoop.hdds.protocol.proto.ScmBlockLocationProtocolProtos;
+import org.apache.hadoop.hdds.scm.container.common.helpers.AllocatedBlockWrapper;
 import org.apache.hadoop.hdds.utils.db.cache.CacheKey;
 import org.apache.hadoop.hdds.utils.db.cache.CacheValue;
 import org.apache.hadoop.ozone.OmUtils;
@@ -47,18 +49,7 @@ import org.apache.hadoop.ozone.OzoneConsts;
 import org.apache.hadoop.ozone.om.OMMetrics;
 import org.apache.hadoop.ozone.om.PrefixManager;
 import org.apache.hadoop.ozone.om.ResolvedBucket;
-import org.apache.hadoop.ozone.om.helpers.BucketEncryptionKeyInfo;
-import org.apache.hadoop.ozone.om.helpers.BucketLayout;
-import org.apache.hadoop.ozone.om.helpers.KeyValueUtil;
-import org.apache.hadoop.ozone.om.helpers.OmBucketInfo;
-import org.apache.hadoop.ozone.om.helpers.OmKeyInfo;
-import org.apache.hadoop.ozone.om.helpers.OmKeyLocationInfo;
-import org.apache.hadoop.ozone.om.helpers.OmKeyLocationInfoGroup;
-import org.apache.hadoop.ozone.om.helpers.OmPrefixInfo;
-import org.apache.hadoop.ozone.om.helpers.OmVolumeArgs;
-import org.apache.hadoop.ozone.om.helpers.OzoneAclUtil;
-import org.apache.hadoop.ozone.om.helpers.QuotaUtil;
-import org.apache.hadoop.ozone.om.helpers.RepeatedOmKeyInfo;
+import org.apache.hadoop.ozone.om.helpers.*;
 import org.apache.hadoop.ozone.om.lock.OzoneLockStrategy;
 import org.apache.hadoop.ozone.om.request.OMClientRequestUtils;
 import org.apache.hadoop.ozone.om.request.file.OMFileRequest;
@@ -85,6 +76,12 @@ import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos
     .KeyArgs;
 import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos
     .OMRequest;
+
+
+import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.AllocateBlockRequest;
+import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.AllocateBlockResponse;
+
+
 import org.apache.hadoop.hdds.security.token.OzoneBlockTokenSecretManager;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -138,11 +135,14 @@ public abstract class OMKeyRequest extends OMClientRequest {
    * @throws IOException
    */
   @SuppressWarnings("parameternumber")
-  protected List< OmKeyLocationInfo > allocateBlock(ScmClient scmClient,
-      OzoneBlockTokenSecretManager secretManager,
-      ReplicationConfig replicationConfig, ExcludeList excludeList,
-      long requestedSize, long scmBlockSize, int preallocateBlocksMax,
-      boolean grpcBlockTokenEnabled, String omID, OMMetrics omMetrics)
+//  protected List< OmKeyLocationInfo > allocateBlock(ScmClient scmClient,
+//  protected AllocatedBlockWrapper allocateBlock(ScmClient scmClient,
+  protected OmKeyLocationInfoWrapper allocateBlock(ScmClient scmClient,
+//  protected AllocateBlockResponse allocateBlock(ScmClient scmClient,
+                                                   OzoneBlockTokenSecretManager secretManager,
+                                                   ReplicationConfig replicationConfig, ExcludeList excludeList,
+                                                   long requestedSize, long scmBlockSize, int preallocateBlocksMax,
+                                                   boolean grpcBlockTokenEnabled, String omID, OMMetrics omMetrics)
       throws IOException {
     int dataGroupSize = replicationConfig instanceof ECReplicationConfig
         ? ((ECReplicationConfig) replicationConfig).getData() : 1;
@@ -152,20 +152,36 @@ public abstract class OMKeyRequest extends OMClientRequest {
     List<OmKeyLocationInfo> locationInfos = new ArrayList<>(numBlocks);
     String remoteUser = getRemoteUser().getShortUserName();
     List<AllocatedBlock> allocatedBlocks;
+//    AllocateBlockResponse resp = null;
+    AllocatedBlockWrapper allocatedBlockWrapper = null;
+    OmKeyLocationInfoWrapper wrapper1 = new OmKeyLocationInfoWrapper();
+//    scmClient.getBlockClient().getScmInfo()
+
+    System.out.println("************ 56565656565656565__________a,  " + excludeList.getDatanodes().size());
     try {
-      allocatedBlocks = scmClient.getBlockClient()
+//      allocatedBlocks = scmClient.getBlockClient()
+      allocatedBlockWrapper = scmClient.getBlockClient()
           .allocateBlock(scmBlockSize, numBlocks, replicationConfig, omID,
               excludeList);
-    } catch (SCMException ex) {
+    } catch (SCMException ex) { //
       omMetrics.incNumBlockAllocateCallFails();
       if (ex.getResult()
           .equals(SCMException.ResultCodes.SAFE_MODE_EXCEPTION)) {
         throw new OMException(ex.getMessage(),
             OMException.ResultCodes.SCM_IN_SAFE_MODE);
+      } else if (ex.getResult()
+          .equals(SCMException.ResultCodes.RETRY_ALL_DN_IN_EXCLUDE_LIST)) {//哈哈哈哈哈哈哈哈哈
+        System.out.println("*********** 56565656565656565__________c, RETRY_ALL_DN_IN_EXCLUDE_LIST" );
+        throw new OMException(ex.getMessage(),
+            OMException.ResultCodes.RETRY_ALL_DN_IN_EXCLUDE_LIST);
       }
       throw ex;
     }
-    for (AllocatedBlock allocatedBlock : allocatedBlocks) {
+
+//    List<AllocatedBlock> allocatedBlocks = resp.getKeyLocation();
+
+    for (AllocatedBlock allocatedBlock : allocatedBlockWrapper.getAllocatedBlocks()) {
+//    for (AllocatedBlock allocatedBlock : allocatedBlocks) {
       BlockID blockID = new BlockID(allocatedBlock.getBlockID());
       OmKeyLocationInfo.Builder builder = new OmKeyLocationInfo.Builder()
           .setBlockID(blockID)
@@ -178,7 +194,13 @@ public abstract class OMKeyRequest extends OMClientRequest {
       }
       locationInfos.add(builder.build());
     }
-    return locationInfos;
+    wrapper1.setOmKeyLocationInfo(locationInfos);
+    wrapper1.setShouldRetryFullDNList(allocatedBlockWrapper.isShouldRetryFullDNList());
+//    return locationInfos;
+//    return resp;
+    System.out.println("************ 56565656565656565__________b,  " + excludeList.getDatanodes().size());
+
+    return wrapper1;
   }
 
   /* Optimize ugi lookup for RPC operations to avoid a trip through

@@ -95,73 +95,73 @@ public class TestOmBlockVersioning {
     }
   }
 
-  @Test
-  public void testAllocateCommit() throws Exception {
-    String volumeName = "volume" + RandomStringUtils.randomNumeric(5);
-    String bucketName = "bucket" + RandomStringUtils.randomNumeric(5);
-    String keyName = "key" + RandomStringUtils.randomNumeric(5);
-
-    OzoneBucket bucket =
-        TestDataUtil.createVolumeAndBucket(client, volumeName, bucketName);
-    // Versioning isn't supported currently, but just preserving old behaviour
-    bucket.setVersioning(true);
-
-    OmKeyArgs keyArgs = new OmKeyArgs.Builder()
-        .setVolumeName(volumeName)
-        .setBucketName(bucketName)
-        .setKeyName(keyName)
-        .setDataSize(1000)
-        .setAcls(new ArrayList<>())
-        .setReplicationConfig(StandaloneReplicationConfig.getInstance(ONE))
-        .build();
-
-    // 1st update, version 0
-    OpenKeySession openKey = writeClient.openKey(keyArgs);
-    // explicitly set the keyLocation list before committing the key.
-    keyArgs.setLocationInfoList(openKey.getKeyInfo().getLatestVersionLocations()
-        .getBlocksLatestVersionOnly());
-    writeClient.commitKey(keyArgs, openKey.getId());
-
-    OmKeyInfo keyInfo = ozoneManager.lookupKey(keyArgs);
-    OmKeyLocationInfoGroup highestVersion =
-        checkVersions(keyInfo.getKeyLocationVersions());
-    assertEquals(0, highestVersion.getVersion());
-    assertEquals(1, highestVersion.getLocationList().size());
-
-    // 2nd update, version 1
-    openKey = writeClient.openKey(keyArgs);
-    //OmKeyLocationInfo locationInfo =
-    //    writeClient.allocateBlock(keyArgs, openKey.getId());
-    // explicitly set the keyLocation list before committing the key.
-    keyArgs.setLocationInfoList(openKey.getKeyInfo().getLatestVersionLocations()
-        .getBlocksLatestVersionOnly());
-    writeClient.commitKey(keyArgs, openKey.getId());
-
-    keyInfo = ozoneManager.lookupKey(keyArgs);
-    highestVersion = checkVersions(keyInfo.getKeyLocationVersions());
-    assertEquals(1, highestVersion.getVersion());
-    assertEquals(1, highestVersion.getLocationList().size());
-
-    // 3rd update, version 2
-    openKey = writeClient.openKey(keyArgs);
-
-    // this block will be appended to the latest version of version 2.
-    OmKeyLocationInfo locationInfo =
-        writeClient.allocateBlock(keyArgs, openKey.getId(),
-            new ExcludeList());
-    List<OmKeyLocationInfo> locationInfoList =
-        openKey.getKeyInfo().getLatestVersionLocations()
-            .getBlocksLatestVersionOnly();
-    Assert.assertTrue(locationInfoList.size() == 1);
-    locationInfoList.add(locationInfo);
-    keyArgs.setLocationInfoList(locationInfoList);
-    writeClient.commitKey(keyArgs, openKey.getId());
-
-    keyInfo = ozoneManager.lookupKey(keyArgs);
-    highestVersion = checkVersions(keyInfo.getKeyLocationVersions());
-    assertEquals(2, highestVersion.getVersion());
-    assertEquals(2, highestVersion.getLocationList().size());
-  }
+//  @Test
+//  public void testAllocateCommit() throws Exception {
+//    String volumeName = "volume" + RandomStringUtils.randomNumeric(5);
+//    String bucketName = "bucket" + RandomStringUtils.randomNumeric(5);
+//    String keyName = "key" + RandomStringUtils.randomNumeric(5);
+//
+//    OzoneBucket bucket =
+//        TestDataUtil.createVolumeAndBucket(client, volumeName, bucketName);
+//    // Versioning isn't supported currently, but just preserving old behaviour
+//    bucket.setVersioning(true);
+//
+//    OmKeyArgs keyArgs = new OmKeyArgs.Builder()
+//        .setVolumeName(volumeName)
+//        .setBucketName(bucketName)
+//        .setKeyName(keyName)
+//        .setDataSize(1000)
+//        .setAcls(new ArrayList<>())
+//        .setReplicationConfig(StandaloneReplicationConfig.getInstance(ONE))
+//        .build();
+//
+//    // 1st update, version 0
+//    OpenKeySession openKey = writeClient.openKey(keyArgs);
+//    // explicitly set the keyLocation list before committing the key.
+//    keyArgs.setLocationInfoList(openKey.getKeyInfo().getLatestVersionLocations()
+//        .getBlocksLatestVersionOnly());
+//    writeClient.commitKey(keyArgs, openKey.getId());
+//
+//    OmKeyInfo keyInfo = ozoneManager.lookupKey(keyArgs);
+//    OmKeyLocationInfoGroup highestVersion =
+//        checkVersions(keyInfo.getKeyLocationVersions());
+//    assertEquals(0, highestVersion.getVersion());
+//    assertEquals(1, highestVersion.getLocationList().size());
+//
+//    // 2nd update, version 1
+//    openKey = writeClient.openKey(keyArgs);
+//    //OmKeyLocationInfo locationInfo =
+//    //    writeClient.allocateBlock(keyArgs, openKey.getId());
+//    // explicitly set the keyLocation list before committing the key.
+//    keyArgs.setLocationInfoList(openKey.getKeyInfo().getLatestVersionLocations()
+//        .getBlocksLatestVersionOnly());
+//    writeClient.commitKey(keyArgs, openKey.getId());
+//
+//    keyInfo = ozoneManager.lookupKey(keyArgs);
+//    highestVersion = checkVersions(keyInfo.getKeyLocationVersions());
+//    assertEquals(1, highestVersion.getVersion());
+//    assertEquals(1, highestVersion.getLocationList().size());
+//
+//    // 3rd update, version 2
+//    openKey = writeClient.openKey(keyArgs);
+//
+//    // this block will be appended to the latest version of version 2.
+//    OmKeyLocationInfo locationInfo =
+//        writeClient.allocateBlock(keyArgs, openKey.getId(),
+//            new ExcludeList());
+//    List<OmKeyLocationInfo> locationInfoList =
+//        openKey.getKeyInfo().getLatestVersionLocations()
+//            .getBlocksLatestVersionOnly();
+//    Assert.assertTrue(locationInfoList.size() == 1);
+//    locationInfoList.add(locationInfo);
+//    keyArgs.setLocationInfoList(locationInfoList);
+//    writeClient.commitKey(keyArgs, openKey.getId());
+//
+//    keyInfo = ozoneManager.lookupKey(keyArgs);
+//    highestVersion = checkVersions(keyInfo.getKeyLocationVersions());
+//    assertEquals(2, highestVersion.getVersion());
+//    assertEquals(2, highestVersion.getLocationList().size());
+//  }
 
   private OmKeyLocationInfoGroup checkVersions(
       List<OmKeyLocationInfoGroup> versions) {

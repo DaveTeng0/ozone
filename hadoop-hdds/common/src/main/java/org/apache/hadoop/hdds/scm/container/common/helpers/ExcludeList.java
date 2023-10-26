@@ -41,11 +41,12 @@ public class ExcludeList {
   private final Set<ContainerID> containerIds;
   private final Set<PipelineID> pipelineIds;
   private long expiryTime = 0;
-  private java.time.Clock clock;
+//  private java.time.Clock clock;
+  protected java.time.Clock clock;
 
 
   public ExcludeList() {
-    LOG.warn("********* aa4 ExcludeList() with expiryTime = " + expiryTime);
+//    LOG.warn("********* aa4 ExcludeList() with expiryTime = " + expiryTime);
 
     datanodes = new ConcurrentHashMap<>();
     containerIds = new HashSet<>();
@@ -67,12 +68,12 @@ public class ExcludeList {
     Set<DatanodeDetails> dns = new HashSet<>();
 //    LOG.warn("********* aa2 getDatanodes() with expiryTime = " + expiryTime);
 
-    LOG.warn("********* aa2.5 datanodes.entrySet().size = " + datanodes.entrySet().size());
-
-    Arrays.stream(Thread.currentThread().getStackTrace())
-        .forEach(s -> System.out.println(
-            "\tat " + s.getClassName() + "." + s.getMethodName() + "(" + s.getFileName() + ":" + s
-                .getLineNumber() + ")"));
+//    LOG.warn("********* aa2.5 datanodes.entrySet().size = " + datanodes.entrySet().size());
+//
+//    Arrays.stream(Thread.currentThread().getStackTrace())
+//        .forEach(s -> System.out.println(
+//            "\tat " + s.getClassName() + "." + s.getMethodName() + "(" + s.getFileName() + ":" + s
+//                .getLineNumber() + ")"));
 
 
     if (expiryTime > 0) {
@@ -81,7 +82,9 @@ public class ExcludeList {
       while (iterator.hasNext()) {
         Map.Entry<DatanodeDetails, Long> entry = iterator.next();
         Long storedExpiryTime = entry.getValue();
-        if (clock.millis() > storedExpiryTime) {
+//        if (clock.millis() > storedExpiryTime) {
+        if (isExpired(storedExpiryTime)) {
+
           iterator.remove(); // removing
         } else {
           dns.add(entry.getKey());
@@ -90,9 +93,13 @@ public class ExcludeList {
     } else {
       dns = datanodes.keySet();
     }
-    LOG.warn("********* aa2.6 getDatanodes() dns keySet size = " + datanodes.entrySet().size());
+//    LOG.warn("********* aa2.6 getDatanodes() dns keySet size = " + datanodes.entrySet().size());
 
     return dns;
+  }
+
+  public boolean isExpired(Long storedExpiryTime) {
+    return clock.millis() > storedExpiryTime;
   }
 
   public void addDatanodes(Collection<DatanodeDetails> dns) {
@@ -100,7 +107,7 @@ public class ExcludeList {
   }
 
   public void addDatanode(DatanodeDetails dn) {
-    LOG.warn("********* aaaaa5 adding dn with expiryTime = " + expiryTime);
+//    LOG.warn("********* aaaaa5 adding dn with expiryTime = " + expiryTime);
     datanodes.put(dn, clock.millis() + expiryTime);
   }
 

@@ -19,15 +19,15 @@
 package org.apache.hadoop.ozone.om.request.key;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import com.google.common.base.Preconditions;
 import org.apache.hadoop.hdds.client.ReplicationConfig;
-import org.apache.hadoop.ozone.om.helpers.BucketLayout;
-import org.apache.hadoop.ozone.om.helpers.OmBucketInfo;
-import org.apache.hadoop.ozone.om.helpers.QuotaUtil;
+import org.apache.hadoop.hdds.scm.container.common.helpers.AllocatedBlockWrapper;
+import org.apache.hadoop.ozone.om.helpers.*;
 import org.apache.hadoop.ozone.om.ratis.utils.OzoneManagerDoubleBufferHelper;
 import org.apache.hadoop.ozone.om.request.util.OmResponseUtil;
 import org.apache.hadoop.ozone.om.request.validation.RequestFeatureValidator;
@@ -49,8 +49,6 @@ import org.apache.hadoop.ozone.om.OMMetadataManager;
 import org.apache.hadoop.ozone.om.OMMetrics;
 import org.apache.hadoop.ozone.om.OzoneManager;
 import org.apache.hadoop.ozone.om.exceptions.OMException;
-import org.apache.hadoop.ozone.om.helpers.OmKeyInfo;
-import org.apache.hadoop.ozone.om.helpers.OmKeyLocationInfo;
 import org.apache.hadoop.ozone.om.response.OMClientResponse;
 import org.apache.hadoop.ozone.om.response.key.OMAllocateBlockResponse;
 import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos;
@@ -81,6 +79,16 @@ public class OMAllocateBlockRequest extends OMKeyRequest {
   @Override
   public OMRequest preExecute(OzoneManager ozoneManager) throws IOException {
 
+    if (true) {
+      System.out.println("******** start trace eeeeeeeeeeeee_______1 ***************");
+      Arrays.stream(Thread.currentThread().getStackTrace())
+          .forEach(s -> System.out.println(
+              "\tat " + s.getClassName() + "." + s.getMethodName() + "(" + s.getFileName() + ":" + s
+                  .getLineNumber() + ")"));
+      System.out.println("********* end trace eeeeeeeeeeeee_______1 **************");
+    }
+
+
     AllocateBlockRequest allocateBlockRequest =
         getOmRequest().getAllocateBlockRequest();
 
@@ -97,6 +105,10 @@ public class OMAllocateBlockRequest extends OMKeyRequest {
           ExcludeList.getFromProtoBuf(allocateBlockRequest.getExcludeList());
     }
 
+
+    //check if all DN in exclude list
+//    ozoneManager.getScmClient();
+
     // TODO: Here we are allocating block with out any check for key exist in
     //  open table or not and also with out any authorization checks.
     //  Assumption here is that allocateBlocks with out openKey will be less.
@@ -111,13 +123,18 @@ public class OMAllocateBlockRequest extends OMKeyRequest {
     // To allocate atleast one block passing requested size and scmBlockSize
     // as same value. When allocating block requested size is same as
     // scmBlockSize.
-    List<OmKeyLocationInfo> omKeyLocationInfoList =
-        allocateBlock(ozoneManager.getScmClient(),
-            ozoneManager.getBlockTokenSecretManager(), repConfig, excludeList,
-            ozoneManager.getScmBlockSize(), ozoneManager.getScmBlockSize(),
-            ozoneManager.getPreallocateBlocksMax(),
-            ozoneManager.isGrpcBlockTokenEnabled(), ozoneManager.getOMNodeId(),
-            ozoneManager.getMetrics());
+
+//    AllocatedBlockWrapper wrapper = allocateBlock(ozoneManager.getScmClient(),
+    OmKeyLocationInfoWrapper wrapper = allocateBlock(ozoneManager.getScmClient(),
+        ozoneManager.getBlockTokenSecretManager(), repConfig, excludeList,
+        ozoneManager.getScmBlockSize(), ozoneManager.getScmBlockSize(),
+        ozoneManager.getPreallocateBlocksMax(),
+        ozoneManager.isGrpcBlockTokenEnabled(), ozoneManager.getOMNodeId(),
+        ozoneManager.getMetrics());
+
+    System.out.println("********** eeeeeeeeeeeee________3, " + wrapper.isShouldRetryFullDNList());
+
+    List<OmKeyLocationInfo> omKeyLocationInfoList = wrapper.getOmKeyLocationInfo();
 
     // Set modification time and normalize key if required.
     KeyArgs.Builder newKeyArgs =
@@ -134,9 +151,14 @@ public class OMAllocateBlockRequest extends OMKeyRequest {
     }
 
     // Add allocated block info.
-    newAllocatedBlockRequest.setKeyLocation(
-        omKeyLocationInfoList.get(0).getProtobuf(getOmRequest().getVersion()));
+    if (null != omKeyLocationInfoList && omKeyLocationInfoList.size() > 0) {
+      newAllocatedBlockRequest.setKeyLocation(
+          omKeyLocationInfoList.get(0).getProtobuf(getOmRequest().getVersion()));
+    }
 
+    newAllocatedBlockRequest.setShouldRetryFullDNList(wrapper.isShouldRetryFullDNList());
+
+    System.out.println("*********** eeeeeeeeeeeee________2, " + newAllocatedBlockRequest.getShouldRetryFullDNList());
     return getOmRequest().toBuilder().setUserInfo(getUserInfo())
         .setAllocateBlockRequest(newAllocatedBlockRequest).build();
 
@@ -145,6 +167,8 @@ public class OMAllocateBlockRequest extends OMKeyRequest {
   @Override
   public OMClientResponse validateAndUpdateCache(OzoneManager ozoneManager,
       long trxnLogIndex, OzoneManagerDoubleBufferHelper omDoubleBufferHelper) {
+
+    System.out.println("*********** eeeeeeeeeeeee________3");
 
     OzoneManagerProtocolProtos.AllocateBlockRequest allocateBlockRequest =
         getOmRequest().getAllocateBlockRequest();
@@ -237,8 +261,11 @@ public class OMAllocateBlockRequest extends OMKeyRequest {
           new CacheKey<>(openKeyName),
           CacheValue.get(trxnLogIndex, openKeyInfo));
 
+      boolean test = true;
       omResponse.setAllocateBlockResponse(AllocateBlockResponse.newBuilder()
-          .setKeyLocation(blockLocation).build());
+          .setKeyLocation(blockLocation)
+          .setShouldRetryFullDNList(test)
+          .build());
       omClientResponse = new OMAllocateBlockResponse(omResponse.build(),
           openKeyInfo, clientID, getBucketLayout());
 
@@ -262,6 +289,9 @@ public class OMAllocateBlockRequest extends OMKeyRequest {
 
     auditLog(auditLogger, buildAuditMessage(OMAction.ALLOCATE_BLOCK, auditMap,
         exception, getOmRequest().getUserInfo()));
+
+
+    System.out.println("*********** eeeeeeeeeeeee________4");
 
     return omClientResponse;
   }

@@ -198,7 +198,11 @@ public class OzoneManagerProtocolServerSideTranslatorPB implements
         return createErrorResponse(request, ex);
       }
 
+      System.out.println("*********** 222222222222__________ a, "
+          + request.getAllocateBlockRequest().getShouldRetryFullDNList()+ ", " + this);
       OMResponse response = submitRequestToRatis(request);
+      System.out.println("*********** 222222222222__________ b, " + this);
+
       if (!response.getSuccess()) {
         omClientRequest.handleRequestFailure(ozoneManager);
       }

@@ -367,8 +367,8 @@ public class TestSstFilteringService {
             .build();
     //Open and Commit the Key in the Key Manager.
     OpenKeySession session = managerProtocol.openKey(keyArg);
-    keyArg.addLocationInfo(managerProtocol.allocateBlock(keyArg,
-        session.getId(), new ExcludeList()));
+//    keyArg.addLocationInfo(managerProtocol.allocateBlock(keyArg,
+//        session.getId(), new ExcludeList()));
     managerProtocol.commitKey(keyArg, session.getId());
   }
 

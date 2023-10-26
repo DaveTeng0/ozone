@@ -29,6 +29,7 @@ import org.apache.hadoop.hdds.protocol.proto.HddsProtos.ReplicationFactor;
 import org.apache.hadoop.hdds.scm.AddSCMRequest;
 import org.apache.hadoop.hdds.scm.ScmInfo;
 import org.apache.hadoop.hdds.scm.container.common.helpers.AllocatedBlock;
+import org.apache.hadoop.hdds.scm.container.common.helpers.AllocatedBlockWrapper;
 import org.apache.hadoop.hdds.scm.container.common.helpers.DeleteBlockResult;
 import org.apache.hadoop.hdds.scm.container.common.helpers.ExcludeList;
 import org.apache.hadoop.hdds.scm.pipeline.Pipeline;
@@ -119,9 +120,11 @@ public class ScmBlockLocationTestingClient implements ScmBlockLocationProtocol {
    * @throws IOException
    */
   @Override
-  public List<AllocatedBlock> allocateBlock(long size, int num,
-      ReplicationConfig config,
-      String owner, ExcludeList excludeList) throws IOException {
+//  public List<AllocatedBlock> allocateBlock(long size, int num,
+  public AllocatedBlockWrapper allocateBlock(long size, int num,
+
+                                             ReplicationConfig config,
+                                             String owner, ExcludeList excludeList) throws IOException {
     DatanodeDetails datanodeDetails = randomDatanodeDetails();
     Pipeline pipeline = createPipeline(datanodeDetails);
     long containerID = Time.monotonicNow();
@@ -130,7 +133,7 @@ public class ScmBlockLocationTestingClient implements ScmBlockLocationProtocol {
         new AllocatedBlock.Builder()
             .setContainerBlockID(new ContainerBlockID(containerID, localID))
             .setPipeline(pipeline);
-    return Collections.singletonList(abb.build());
+    return new AllocatedBlockWrapper(Collections.singletonList(abb.build()), false);
   }
 
   private Pipeline createPipeline(DatanodeDetails datanode) {

@@ -17,14 +17,23 @@
  */
 package org.apache.hadoop.hdds.scm.protocol;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.apache.hadoop.hdds.client.ReplicationConfig;
 import org.apache.hadoop.hdds.protocol.DatanodeDetails;
+import org.apache.hadoop.hdds.protocol.proto.ScmBlockLocationProtocolProtos;
 import org.apache.hadoop.hdds.scm.AddSCMRequest;
 import org.apache.hadoop.hdds.scm.ScmConfig;
 import org.apache.hadoop.hdds.scm.container.common.helpers.ExcludeList;
+//import org.apache.hadoop.hdds.scm.protocolPB.AllocatedBlockWrapper;
 import org.apache.hadoop.security.KerberosInfo;
 import org.apache.hadoop.hdds.scm.ScmInfo;
 import org.apache.hadoop.hdds.scm.container.common.helpers.AllocatedBlock;
+import org.apache.hadoop.hdds.scm.container.common.helpers.AllocatedBlockWrapper;
+
+
+
+
+
 import org.apache.hadoop.hdds.protocol.proto.HddsProtos.ReplicationFactor;
 import org.apache.hadoop.hdds.protocol.proto.HddsProtos.ReplicationType;
 import org.apache.hadoop.ozone.common.BlockGroup;
@@ -33,6 +42,7 @@ import org.apache.hadoop.ozone.common.DeleteBlockGroupResult;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -62,7 +72,11 @@ public interface ScmBlockLocationProtocol extends Closeable { /// kkkkkkkkkkkkkk
    * @throws IOException
    */
   @Deprecated
-  default List<AllocatedBlock> allocateBlock(long size, int numBlocks,
+//  default List<AllocatedBlock> allocateBlock(long size, int numBlocks,
+  default AllocatedBlockWrapper allocateBlock(long size, int numBlocks,
+
+//  default Map<List<AllocatedBlock>, Boolean> allocateBlock(long size, int numBlocks,
+
       ReplicationType type, ReplicationFactor factor, String owner,
       ExcludeList excludeList) throws IOException, TimeoutException {
     return allocateBlock(size, numBlocks, ReplicationConfig
@@ -83,9 +97,13 @@ public interface ScmBlockLocationProtocol extends Closeable { /// kkkkkkkkkkkkkk
    * @return allocated block accessing info (key, pipeline).
    * @throws IOException
    */
-  List<AllocatedBlock> allocateBlock(long size, int numBlocks,
-      ReplicationConfig replicationConfig, String owner,
-      ExcludeList excludeList) throws IOException;
+//  List<AllocatedBlock> allocateBlock(long size, int numBlocks,
+//  AllocateBlockResponse allocateBlock(long size, int numBlocks,
+  AllocatedBlockWrapper allocateBlock(long size, int numBlocks,
+//  Map<List<AllocatedBlock>, Boolean> allocateBlock(long size, int numBlocks,
+
+                                                                     ReplicationConfig replicationConfig, String owner,
+                                                                     ExcludeList excludeList) throws IOException;
 
   /**
    * Delete blocks for a set of object keys.

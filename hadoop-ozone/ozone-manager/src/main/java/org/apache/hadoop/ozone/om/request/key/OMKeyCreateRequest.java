@@ -21,17 +21,19 @@ package org.apache.hadoop.ozone.om.request.key;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.google.common.base.Preconditions;
 import org.apache.hadoop.hdds.client.ReplicationConfig;
+import org.apache.hadoop.hdds.scm.container.common.helpers.AllocatedBlockWrapper;
 import org.apache.hadoop.ozone.OmUtils;
 import org.apache.hadoop.ozone.om.OMConfigKeys;
 import org.apache.hadoop.ozone.om.OzoneConfigUtil;
 import org.apache.hadoop.ozone.om.exceptions.OMException;
-import org.apache.hadoop.ozone.om.helpers.BucketLayout;
+import org.apache.hadoop.ozone.om.helpers.*;
 import org.apache.hadoop.ozone.om.lock.OzoneLockStrategy;
 import org.apache.hadoop.ozone.om.request.file.OMDirectoryCreateRequest;
 import org.apache.hadoop.ozone.om.request.file.OMFileRequest;
@@ -50,9 +52,6 @@ import org.apache.hadoop.ozone.audit.OMAction;
 import org.apache.hadoop.ozone.om.OMMetadataManager;
 import org.apache.hadoop.ozone.om.OMMetrics;
 import org.apache.hadoop.ozone.om.OzoneManager;
-import org.apache.hadoop.ozone.om.helpers.OmBucketInfo;
-import org.apache.hadoop.ozone.om.helpers.OmKeyInfo;
-import org.apache.hadoop.ozone.om.helpers.OmKeyLocationInfo;
 import org.apache.hadoop.ozone.om.response.OMClientResponse;
 import org.apache.hadoop.ozone.om.ratis.utils.OzoneManagerDoubleBufferHelper;
 import org.apache.hadoop.ozone.om.response.key.OMKeyCreateResponse;
@@ -141,7 +140,18 @@ public class OMKeyCreateRequest extends OMKeyRequest {
       //  As for a client for the first time this can be executed on any OM,
       //  till leader is identified.
 
-      List<OmKeyLocationInfo> omKeyLocationInfoList =
+//      List<OmKeyLocationInfo> omKeyLocationInfoList =
+//          AllocatedBlockWrapper wrapper1 =
+
+      if (true) {
+        System.out.println("******** start trace dddddddddddd_______1 ***************");
+        Arrays.stream(Thread.currentThread().getStackTrace())
+            .forEach(s -> System.out.println(
+                "\tat " + s.getClassName() + "." + s.getMethodName() + "(" + s.getFileName() + ":" + s
+                    .getLineNumber() + ")"));
+        System.out.println("********* end trace dddddddddddd_______1 **************");
+      }
+      OmKeyLocationInfoWrapper wrapper1 =
           allocateBlock(ozoneManager.getScmClient(),
               ozoneManager.getBlockTokenSecretManager(), repConfig,
               new ExcludeList(), requestedSize, scmBlockSize,
@@ -149,6 +159,7 @@ public class OMKeyCreateRequest extends OMKeyRequest {
               ozoneManager.isGrpcBlockTokenEnabled(),
               ozoneManager.getOMNodeId(),
               ozoneManager.getMetrics());
+      List<OmKeyLocationInfo> omKeyLocationInfoList = wrapper1.getOmKeyLocationInfo();
 
       newKeyArgs = keyArgs.toBuilder().setModificationTime(Time.now())
               .setType(type).setFactor(factor)
@@ -183,6 +194,17 @@ public class OMKeyCreateRequest extends OMKeyRequest {
   @SuppressWarnings("methodlength")
   public OMClientResponse validateAndUpdateCache(OzoneManager ozoneManager,
       long trxnLogIndex, OzoneManagerDoubleBufferHelper omDoubleBufferHelper) {
+
+    if (true) {
+      System.out.println("******** start trace dddddddddddd_______2 ***************");
+      Arrays.stream(Thread.currentThread().getStackTrace())
+          .forEach(s -> System.out.println(
+              "\tat " + s.getClassName() + "." + s.getMethodName() + "(" + s.getFileName() + ":" + s
+                  .getLineNumber() + ")"));
+      System.out.println("********* end trace dddddddddddd_______2 **************");
+    }
+
+
     CreateKeyRequest createKeyRequest = getOmRequest().getCreateKeyRequest();
 
     KeyArgs keyArgs = createKeyRequest.getKeyArgs();
@@ -355,6 +377,7 @@ public class OMKeyCreateRequest extends OMKeyRequest {
     logResult(createKeyRequest, omMetrics, exception, result,
             numMissingParents);
 
+    System.out.println("*********** dddddddddddddd_________3  success complete validateAndUpdateCache of " + this);
     return omClientResponse;
   }
 

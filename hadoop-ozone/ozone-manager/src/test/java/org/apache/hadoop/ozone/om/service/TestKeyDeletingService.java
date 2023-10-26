@@ -651,8 +651,8 @@ t
     // allocate blocks until the blocks num equal to numBlocks
     LinkedList<OmKeyLocationInfo> allocated = new LinkedList<>();
     for (int i = 0; i < numBlocks - preAllocatedSize; i++) {
-      allocated.add(writeClient.allocateBlock(keyArg, session.getId(),
-          new ExcludeList()));
+//      allocated.add(writeClient.allocateBlock(keyArg, session.getId(),
+//          new ExcludeList()));
     }
 
     // remove the blocks not to be committed

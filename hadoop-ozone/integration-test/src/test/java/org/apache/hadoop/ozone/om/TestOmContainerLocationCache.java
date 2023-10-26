@@ -49,6 +49,7 @@ import org.apache.hadoop.hdds.scm.XceiverClientReply;
 import org.apache.hadoop.hdds.scm.XceiverClientSpi;
 import org.apache.hadoop.hdds.scm.container.ContainerInfo;
 import org.apache.hadoop.hdds.scm.container.common.helpers.AllocatedBlock;
+import org.apache.hadoop.hdds.scm.container.common.helpers.AllocatedBlockWrapper;
 import org.apache.hadoop.hdds.scm.container.common.helpers.ContainerWithPipeline;
 import org.apache.hadoop.hdds.scm.container.common.helpers.ExcludeList;
 import org.apache.hadoop.hdds.scm.pipeline.Pipeline;
@@ -558,7 +559,9 @@ public class TestOmContainerLocationCache {
             any(ReplicationConfig.class),
             Mockito.anyString(),
             any(ExcludeList.class)))
-        .thenReturn(Collections.singletonList(block));
+//        .thenReturn(Collections.singletonList(block));
+        .thenReturn(any(AllocatedBlockWrapper.class));
+
   }
 
   private void mockScmGetContainerPipeline(long containerId,

@@ -18,10 +18,10 @@ package org.apache.hadoop.hdds.scm.protocolPB;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.apache.hadoop.hdds.annotation.InterfaceAudience;
 import org.apache.hadoop.hdds.client.ContainerBlockID;
 import org.apache.hadoop.hdds.client.ECReplicationConfig;
@@ -46,6 +46,7 @@ import org.apache.hadoop.hdds.protocol.proto.ScmBlockLocationProtocolProtos
 import org.apache.hadoop.hdds.scm.AddSCMRequest;
 import org.apache.hadoop.hdds.scm.ScmInfo;
 import org.apache.hadoop.hdds.scm.container.common.helpers.AllocatedBlock;
+import org.apache.hadoop.hdds.scm.container.common.helpers.AllocatedBlockWrapper;
 import org.apache.hadoop.hdds.scm.container.common.helpers.ExcludeList;
 import org.apache.hadoop.hdds.scm.exceptions.SCMException;
 import org.apache.hadoop.hdds.scm.pipeline.Pipeline;
@@ -146,11 +147,24 @@ public final class ScmBlockLocationProtocolClientSideTranslatorPB
    * @throws IOException
    */
   @Override
-  public List<AllocatedBlock> allocateBlock(
+//  public List<AllocatedBlock> allocateBlock(
+  public AllocatedBlockWrapper allocateBlock(
+//  public Map<List<AllocatedBlock>, Boolean> allocateBlock(
+
       long size, int num,
       ReplicationConfig replicationConfig,
       String owner, ExcludeList excludeList
   ) throws IOException {
+    System.out.println("************* 31313131313131313131313131313131313________ a, " + excludeList.getDatanodes().size());
+    System.out.println("******** start trace spiderman ***************");
+    Arrays.stream(Thread.currentThread().getStackTrace())
+        .forEach(s -> System.out.println(
+            "\tat " + s.getClassName() + "." + s.getMethodName() + "(" + s.getFileName() + ":" + s
+                .getLineNumber() + ")"));
+    System.out.println("********* end trace spiderman **************");
+
+
+
     Preconditions.checkArgument(size > 0, "block size must be greater than 0");
 
     final AllocateScmBlockRequestProto.Builder requestBuilder =
@@ -187,7 +201,7 @@ public final class ScmBlockLocationProtocolClientSideTranslatorPB
     AllocateScmBlockRequestProto request = requestBuilder.build();
 
     SCMBlockLocationRequest wrapper = createSCMBlockRequest(
-        Type.AllocateScmBlock) // hhhhhhhhhhhhhh
+        Type.AllocateScmBlock) // hhhhhhhhhhhhhh 哈哈哈哈哈哈哈哈哈
         .setAllocateScmBlockRequest(request)
         .build();
 
@@ -205,7 +219,17 @@ public final class ScmBlockLocationProtocolClientSideTranslatorPB
       blocks.add(builder.build());
     }
 
-    return blocks;
+    System.out.println("************* 31313131313131313131313131313131313________ b, "
+        + response.getShouldRetryFullDNList() + ", resp block cnt: " + response.getBlocksCount());
+    AllocatedBlockWrapper wrapper1 = new AllocatedBlockWrapper(blocks, response.getShouldRetryFullDNList());
+    if(false) {
+      throw new RuntimeException("ms_charge_blade. ");
+    }
+    return wrapper1;
+//    HashMap<List<AllocatedBlock>, Boolean> map = new HashMap<>();
+//    map.put(blocks, response.getShouldRetryFullDNList());
+//    return blocks;
+//    return map;
   }
 
   /**
@@ -330,3 +354,32 @@ public final class ScmBlockLocationProtocolClientSideTranslatorPB
     failoverProxyProvider.close();
   }
 }
+
+//class AllocatedBlockWrapper {
+//  List<AllocatedBlock> allocatedBlocks;
+//  boolean shouldRetryFullDNList;
+//
+//  public AllocatedBlockWrapper(List<AllocatedBlock> allocatedBlocks, boolean shouldRetryFullDNList) {
+//    this.allocatedBlocks = allocatedBlocks;
+//    this.shouldRetryFullDNList = shouldRetryFullDNList;
+//  }
+//
+//  public List<AllocatedBlock> getAllocatedBlocks() {
+//    return allocatedBlocks;
+//  }
+//
+//  public void setAllocatedBlocks(
+//      List<AllocatedBlock> allocatedBlocks) {
+//    this.allocatedBlocks = allocatedBlocks;
+//  }
+//
+//  public boolean isShouldRetryFullDNList() {
+//    return shouldRetryFullDNList;
+//  }
+//
+//  public void setShouldRetryFullDNList(boolean shouldRetryFullDNList) {
+//    this.shouldRetryFullDNList = shouldRetryFullDNList;
+//  }
+//
+//
+//}

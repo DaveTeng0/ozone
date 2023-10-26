@@ -50,6 +50,23 @@ public class OzoneClientConfig {
     COMPOSITE_CRC  // Block/chunk-independent composite CRC
   }
 
+  public int getMaxTimesFullDNListRetry() {
+    return maxTimesFullDNListRetry;
+  }
+
+  public void setMaxTimesFullDNListRetry(int maxTimesFullDNListRetry) {
+    this.maxTimesFullDNListRetry = maxTimesFullDNListRetry;
+  }
+
+  @Config(key = "max.times.full.dn.list.retry",
+      defaultValue = "10",
+      type = ConfigType.INT,
+      description = "maxTimesFullDNListRetry",
+      tags = ConfigTag.CLIENT
+  )
+  private int maxTimesFullDNListRetry = 10;
+
+
   @Config(key = "stream.buffer.flush.size",
       defaultValue = "16MB",
       type = ConfigType.SIZE,

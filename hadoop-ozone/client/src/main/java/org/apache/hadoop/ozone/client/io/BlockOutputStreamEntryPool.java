@@ -27,7 +27,9 @@ import java.time.temporal.TemporalAmount;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.apache.hadoop.hdds.client.ReplicationConfig;
 import org.apache.hadoop.hdds.conf.OzoneConfiguration;
 import org.apache.hadoop.hdds.scm.ByteStringConversion;
@@ -43,6 +45,9 @@ import org.apache.hadoop.ozone.om.helpers.OmKeyLocationInfo;
 import org.apache.hadoop.ozone.om.helpers.OmKeyLocationInfoGroup;
 import org.apache.hadoop.ozone.om.helpers.OmMultipartCommitUploadPartInfo;
 import org.apache.hadoop.ozone.om.protocol.OzoneManagerProtocol;
+
+import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.AllocateBlockResponse;
+
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -61,6 +66,8 @@ public class BlockOutputStreamEntryPool {
 
   public static final Logger LOG =
       LoggerFactory.getLogger(BlockOutputStreamEntryPool.class);
+
+  protected boolean shouldRetryFullDNList;
 
   /**
    * List of stream entries that are used to write a block of data.
@@ -85,7 +92,7 @@ public class BlockOutputStreamEntryPool {
   private final BufferPool bufferPool;
   private OmMultipartCommitUploadPartInfo commitUploadPartInfo;
   private final long openID;
-  private final ExcludeList excludeList;
+  protected ExcludeList excludeList;
   private final ContainerClientMetrics clientMetrics;
 
 //  public Clock testClock = Clock.system(ZoneOffset.UTC);
@@ -102,7 +109,7 @@ public Clock testClock = new CustomClock(Instant.now(), ZoneOffset.UTC);
       XceiverClientFactory xceiverClientFactory, long openID,
       ContainerClientMetrics clientMetrics
   ) {
-    System.out.println("********* kkkkkkkkk2 ");
+//    System.out.println("********* kkkkkkkkk2 ");
 
     this.config = config;
     this.xceiverClientFactory = xceiverClientFactory;
@@ -117,6 +124,7 @@ public Clock testClock = new CustomClock(Instant.now(), ZoneOffset.UTC);
     this.requestID = requestId;
     this.openID = openID;
     this.excludeList = createExcludeList(); // hhhhhhhhhhh
+    setExcludeList(createExcludeList());
 
     this.bufferPool =
         new BufferPool(config.getStreamBufferSize(),
@@ -139,13 +147,21 @@ public Clock testClock = new CustomClock(Instant.now(), ZoneOffset.UTC);
 
   }
 
+  public void setExcludeList(ExcludeList excludeList) {
+    this.excludeList = excludeList;
+  }
+
+  protected Clock createExcludeListClock() {
+    return Clock.system(ZoneOffset.UTC);
+  }
+
   public Clock getTestClock() {
     return testClock;
   }
 
 
   BlockOutputStreamEntryPool(ContainerClientMetrics clientMetrics) {
-    System.out.println("******** kkkkkkkk1 ");
+//    System.out.println("******** kkkkkkkk1 ");
     streamEntries = new ArrayList<>();
     omClient = null;
     keyArgs = null;
@@ -213,11 +229,15 @@ public Clock testClock = new CustomClock(Instant.now(), ZoneOffset.UTC);
             .build();
   }
 
-  private void addKeyLocationInfo(OmKeyLocationInfo subKeyInfo) {
-    Preconditions.checkNotNull(subKeyInfo.getPipeline());
-    streamEntries.add(createStreamEntry(subKeyInfo)); // here add new streamEntry
+  protected void addKeyLocationInfo(OmKeyLocationInfo subKeyInfo) {
+    if(null != subKeyInfo.getPipeline()){
+      Preconditions.checkNotNull(subKeyInfo.getPipeline());
+      streamEntries.add(createStreamEntry(subKeyInfo)); // here add new streamEntry
+    } else {
+      currentStreamIndex--;
+    }
 
-    System.out.println("********** lllllllll1 "+ subKeyInfo);
+//    System.out.println("********** lllllllll1 "+ subKeyInfo);
   }
 
   /**
@@ -331,13 +351,24 @@ public Clock testClock = new CustomClock(Instant.now(), ZoneOffset.UTC);
    *
    * @throws IOException
    */
-  private void allocateNewBlock() throws IOException {
+  protected void allocateNewBlock() throws IOException {
     if (!excludeList.isEmpty()) {
       LOG.debug("Allocating block with {}", excludeList);
     }
-    OmKeyLocationInfo subKeyInfo =
+    System.out.println("***************** 4646464646464646__________");
+//    OmKeyLocationInfo subKeyInfo =
+    AllocateBlockResponse resp =
         omClient.allocateBlock(keyArgs, openID, excludeList);
-    addKeyLocationInfo(subKeyInfo);
+    OmKeyLocationInfo info1 =OmKeyLocationInfo.getFromProtobuf(resp.getKeyLocation());
+//    addKeyLocationInfo(subKeyInfo);
+    if(null != info1) {
+      addKeyLocationInfo(info1);
+    } else {
+      currentStreamIndex--;
+    }
+//      shouldRetryFullDNList = omk.getValue();
+    shouldRetryFullDNList = resp.getShouldRetryFullDNList();
+    System.out.println("********** 4545454545____________ " + shouldRetryFullDNList + ", excludeList = " + excludeList.getDatanodes().size());
   }
 
   /**
@@ -407,7 +438,7 @@ public Clock testClock = new CustomClock(Instant.now(), ZoneOffset.UTC);
    * @return the new current open stream to write to
    * @throws IOException if the block allocation failed.
    */
-  BlockOutputStreamEntry allocateBlockIfNeeded() throws IOException {
+  public BlockOutputStreamEntry allocateBlockIfNeeded() throws IOException { // kkkkkkkkkkkkkkkkkkkk
     BlockOutputStreamEntry streamEntry = getCurrentStreamEntry();
     if (streamEntry != null && streamEntry.isClosed()) {
       // a stream entry gets closed either by :
@@ -421,10 +452,15 @@ public Clock testClock = new CustomClock(Instant.now(), ZoneOffset.UTC);
       Preconditions.checkNotNull(omClient);
       // allocate a new block, if a exception happens, log an error and
       // throw exception to the caller directly, and the write fails.
-      allocateNewBlock();
+      try {
+        allocateNewBlock();
+      } catch (Exception e) {
+        currentStreamIndex--;
+      }
     }
     // in theory, this condition should never violate due the check above
     // still do a sanity check.
+    System.out.println("****** ininininininin______2, " + currentStreamIndex + "/" + streamEntries.size());
     Preconditions.checkArgument(currentStreamIndex < streamEntries.size());
     return streamEntries.get(currentStreamIndex);
   }

@@ -18,6 +18,7 @@
 package org.apache.hadoop.hdds.scm.protocol;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,6 +41,7 @@ import org.apache.hadoop.hdds.protocol.proto.ScmBlockLocationProtocolProtos.Stat
 import org.apache.hadoop.hdds.scm.AddSCMRequest;
 import org.apache.hadoop.hdds.scm.ScmInfo;
 import org.apache.hadoop.hdds.scm.container.common.helpers.AllocatedBlock;
+import org.apache.hadoop.hdds.scm.container.common.helpers.AllocatedBlockWrapper;
 import org.apache.hadoop.hdds.scm.container.common.helpers.ExcludeList;
 import org.apache.hadoop.hdds.scm.exceptions.SCMException;
 import org.apache.hadoop.hdds.scm.ha.RatisUtil;
@@ -179,16 +181,47 @@ public final class ScmBlockLocationProtocolServerSideTranslatorPB
 
   private Status exceptionToResponseStatus(IOException ex) {
     if (ex instanceof SCMException && ((SCMException) ex).getResult() != null) {
+      System.out.println("*************  american captin: "
+          + ((SCMException) ex).getResult() + ", " + ((SCMException) ex).getResult().ordinal());
       return Status.values()[((SCMException) ex).getResult().ordinal()];
     } else {
       return Status.INTERNAL_ERROR;
     }
   }
 
-  public AllocateScmBlockResponseProto allocateScmBlock(
+  public AllocateScmBlockResponseProto allocateScmBlock( //哈哈哈哈哈哈哈哈哈哈哈哈
       AllocateScmBlockRequestProto request, int clientVersion)
       throws IOException {
-    List<AllocatedBlock> allocatedBlocks =
+    if (false) {
+      System.out.println("******** start trace msmsmsms new world ***************");
+      Arrays.stream(Thread.currentThread().getStackTrace())
+          .forEach(s -> System.out.println(
+              "\tat " + s.getClassName() + "." + s.getMethodName() + "(" + s.getFileName() + ":" + s
+                  .getLineNumber() + ")"));
+      System.out.println("********* end trace msmsmsmsms**************");
+//      throw new IOException("hello_monster_h");
+    }
+
+    AllocateScmBlockResponseProto.Builder builder =
+        AllocateScmBlockResponseProto.newBuilder();
+
+    //check if all DN in exclude list
+    ExcludeList excludeList = ExcludeList.getFromProtoBuf(request.getExcludeList());
+    System.out.println("*************** 3232323232323232323232323__________ a, "
+        + excludeList.getDatanodes().size() + "/" + scm.getScmNodeManager().getAllNodes().size());
+
+//    if (excludeList.getDatanodes().size() == scm.getScmNodeManager().getAllNodes().size()) {
+    if (excludeList.getDatanodes().size() == 3) {
+
+      System.out.println("********** aaaaaaaa1: RetryFullDNList");
+//      builder.setShouldRetryFullDNList(true);
+//      return builder.build();
+      throw new SCMException("All Datanodes have been added in client's exclude list. Client should retry all Datanodes again.",
+          SCMException.ResultCodes.RETRY_ALL_DN_IN_EXCLUDE_LIST);
+    }
+
+//    List<AllocatedBlock> allocatedBlocks =
+    AllocatedBlockWrapper wrapper =
         impl.allocateBlock(request.getSize(),
             request.getNumBlocks(),
             ReplicationConfig.fromProto(
@@ -197,9 +230,10 @@ public final class ScmBlockLocationProtocolServerSideTranslatorPB
                 request.getEcReplicationConfig()),
             request.getOwner(),
             ExcludeList.getFromProtoBuf(request.getExcludeList()));
+    List<AllocatedBlock> allocatedBlocks = wrapper.getAllocatedBlocks();
 
-    AllocateScmBlockResponseProto.Builder builder =
-        AllocateScmBlockResponseProto.newBuilder();
+//    AllocateScmBlockResponseProto.Builder builder =
+//        AllocateScmBlockResponseProto.newBuilder();
 
     if (allocatedBlocks.size() < request.getNumBlocks()) {
       throw new SCMException("Allocated " + allocatedBlocks.size() +
@@ -211,6 +245,8 @@ public final class ScmBlockLocationProtocolServerSideTranslatorPB
           .setContainerBlockID(block.getBlockID().getProtobuf())
           .setPipeline(block.getPipeline().getProtobufMessage(clientVersion)));
     }
+    builder.setShouldRetryFullDNList(false);
+    System.out.println("*************** 3232323232323232323232323__________ b, " + excludeList.getDatanodes().size());
 
     return builder.build();
   }

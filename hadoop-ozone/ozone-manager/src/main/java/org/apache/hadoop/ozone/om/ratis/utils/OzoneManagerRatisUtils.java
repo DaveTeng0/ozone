@@ -97,6 +97,7 @@ import org.rocksdb.RocksDBException;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Arrays;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -125,6 +126,14 @@ public final class OzoneManagerRatisUtils {
   @SuppressWarnings("checkstyle:methodlength")
   public static OMClientRequest createClientRequest(OMRequest omRequest,
       OzoneManager ozoneManager) throws IOException {
+
+    System.out.println("************** pppppppp______1, start : " + omRequest.getCmdType());
+    Arrays.stream(Thread.currentThread().getStackTrace())
+        .forEach(s -> System.out.println(
+            "\tat " + s.getClassName() + "." + s.getMethodName() + "(" + s.getFileName() + ":" + s
+                .getLineNumber() + ")"));
+
+    System.out.println("************** pppppppp______1, end : " + omRequest.getCmdType());
 
     // Handling of exception by createClientRequest(OMRequest, OzoneManger):
     // Either the code will take FSO or non FSO path, both classes has a
@@ -392,7 +401,9 @@ public final class OzoneManagerRatisUtils {
    */
   public static Status exceptionToResponseStatus(IOException exception) {
     if (exception instanceof OMException) {
-      return Status.values()[((OMException) exception).getResult().ordinal()];
+      return Status.values() [
+          ((OMException) exception).getResult().ordinal()
+      ];
     } else {
       // Doing this here, because when DB error happens we need to return
       // correct error code, so that in applyTransaction we can

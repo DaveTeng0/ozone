@@ -18,11 +18,7 @@ package org.apache.hadoop.hdds.scm.block;
 
 import javax.management.ObjectName;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import org.apache.hadoop.hdds.client.BlockID;
 import org.apache.hadoop.hdds.client.ContainerBlockID;
@@ -148,6 +144,16 @@ public class BlockManagerImpl implements BlockManager, BlockmanagerMXBean {
       ReplicationConfig replicationConfig,
       String owner, ExcludeList excludeList)
       throws IOException {
+    if(true) {
+      System.out.println("******** start trace hunterhunterhunter***************");
+      Arrays.stream(Thread.currentThread().getStackTrace())
+          .forEach(s -> System.out.println(
+              "\tat " + s.getClassName() + "." + s.getMethodName() + "(" + s.getFileName() + ":" + s
+                  .getLineNumber() + ")"));
+      System.out.println("********* end trace **************");
+//      throw new IOException("monster_hunter_new");
+    }
+
     if (LOG.isTraceEnabled()) {
       LOG.trace("Size : {} , replicationConfig: {}", size, replicationConfig);
     }

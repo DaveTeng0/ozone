@@ -281,6 +281,7 @@ public class BlockOutputStream extends OutputStream {
 
   @Override
   public void write(byte[] b, int off, int len) throws IOException {
+    System.out.println("********* xxxxxxxx_______1, off/len: " + off+ "/"+ len);
     checkOpen();
     if (b == null) {
       throw new NullPointerException();
@@ -347,6 +348,7 @@ public class BlockOutputStream extends OutputStream {
 
   // In this case, the data is already cached in the currentBuffer.
   public void writeOnRetry(long len) throws IOException {
+    System.out.println("********** yyyyyyyyy____1, writeOnRetry, len = " + len + ", " + this);
     if (len == 0) {
       return;
     }
@@ -562,18 +564,18 @@ public class BlockOutputStream extends OutputStream {
    * @param close whether the flush is happening as part of closing the stream
    */
   protected void handleFlush(boolean close) throws IOException {
+    if (true) {
     System.out.println("***** stack trace 3 start ***** " + this);
-    if (1 == 1) {
       Arrays.stream(Thread.currentThread().getStackTrace()).forEach(s -> System.out.println(
           "\tat " + s.getClassName() + "." + s.getMethodName() + "(" + s.getFileName() + ":" + s
               .getLineNumber() + ")"));
-
-//      throw new RuntimeException("hello_w_2");
-    }
     System.out.println("***** stack trace 3 end *****" + this);
+    }
+
+
     try {
       handleFlushInternal(close);
-    } catch (ExecutionException e) {
+    } catch (ExecutionException e) { // 啊啊啊啊啊啊啊啊
       failedServers.addAll(getPipeline().getNodes());
       System.out.println("********** eeeeeee2.5 failedServers size: " + failedServers.size());
 
@@ -604,6 +606,14 @@ public class BlockOutputStream extends OutputStream {
 
   private void handleFlushInternal(boolean close)
       throws IOException, InterruptedException, ExecutionException {
+    System.out.println("******** start trace popopopopopop_____1 ***************");
+    Arrays.stream(Thread.currentThread().getStackTrace())
+        .forEach(s -> System.out.println(
+            "\tat " + s.getClassName() + "." + s.getMethodName() + "(" + s.getFileName() + ":" + s
+                .getLineNumber() + ")"));
+    System.out.println("********* end trace popopopopopop_____1 **************");
+
+
     checkOpen();
     // flush the last chunk data residing on the currentBuffer
     if (totalDataFlushedLength < writtenDataLength) {
@@ -820,6 +830,17 @@ public class BlockOutputStream extends OutputStream {
    * @throws IOException
    */
   private void handleExecutionException(Exception ex) throws IOException {
+    System.out.println("******** start trace  switch_ax_____1 ***************");
+    Arrays.stream(Thread.currentThread().getStackTrace())
+        .forEach(s -> System.out.println(
+            "\tat " + s.getClassName() + "." + s.getMethodName() + "(" + s.getFileName() + ":" + s
+                .getLineNumber() + ")"));
+    System.out.println("********* end trace switch_ax_____1 **************");
+    System.out.println("******* switch_ax_____2, " + ex + ", " +ex.getMessage());
+
+
+
+
     setIoException(ex);
     adjustBuffersOnException();
     throw getIoException();

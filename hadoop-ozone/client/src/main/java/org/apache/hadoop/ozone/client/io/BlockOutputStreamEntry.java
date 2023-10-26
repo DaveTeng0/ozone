@@ -226,12 +226,12 @@ public class BlockOutputStreamEntry extends OutputStream {
           .getName();
       System.out.println("****** ababababa " + this.getClass().getSimpleName() + " : " + methodName);
 
-      System.out.println("******** start trace 2 ***************");
-      Arrays.stream(Thread.currentThread().getStackTrace())
-          .forEach(s -> System.out.println(
-              "\tat " + s.getClassName() + "." + s.getMethodName() + "(" + s.getFileName() + ":" + s
-                  .getLineNumber() + ")"));
-      System.out.println("********* end trace 2 **************");
+//      System.out.println("******** start trace 2 ***************");
+//      Arrays.stream(Thread.currentThread().getStackTrace())
+//          .forEach(s -> System.out.println(
+//              "\tat " + s.getClassName() + "." + s.getMethodName() + "(" + s.getFileName() + ":" + s
+//                  .getLineNumber() + ")"));
+//      System.out.println("********* end trace 2 **************");
 
       BlockOutputStream out = (BlockOutputStream) getOutputStream();
       return out.getFailedServers();

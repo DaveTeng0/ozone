@@ -19,6 +19,7 @@
 package org.apache.hadoop.ozone.client.io;
 
 import com.google.common.base.Preconditions;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.apache.hadoop.hdds.client.ReplicationConfig;
 import org.apache.hadoop.hdds.scm.OzoneClientConfig;
 import org.apache.hadoop.hdds.scm.XceiverClientFactory;
@@ -31,13 +32,16 @@ import org.apache.hadoop.ozone.om.helpers.OmKeyLocationInfo;
 import org.apache.hadoop.ozone.om.helpers.OmKeyLocationInfoGroup;
 import org.apache.hadoop.ozone.om.helpers.OmMultipartCommitUploadPartInfo;
 import org.apache.hadoop.ozone.om.protocol.OzoneManagerProtocol;
+
+
+import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.AllocateBlockResponse;
+
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.*;
 
 /**
  * This class manages the stream entries list and handles block allocation
@@ -59,6 +63,17 @@ public class BlockDataStreamOutputEntryPool {
   private final long openID;
   private final ExcludeList excludeList;
   private List<StreamBuffer> bufferList;
+
+  public int getMaxTimesFullDNListRetry() {
+    return maxTimesFullDNListRetry;
+  }
+
+  public void setMaxTimesFullDNListRetry(int maxTimesFullDNListRetry) {
+    this.maxTimesFullDNListRetry = maxTimesFullDNListRetry;
+  }
+
+  protected int maxTimesFullDNListRetry;
+
 
   @SuppressWarnings({"parameternumber", "squid:S00107"})
   public BlockDataStreamOutputEntryPool(
@@ -84,6 +99,7 @@ public class BlockDataStreamOutputEntryPool {
     this.openID = openID;
     this.excludeList = new ExcludeList();
     this.bufferList = new ArrayList<>();
+    this.maxTimesFullDNListRetry = config.getMaxTimesFullDNListRetry();
   }
 
   /**
@@ -203,9 +219,12 @@ public class BlockDataStreamOutputEntryPool {
     if (!excludeList.isEmpty()) {
       LOG.debug("Allocating block with {}", excludeList);
     }
-    OmKeyLocationInfo subKeyInfo =
+//    OmKeyLocationInfo subKeyInfo =
+//    Map<OmKeyLocationInfo, Boolean> map =
+//    OmKeyLocationInfoWrapper wrapper =
+    AllocateBlockResponse resp =
         omClient.allocateBlock(keyArgs, openID, excludeList);
-    addKeyLocationInfo(subKeyInfo);
+    addKeyLocationInfo(OmKeyLocationInfo.getFromProtobuf(resp.getKeyLocation()));
   }
 
 
@@ -255,6 +274,8 @@ public class BlockDataStreamOutputEntryPool {
     // in theory, this condition should never violate due the check above
     // still do a sanity check.
     Preconditions.checkArgument(currentStreamIndex < streamEntries.size());
+
+
     return streamEntries.get(currentStreamIndex);
   }
 

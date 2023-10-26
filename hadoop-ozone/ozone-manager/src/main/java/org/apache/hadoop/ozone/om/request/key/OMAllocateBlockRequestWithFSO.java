@@ -77,6 +77,12 @@ public class OMAllocateBlockRequestWithFSO extends OMAllocateBlockRequest {
   public OMClientResponse validateAndUpdateCache(OzoneManager ozoneManager,
       long trxnLogIndex, OzoneManagerDoubleBufferHelper omDoubleBufferHelper) {
 
+    if(false){
+      throw new RuntimeException("ms_ice_borne");
+    }
+    System.out.println("********** xxxxxxxxx________ 1, "
+        + getOmRequest().getAllocateBlockRequest().getShouldRetryFullDNList() + ",,,,,,,,,,,, " + this);
+
     AllocateBlockRequest allocateBlockRequest =
             getOmRequest().getAllocateBlockRequest();
 
@@ -167,8 +173,9 @@ public class OMAllocateBlockRequestWithFSO extends OMAllocateBlockRequest {
       addOpenTableCacheEntry(trxnLogIndex, omMetadataManager, openKeyName,
               openKeyInfo);
 
+      System.out.println("xxxxxxxxx________ 3, blockLocation = " + blockLocation);
       omResponse.setAllocateBlockResponse(AllocateBlockResponse.newBuilder()
-              .setKeyLocation(blockLocation).build());
+              .setKeyLocation(blockLocation).build()); // KKKKKKKKKKKKK
       long volumeId = omMetadataManager.getVolumeId(volumeName);
       omClientResponse = getOmClientResponse(clientID, omResponse,
               openKeyInfo, omBucketInfo.copyObject(), volumeId);
@@ -192,6 +199,9 @@ public class OMAllocateBlockRequestWithFSO extends OMAllocateBlockRequest {
 
     auditLog(auditLogger, buildAuditMessage(OMAction.ALLOCATE_BLOCK, auditMap,
             exception, getOmRequest().getUserInfo()));
+
+
+    System.out.println("********** xxxxxxxxx________ 2, " + this);
 
     return omClientResponse;
   }

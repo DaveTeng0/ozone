@@ -247,7 +247,10 @@ public final class OzoneManagerRatisServer {
     if (ozoneManager.getPrepareState().requestAllowed(omRequest.getCmdType())) {
       RaftClientRequest raftClientRequest =
           createWriteRaftClientRequest(omRequest);
+
+      System.out.println("*********** zzzzzzzzzzzzz__________________1, " + raftClientRequest.getMessage().getContent());
       RaftClientReply raftClientReply = submitRequestToRatis(raftClientRequest);
+      System.out.println("*********** zzzzzzzzzzzzz__________________2, " + raftClientReply.getMessage().getContent());
 
       return processReply(omRequest, raftClientReply);
     } else {

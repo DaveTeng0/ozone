@@ -254,8 +254,8 @@ public class TestOpenKeyCleanupService {
     // Open and write the key without commit it.
     OpenKeySession session = writeClient.openKey(keyArg);
     for (int i = 0; i < numBlocks; i++) {
-      keyArg.addLocationInfo(writeClient.allocateBlock(keyArg, session.getId(),
-          new ExcludeList()));
+//      keyArg.addLocationInfo(writeClient.allocateBlock(keyArg, session.getId(),
+//          new ExcludeList()));
     }
     if (hsync) {
       writeClient.hsyncKey(keyArg, session.getId());

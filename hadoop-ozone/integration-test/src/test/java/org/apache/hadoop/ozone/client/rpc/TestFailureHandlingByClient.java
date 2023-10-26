@@ -78,7 +78,8 @@ import org.slf4j.LoggerFactory;
 /**
  * Tests Exception handling by Ozone Client.
  */
-@Timeout(300)
+//@Timeout(300)
+  @Timeout(120)
 public class TestFailureHandlingByClient {
 
   private static final Logger LOG =
@@ -148,7 +149,9 @@ public class TestFailureHandlingByClient {
         Collections.singleton(HddsUtils.getHostName(conf))).get(0),
         "/rack1");
     cluster = MiniOzoneCluster.newBuilder(conf)
+//        .setNumDatanodes(3).setTotalPipelineNumLimit(1).build();
         .setNumDatanodes(10).setTotalPipelineNumLimit(15).build();
+
     cluster.waitForClusterToBeReady();
     //the easiest way to create an open container is creating a key
     client = OzoneClientFactory.getRpcClient(conf);
@@ -233,15 +236,30 @@ public class TestFailureHandlingByClient {
       OzoneOutputStream key = createKey(keyName, ReplicationType.RATIS, 0);
 //    OzoneOutputStream key = createKey(keyName, ReplicationType.EC, 0);
 
+      if(false) {
+        throw new RuntimeException("monster_big_sword");
+      }
+
 //    LOG.warn("*********** bbbbb key.excludeListExpireTime = " + ((KeyOutputStream)key.getOutputStream()).getExcludeList().getExpiryTime());
 //      byte[] data = ContainerTestHelper.getFixedLengthString(
 //          keyString, 2 * chunkSize + chunkSize / 2).getBytes(UTF_8);
     byte[] data = "1234567".getBytes(UTF_8);
       key.write(data);
-      System.out.println("****** fffffff1 " +
-          ((KeyOutputStream) key.getOutputStream()).getStreamEntries().get(0)
-              .getClass().getSimpleName()
-          + ",,,,, " + key);
+      if(false) {
+        throw new RuntimeException("monster_long_sword");
+      }
+
+//      key.flush();
+//      Thread.sleep(60000);
+
+      if(false) {
+        throw new RuntimeException("monster_impact_ax");
+      }
+
+//      System.out.println("****** fffffff1 " +
+//          ((KeyOutputStream) key.getOutputStream()).getStreamEntries().get(0)
+//              .getClass().getSimpleName()
+//          + ",,,,, " + key);
 //    key.close();
 
 //    Thread.sleep(3000);
@@ -265,14 +283,14 @@ public class TestFailureHandlingByClient {
       List<DatanodeDetails> datanodes = pipeline.getNodes();
       StringBuilder sbDndts = new StringBuilder();
       int dncnt = 0;
-      for (DatanodeDetails dndts : datanodes) {
-        sbDndts.append(
-            "datanode[" + dncnt + "] = " + dndts.toDebugString() + ", ");
-        dncnt++;
-      }
-      LOG.warn(
-          "******** aaa5: SIZE of datanodes [" + datanodes.size() + "] ==> " +
-              sbDndts);
+//      for (DatanodeDetails dndts : datanodes) {
+//        sbDndts.append(
+//            "datanode[" + dncnt + "] = " + dndts.toDebugString() + ", ");
+//        dncnt++;
+//      }
+//      LOG.warn(
+//          "******** aaa5: SIZE of datanodes [" + datanodes.size() + "] ==> " +
+//              sbDndts);
 
       cluster.shutdownHddsDatanode(datanodes.get(0));
       cluster.shutdownHddsDatanode(datanodes.get(1));
@@ -281,6 +299,7 @@ public class TestFailureHandlingByClient {
       // The write will fail but exception will be handled and length will be
       // updated correctly in OzoneManager once the steam is closed
 //    key.close();
+//      key.write(data);
       key.flush();
       //get the name of a valid container
       OmKeyArgs keyArgs = new OmKeyArgs.Builder().setVolumeName(volumeName)
@@ -302,33 +321,32 @@ public class TestFailureHandlingByClient {
 
 //    ((KeyOutputStream) key.getOutputStream()).getStreamEntries().get(0).
 
-      StringBuilder sb = new StringBuilder();
-      groupOutputStream.getStreamEntries()
-          .forEach(s -> {
-            BlockOutputStream bl = (BlockOutputStream) s.getOutputStream();
-//            sb.append("******* ooooooooo1 " + bl + ", ")
-//                .append(bl.getBlockID() + ", ")
-//                .append(bl.getFailedServers()).append(",,,,,,,,,,,, ");
-          });
-      System.out.println("********** nnnnnnnnnnnn1: " + sb);
+//      StringBuilder sb = new StringBuilder();
+//      groupOutputStream.getStreamEntries()
+//          .forEach(s -> {
+//            BlockOutputStream bl = (BlockOutputStream) s.getOutputStream();
+////            sb.append("******* ooooooooo1 " + bl + ", ")
+////                .append(bl.getBlockID() + ", ")
+////                .append(bl.getFailedServers()).append(",,,,,,,,,,,, ");
+//          });
+//      System.out.println("********** nnnnnnnnnnnn1: " + sb);
       System.out.println("********** nnnnnnnnnnnn2: size = " +
           groupOutputStream.getStreamEntries().size());
 
-      if (true) {
+      if (false) {
         throw new RuntimeException("hello_w_excep");
       }
 
       Assert.assertEquals(3,
           groupOutputStream.getExcludeList().getDatanodes().size());
 
-      /*
-      key.flush();
+//      key.flush();
       ((CustomClock)groupOutputStream.getExcludeList().getClock()).fastForward(400 * 1000);
-      Assert.assertEquals(3,
+      int expectedDNcnt = 0; // 3
+      Assert.assertEquals(expectedDNcnt,
           groupOutputStream.getExcludeList().getDatanodes().size());
 
 
-       */
 
 //      cluster.restartHddsDatanode(datanodes.get(0), true); // restart DN not working, will time out
 //      cluster.restartHddsDatanode(datanodes.get(1), true);

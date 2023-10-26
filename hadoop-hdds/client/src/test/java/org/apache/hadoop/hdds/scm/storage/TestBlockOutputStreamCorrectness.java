@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hadoop.hdds.client.BlockID;
 import org.apache.hadoop.hdds.protocol.DatanodeDetails;
+import org.apache.hadoop.hdds.protocol.datanode.proto.ContainerProtos;
 import org.apache.hadoop.hdds.protocol.datanode.proto.ContainerProtos.ChecksumType;
 import org.apache.hadoop.hdds.protocol.datanode.proto.ContainerProtos.ContainerCommandRequestProto;
 import org.apache.hadoop.hdds.protocol.datanode.proto.ContainerProtos.ContainerCommandResponseProto;
@@ -86,6 +87,22 @@ public class TestBlockOutputStreamCorrectness {
       }
       outputStream.close();
     }
+  }
+
+  @Test
+  public void t2() throws Exception{
+    BufferPool bufferPool = new BufferPool(4 * 1024 * 1024, 32 / 4);
+    BlockOutputStream outputStream =
+        createBlockOutputStream(bufferPool);
+    Random random = new Random(SEED);
+    outputStream.write((byte) random.nextInt());
+    XceiverClientSpi xceiverClient = outputStream.getXceiverClient();//xceiverClient.
+
+    Mockito.doThrow(IOException.class).when(xceiverClient)
+        .sendCommandAsync(
+            Mockito.any(ContainerProtos.ContainerCommandRequestProto.class));
+
+//    outputStream.
   }
 
   private BlockOutputStream createBlockOutputStream(BufferPool bufferPool)

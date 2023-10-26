@@ -503,6 +503,7 @@ enum Status {
     CONTAINS_SNAPSHOT = 88;
     SSL_CONNECTION_FAILURE = 89;
     RENAME_OPEN_FILE = 90;
+    RETRY_ALL_DN_IN_EXCLUDE_LIST = 91;
 }
 
 /**
@@ -992,9 +993,15 @@ message KeyArgs {
 }
 
 message KeyLocation {
-    required hadoop.hdds.BlockID blockID = 1;
-    required uint64 offset = 3;
-    required uint64 length = 4;
+//    required hadoop.hdds.BlockID blockID = 1;
+  optional hadoop.hdds.BlockID blockID = 1;
+
+//    required uint64 offset = 3;
+  optional uint64 offset = 3;
+
+//    required uint64 length = 4;
+  optional uint64 length = 4;
+
     // indicated at which version this block gets created.
     optional uint64 createVersion = 5;
     optional hadoop.common.TokenProto token = 6;
@@ -1358,7 +1365,7 @@ message CommitKeyResponse {
 
 }
 
-message AllocateBlockRequest {
+message AllocateBlockRequest { // kkkkkkkkkkkkkkkkk__________________________
     required KeyArgs keyArgs = 1;
     required uint64 clientID = 2;
     optional hadoop.hdds.ExcludeListProto excludeList = 3;
@@ -1366,11 +1373,12 @@ message AllocateBlockRequest {
     // AllocateBlockRequest with keyLocation set. If this is set, no need to
     // call scm again in OM Ratis applyTransaction just append it to DB.
     optional KeyLocation keyLocation = 4;
+    optional bool shouldRetryFullDNList = 5;
 }
 
-message AllocateBlockResponse {
-
+message AllocateBlockResponse { //kkkkkkkkkkkkkkkkk__________________________
     optional KeyLocation keyLocation = 2;
+    optional bool shouldRetryFullDNList = 3;
 }
 
 message ServiceListRequest {

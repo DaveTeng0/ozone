@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.ozone.client.io;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
@@ -41,6 +42,7 @@ import org.apache.hadoop.hdds.scm.pipeline.PipelineID;
 import org.apache.hadoop.hdds.scm.storage.ECBlockOutputStream;
 import org.apache.hadoop.io.retry.RetryPolicies;
 import org.apache.hadoop.io.retry.RetryPolicy;
+import org.apache.hadoop.ozone.om.exceptions.OMException;
 import org.apache.hadoop.ozone.om.helpers.OmKeyLocationInfo;
 import org.apache.hadoop.ozone.om.helpers.OmKeyLocationInfoGroup;
 import org.apache.hadoop.ozone.om.helpers.OmMultipartCommitUploadPartInfo;
@@ -88,9 +90,11 @@ public class KeyOutputStream extends OutputStream implements Syncable {
   // whether an exception is encountered while write and whole write could
   // not succeed
   private boolean isException;
-  private final BlockOutputStreamEntryPool blockOutputStreamEntryPool;
+  private BlockOutputStreamEntryPool blockOutputStreamEntryPool;
 
   private long clientID;
+
+  public int cntTimesRetryFullDNList;
 
   public KeyOutputStream(ReplicationConfig replicationConfig,
       ContainerClientMetrics clientMetrics) {
@@ -217,18 +221,39 @@ public class KeyOutputStream extends OutputStream implements Syncable {
     writeOffset += len;
   }
 
+  protected BlockOutputStreamEntryPool getBlockOutputStreamEntryPool() {
+    return blockOutputStreamEntryPool;
+  }
+
+  protected void setBlockOutputStreamEntryPool(BlockOutputStreamEntryPool streamEntryPool) {
+    blockOutputStreamEntryPool = streamEntryPool;
+  }
+
   private void handleWrite(byte[] b, int off, long len, boolean retry) // hhhhhhhhhhhhh
       throws IOException {
 
-        System.out.println("********* jjjjjjjjj3 off: "+ off + ", len: " + len + ", retry: " + retry);
-
     while (len > 0) {
       try {
+//        BlockOutputStreamEntry current =
+//            getBlockOutputStreamEntryPool().allocateBlockIfNeeded();
+        System.out.println("********* jjjjjjjjj3 client config reTryFullDNList: "+ config.getMaxTimesFullDNListRetry()
+          + ", shouldRetryFullDNList = " + blockOutputStreamEntryPool.shouldRetryFullDNList + ", cntTimesRetryFullDNList = " + cntTimesRetryFullDNList);
         BlockOutputStreamEntry current =
             blockOutputStreamEntryPool.allocateBlockIfNeeded();
 
+        System.out.println("********* jjjjjjjj6");
+        if (blockOutputStreamEntryPool.shouldRetryFullDNList){
+            if(cntTimesRetryFullDNList < config.getMaxTimesFullDNListRetry()) {
+              System.out.println("********* jjjjjjjjjjjjj_________7");
+          blockOutputStreamEntryPool.excludeList.clear();
+          cntTimesRetryFullDNList++;
+        } else if (cntTimesRetryFullDNList == config.getMaxTimesFullDNListRetry()) {
+              System.out.println("********* jjjjjjjjjjjjj_________8");
+              throw new IOException("Already reached the max times of full DN list retry when writing key.");
+            }
+        }
 
-        System.out.println("********** jjjjjjjjjj2 blockOutputStreamEntryPool size = " + blockOutputStreamEntryPool.getStreamEntries().size());
+//        System.out.println("********** jjjjjjjjjj2 blockOutputStreamEntryPool size = " + blockOutputStreamEntryPool.getStreamEntries().size());
 
         // length(len) will be in int range if the call is happening through
         // write API of blockOutputStream. Length can be in long range if it
@@ -236,9 +261,9 @@ public class KeyOutputStream extends OutputStream implements Syncable {
         int expectedWriteLen = Math.min((int) len,
                 (int) current.getRemaining());
         long currentPos = current.getWrittenDataLength();
-        System.out.println("********** jjjjjjjjjj4 current.getRemaining(): "
-            + current.getRemaining() + ", len: " + len + ", expectedWriteLen: " + expectedWriteLen
-            + ", currentPos: " + currentPos);
+//        System.out.println("********** jjjjjjjjjj4 current.getRemaining(): "
+//            + current.getRemaining() + ", len: " + len + ", expectedWriteLen: " + expectedWriteLen
+//            + ", currentPos: " + currentPos);
         // writeLen will be updated based on whether the write was succeeded
         // or if it sees an exception, how much the actual write was
         // acknowledged.
@@ -255,7 +280,24 @@ public class KeyOutputStream extends OutputStream implements Syncable {
         off += writtenLength;
       } catch (Exception e) {
         markStreamClosed();
-        throw new IOException(e);
+//        throw new IOException(e);
+//        throw e;
+        long bufferedDataLen = blockOutputStreamEntryPool.computeBufferData();
+        System.out.println("jjjjjjjjjjjjj_________9, " + bufferedDataLen + ", "+ e);
+
+        if (
+//            bufferedDataLen > 0 &&
+            (e instanceof OMException && ((OMException) e).getResult()==
+            OMException.ResultCodes.RETRY_ALL_DN_IN_EXCLUDE_LIST)) {
+
+                // clean dn from client's exclude list
+                blockOutputStreamEntryPool.getExcludeList().getDatanodes().clear();
+                System.out.println("************ qqqqqqq______1, "
+                    + blockOutputStreamEntryPool.getExcludeList().getDatanodes().size());
+                handleWrite(null, 0, len, retry);
+        }
+        throw e;
+
       }
     }
   }
@@ -268,6 +310,8 @@ public class KeyOutputStream extends OutputStream implements Syncable {
         current.writeOnRetry(len);
       } else {
         current.write(b, off, writeLen);
+//        getCurrent.write(b, off, writeLen);
+
         offset += writeLen;
       }
     } catch (IOException ioe) {
@@ -280,7 +324,8 @@ public class KeyOutputStream extends OutputStream implements Syncable {
       // the buffers
       Preconditions.checkState(!retry || len <= config
           .getStreamBufferMaxSize());
-      int dataWritten = (int) (current.getWrittenDataLength() - currentPos);
+//      int dataWritten = (int) (current.getWrittenDataLength() - currentPos);
+      int dataWritten = getDataWritten(current, currentPos);
       writeLen = retry ? (int) len : dataWritten;
       // In retry path, the data written is already accounted in offset.
       if (!retry) {
@@ -296,20 +341,9 @@ public class KeyOutputStream extends OutputStream implements Syncable {
     return writeLen;
   }
 
-  public void excludePipelineAndFailedDN_tttttt(Pipeline pipeline, List<ECBlockOutputStream> failedStreams) {
-
-      // Exclude the failed pipeline
-      blockOutputStreamEntryPool.getExcludeList().addPipeline(pipeline.getId());
-
-      // If the failure is NOT caused by other reasons (e.g. container full),
-      // we assume it is caused by DN failure and exclude the failed DN.
-      failedStreams.stream()
-          .filter(s -> !checkIfContainerToExclude(
-              HddsClientUtils.checkForException(s.getIoException())))
-          .forEach(s -> blockOutputStreamEntryPool.getExcludeList()
-              .addDatanode(s.getDatanodeDetails())); // hhhhhhhhhhhh
-
-    }
+  protected int getDataWritten(BlockOutputStreamEntry current, long currentPos) {
+    return (int) (current.getWrittenDataLength() - currentPos);
+  }
 
   /**
    * It performs following actions :
@@ -323,7 +357,7 @@ public class KeyOutputStream extends OutputStream implements Syncable {
    */
   private void handleException(BlockOutputStreamEntry streamEntry,
       IOException exception) throws IOException {
-    if (1 == 1) {
+    if (true) {
 //      String fullStackTrace = org.apache.commons.lang.exception.ExceptionUtils.getFullStackTrace(e);
       System.out.println("*********");
       System.out.println("****** ccccc2: " + exception);
@@ -369,10 +403,37 @@ public class KeyOutputStream extends OutputStream implements Syncable {
     Preconditions.checkNotNull(failedServers);
     ExcludeList excludeList = blockOutputStreamEntryPool.getExcludeList();
 
-    System.out.println("****** ccccc1: " + failedServers.size());
-    if (!failedServers.isEmpty()) {
-      excludeList.addDatanodes(failedServers); // hhhhhhhhh
-    }
+
+
+
+
+    System.out.println("****** ccccc_______1: " + failedServers.size());
+        if (!failedServers.isEmpty()) {
+        excludeList.addDatanodes(failedServers); // hhhhhhhhh
+      }
+        if(exception instanceof OMException){
+          OMException ex = (OMException) exception;
+          if (ex.getResult().equals(OMException.ResultCodes.RETRY_ALL_DN_IN_EXCLUDE_LIST)) {
+//            excludeList.getDatanodes().clear();
+            System.out.println("********** ccccc________2, exclude list clean? "
+                + excludeList.getDatanodes().isEmpty() + ", " +
+                excludeList.getDatanodes().size());
+          }
+        }
+
+        //compare exclude list with full datanode list
+//    for (BlockOutputStreamEntry ble : this.getStreamEntries()) {
+//      ble.getPipeline().getNodes()
+//    }
+
+//    getLocationInfoList()
+//
+//    for( : this.getStreamEntries().) {
+//
+//    }
+//    if (excludeList.getDatanodes().size() == 0) {
+//
+//    }
 
     // if the container needs to be excluded , add the container to the
     // exclusion list , otherwise add the pipeline to the exclusion list
@@ -462,9 +523,13 @@ public class KeyOutputStream extends OutputStream implements Syncable {
     }
     retryCount++;
     if (LOG.isTraceEnabled()) {
-      LOG.trace("Retrying Write request. Already tried {} time(s); " +
-          "retry policy is {} ", retryCount, retryPolicy);
+//      LOG.trace("Retrying Write request. Already tried {} time(s); " +
+//          "retry policy is {} ", retryCount, retryPolicy);
     }
+    System.out.println("************ jjjjjjjjj1212121212_____ Retrying Write request. Already tried {} "
+        + retryCount +" time(s); " +
+        "retry policy is  " + retryPolicy);
+
     handleWrite(null, 0, len, true);
   }
 
@@ -536,7 +601,7 @@ public class KeyOutputStream extends OutputStream implements Syncable {
   @SuppressWarnings("squid:S1141")
   private void handleFlushOrClose(StreamAction op) throws IOException {
     if (!blockOutputStreamEntryPool.isEmpty()) {
-//      System.out.println("******* ddddd1 " + this.getExcludeList().);
+//      System.out.println("******* ddddd____1 " + this.getExcludeList().);
 
       while (true) {
         try {
@@ -544,6 +609,7 @@ public class KeyOutputStream extends OutputStream implements Syncable {
               blockOutputStreamEntryPool.getCurrentStreamEntry();
           if (entry != null) {
             try {
+              System.out.println("********* ddddd____2, handleFlushOrClose()");
               handleStreamAction(entry, op);
             } catch (IOException ioe) {
 //              ((KeyOutputStream)entry.getOutputStream()).
@@ -553,6 +619,10 @@ public class KeyOutputStream extends OutputStream implements Syncable {
           }
           return;
         } catch (Exception e) {
+          System.out.println("********* thor " + e.getClass() + ", " + e.getMessage());
+
+          // retry identification should be here  啊啊啊啊啊啊啊啊啊啊啊啊
+
           markStreamClosed();
           throw e;
         }
@@ -563,7 +633,7 @@ public class KeyOutputStream extends OutputStream implements Syncable {
   private void handleStreamAction(BlockOutputStreamEntry entry,
                                   StreamAction op) throws IOException {
     Collection<DatanodeDetails> failedServers = entry.getFailedServers();
-    System.out.println("********** ddddd1 failedServers size: " + failedServers.size() + ", op = " + op);
+    System.out.println("********** ddddd1， handleStreamAction() => client's failedServers size: " + failedServers.size() + ", op = " + op);
     // failed servers can be null in case there is no data written in
     // the stream
     if (!failedServers.isEmpty()) {
@@ -620,7 +690,10 @@ public class KeyOutputStream extends OutputStream implements Syncable {
   @VisibleForTesting
   public ExcludeList getExcludeList() {
     return blockOutputStreamEntryPool.getExcludeList();
-//    blockOutputStreamEntryPool.
+  }
+
+  public void setExcludeList(ExcludeList excludeList) {
+    blockOutputStreamEntryPool.setExcludeList(excludeList);
   }
 
   /**

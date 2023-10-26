@@ -127,8 +127,11 @@ public final class ECKeyOutputStream extends KeyOutputStream {
     this.config.setStreamBufferSize(ecChunkSize);
     this.numDataBlks = builder.getReplicationConfig().getData();
     this.numParityBlks = builder.getReplicationConfig().getParity();
-    ecChunkBufferCache = new ECChunkBuffers(
-        ecChunkSize, numDataBlks, numParityBlks, bufferPool);
+//    ecChunkBufferCache = new ECChunkBuffers(
+//        ecChunkSize, numDataBlks, numParityBlks, bufferPool);
+    ecChunkBufferCache = createECChunkBuffers();
+
+
     chunkIndex = 0;
     ecStripeQueue = new ArrayBlockingQueue<>(config.getEcStripeQueueSize());
     OmKeyInfo info = builder.getOpenHandler().getKeyInfo();
@@ -148,6 +151,11 @@ public final class ECKeyOutputStream extends KeyOutputStream {
     this.flushExecutor = Executors.newSingleThreadExecutor();
     this.flushFuture = this.flushExecutor.submit(this::flushStripeFromQueue);
     this.flushCheckpoint = new AtomicLong(0);
+  }
+
+  protected ECChunkBuffers createECChunkBuffers() {
+    return new ECChunkBuffers(
+        ecChunkSize, numDataBlks, numParityBlks, bufferPool);
   }
 
   /**
@@ -725,7 +733,7 @@ public final class ECKeyOutputStream extends KeyOutputStream {
       releaseBuffers(parityBuffers);
     }
 
-    private void allocateBuffers(ByteBuffer[] buffers, int bufferSize) {
+    protected void allocateBuffers(ByteBuffer[] buffers, int bufferSize) {
       for (int i = 0; i < buffers.length; i++) {
         buffers[i] = byteBufferPool.getBuffer(false, cellSize);
         buffers[i].limit(bufferSize);

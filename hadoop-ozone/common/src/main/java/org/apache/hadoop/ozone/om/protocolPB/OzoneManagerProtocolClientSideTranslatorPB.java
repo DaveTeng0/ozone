@@ -30,6 +30,7 @@ import org.apache.hadoop.hdds.client.ECReplicationConfig;
 import org.apache.hadoop.hdds.client.ReplicationConfig;
 import org.apache.hadoop.hdds.protocol.proto.HddsProtos.TransferLeadershipRequestProto;
 import org.apache.hadoop.hdds.protocol.proto.HddsProtos.UpgradeFinalizationStatus;
+import org.apache.hadoop.hdds.scm.container.common.helpers.AllocatedBlockWrapper;
 import org.apache.hadoop.hdds.scm.container.common.helpers.ExcludeList;
 import org.apache.hadoop.hdds.tracing.TracingUtil;
 import org.apache.hadoop.io.Text;
@@ -721,6 +722,9 @@ public final class OzoneManagerProtocolClientSideTranslatorPB
   }
 
   private OMResponse handleError(OMResponse resp) throws OMException {
+    System.out.println("");
+    System.out.println("************** iron_man "
+        + resp.getStatus() + ", " + resp.getStatus().ordinal());
     if (resp.getStatus() != OK) {
       throw new OMException(resp.getMessage(),
           ResultCodes.values()[resp.getStatus().ordinal()]);
@@ -729,7 +733,9 @@ public final class OzoneManagerProtocolClientSideTranslatorPB
   }
 
   @Override
-  public OmKeyLocationInfo allocateBlock(OmKeyArgs args, long clientId,
+//  public OmKeyLocationInfo allocateBlock(OmKeyArgs args, long clientId,
+//  public Map<OmKeyLocationInfo, Boolean> allocateBlock(OmKeyArgs args, long clientId,
+  public AllocateBlockResponse allocateBlock(OmKeyArgs args, long clientId,
       ExcludeList excludeList) throws IOException {
 
     System.out.println("********* alalalalalala start ");
@@ -764,13 +770,19 @@ public final class OzoneManagerProtocolClientSideTranslatorPB
     req.setExcludeList(excludeList.getProtoBuf());
 
 
+    System.out.println("********** alalalalalala__________1, ");
     OMRequest omRequest = createOMRequest(Type.AllocateBlock) /// alalalalalalalalalalalalala
         .setAllocateBlockRequest(req)
         .build();
 
     AllocateBlockResponse resp = handleError(submitRequest(omRequest))
         .getAllocateBlockResponse();
-    return OmKeyLocationInfo.getFromProtobuf(resp.getKeyLocation());
+//    return OmKeyLocationInfo.getFromProtobuf(resp.getKeyLocation());
+//    HashMap<OmKeyLocationInfo, Boolean> map = new HashMap<>();
+//    map.put(OmKeyLocationInfo.getFromProtobuf(resp.getKeyLocation()), resp.getShouldRetryFullDNList());
+//    return map;
+//    return new AllocatedBlockWrapper();
+    return resp;
   }
 
   @Override

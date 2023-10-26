@@ -37,6 +37,7 @@ import org.apache.hadoop.hdds.protocol.proto.ScmBlockLocationProtocolProtos;
 import org.apache.hadoop.hdds.scm.AddSCMRequest;
 import org.apache.hadoop.hdds.scm.ScmInfo;
 import org.apache.hadoop.hdds.scm.container.common.helpers.AllocatedBlock;
+import org.apache.hadoop.hdds.scm.container.common.helpers.AllocatedBlockWrapper;
 import org.apache.hadoop.hdds.scm.container.common.helpers.DeleteBlockResult;
 import org.apache.hadoop.hdds.scm.container.common.helpers.ExcludeList;
 import org.apache.hadoop.hdds.scm.exceptions.SCMException;
@@ -172,7 +173,8 @@ public class SCMBlockProtocolServer implements
   }
 
   @Override
-  public List<AllocatedBlock> allocateBlock(
+//  public List<AllocatedBlock> allocateBlock(
+  public AllocatedBlockWrapper allocateBlock(
       long size, int num,
       ReplicationConfig replicationConfig,
       String owner, ExcludeList excludeList
@@ -184,6 +186,19 @@ public class SCMBlockProtocolServer implements
     auditMap.put("owner", owner);
     List<AllocatedBlock> blocks = new ArrayList<>(num);
 
+    AllocatedBlockWrapper wrapper = new AllocatedBlockWrapper();
+
+    System.out.println("*************** 515151515151515151___________ a, "
+        + excludeList.getDatanodes().size() + ", " + scm.getScmNodeManager().getAllNodes().size() + ", " + this);
+    if ( excludeList.getDatanodes().size() == scm.getScmNodeManager().getAllNodes().size()
+          || excludeList.getDatanodes().size() == 3) {
+      wrapper.setShouldRetryFullDNList(true);
+      System.out.println("*************** 515151515151515151___________ c, " + wrapper.isShouldRetryFullDNList());
+
+      return wrapper;
+    }
+    System.out.println("*************** 515151515151515151___________ b, " + this);
+
     if (LOG.isDebugEnabled()) {
       LOG.debug("Allocating {} blocks of size {}, with {}",
           num, size, excludeList);
@@ -191,7 +206,10 @@ public class SCMBlockProtocolServer implements
     try {
       for (int i = 0; i < num; i++) {
         AllocatedBlock block = scm.getScmBlockManager()
+//        AllocatedBlockWrapper wrapper = scm.getScmBlockManager()
+//        AllocateBlockResponse resp = scm.getScmBlockManager()
             .allocateBlock(size, replicationConfig, owner, excludeList);
+
         if (block != null) {
           blocks.add(block);
         }
@@ -208,7 +226,10 @@ public class SCMBlockProtocolServer implements
             SCMAction.ALLOCATE_BLOCK, auditMap));
       }
 
-      return blocks;
+      wrapper.setAllocatedBlocks(blocks);
+//      wrapper.setShouldRetryFullDNList();
+//      return blocks;
+      return wrapper;
     } catch (TimeoutException ex) {
       AUDIT.logWriteFailure(buildAuditMessageForFailure(
           SCMAction.ALLOCATE_BLOCK, auditMap, ex));

@@ -292,17 +292,17 @@ public final class HddsClientUtils {
 
   public static RetryPolicy createRetryPolicy(int maxRetryCount,
       long retryInterval) {
-    System.out.println("---------start a01 ------");
-
-    Arrays.stream(Thread.currentThread().getStackTrace()).forEach(s -> System.out.println(
-        "\tat " + s.getClassName() + "." + s.getMethodName() + "(" + s.getFileName() + ":" + s
-            .getLineNumber() + ")"));
-    System.out.println("---------end a01------");
+//    System.out.println("---------start a01 ------");
+//
+//    Arrays.stream(Thread.currentThread().getStackTrace()).forEach(s -> System.out.println(
+//        "\tat " + s.getClassName() + "." + s.getMethodName() + "(" + s.getFileName() + ":" + s
+//            .getLineNumber() + ")"));
+//    System.out.println("---------end a01------");
 
 
     // retry with fixed sleep between retries
     return RetryPolicies.retryUpToMaximumCountWithFixedSleep(
-        1, retryInterval, TimeUnit.MILLISECONDS);
+        1, retryInterval, TimeUnit.SECONDS);
   }
 
   public static Map<Class<? extends Throwable>,
