@@ -63,7 +63,8 @@ public class TestKeyOutputStream {
         keyOutputStream.getExcludeList().getDatanodes().size());
 
     ExcludeList excludeList = spy(keyOutputStream.getExcludeList());
-    doReturn(300 * 1000L).when(excludeList).getExpiryTime();
+//    doReturn(300 * 1000L).when(excludeList).getExpiryTime();
+    when(excludeList.getExpiryTime()).thenReturn(300 * 1000L);
     doReturn(true).when(excludeList)
         .isExpired(anyLong()); // mock DN in exclude list expires
     keyOutputStream.getBlockOutputStreamEntryPool().setExcludeList(excludeList);
@@ -79,7 +80,8 @@ public class TestKeyOutputStream {
         .setBucketName("testbucket")
         .setKeyName("testKey")
         .build();
-    doReturn(omKeyInfo).when(openKeySession).getKeyInfo();
+//    doReturn(omKeyInfo).when(openKeySession).getKeyInfo();
+    when(openKeySession.getKeyInfo()).thenReturn(omKeyInfo);
 
     XceiverClientFactory xceiverClientManager
         = mock(XceiverClientFactory.class);
