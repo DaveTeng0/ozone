@@ -69,7 +69,7 @@ public class TestKeyOutputStream {
     doReturn(300 * 1000L).when(excludeList).getExpiryTime();
     doReturn(true).when(excludeList)
         .isExpired(anyLong()); // mock DN in exclude list expires
-    keyOutputStream.setExcludeList(excludeList);
+    keyOutputStream.getBlockOutputStreamEntryPool().setExcludeList(excludeList);
     Assert.assertEquals(0,
         keyOutputStream.getExcludeList().getDatanodes().size());
   }

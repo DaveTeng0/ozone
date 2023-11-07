@@ -710,18 +710,20 @@ public class KeyOutputStream extends OutputStream implements Syncable {
     }
   }
 
-  protected BlockOutputStreamEntryPool getBlockOutputStreamEntryPool() {
+  @VisibleForTesting
+  BlockOutputStreamEntryPool getBlockOutputStreamEntryPool() {
     return blockOutputStreamEntryPool;
   }
 
-  protected void setBlockOutputStreamEntryPool(
+  @VisibleForTesting
+  void setBlockOutputStreamEntryPool(
       BlockOutputStreamEntryPool streamEntryPool) {
     blockOutputStreamEntryPool = streamEntryPool;
   }
 
-  public void setExcludeList(ExcludeList excludeList) {
-    blockOutputStreamEntryPool.setExcludeList(excludeList);
-  }
+//  public void setExcludeList(ExcludeList excludeList) {
+//    blockOutputStreamEntryPool.setExcludeList(excludeList);
+//  }
 
   protected int getDataWritten(BlockOutputStreamEntry current,
                                long currentPos) {
