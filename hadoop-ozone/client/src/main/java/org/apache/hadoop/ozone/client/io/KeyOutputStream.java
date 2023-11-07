@@ -711,12 +711,12 @@ public class KeyOutputStream extends OutputStream implements Syncable {
   }
 
   @VisibleForTesting
-  synchronized BlockOutputStreamEntryPool getBlockOutputStreamEntryPool() {
+  private synchronized BlockOutputStreamEntryPool getBlockOutputStreamEntryPool() {
     return blockOutputStreamEntryPool;
   }
 
   @VisibleForTesting
-  synchronized void setBlockOutputStreamEntryPool(
+  private synchronized void setBlockOutputStreamEntryPool(
       BlockOutputStreamEntryPool streamEntryPool) {
     blockOutputStreamEntryPool = streamEntryPool;
   }
