@@ -43,10 +43,7 @@ import static org.apache.hadoop.hdds.protocol.proto.HddsProtos.ReplicationFactor
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.*;
 
 /**
  * Test KeyOutputStream with RATIS keys.
@@ -76,7 +73,7 @@ public class TestKeyOutputStream {
 
   private KeyOutputStream createRATISKeyOutputStream() throws Exception {
     OpenKeySession openKeySession = mock(OpenKeySession.class);
-    doReturn(1L).when(openKeySession).getId();
+//    doReturn(1L).when(openKeySession).getId();
     OmKeyInfo omKeyInfo =  new OmKeyInfo.Builder()
         .setVolumeName("testvolume")
         .setBucketName("testbucket")
@@ -91,8 +88,8 @@ public class TestKeyOutputStream {
         = mock(OzoneManagerClientProtocol.class);
 
     OzoneClientConfig clientConfig = spy(new OzoneClientConfig());
-    doReturn(1).when(clientConfig).getStreamBufferSize();
-    doReturn(300 * 1000L).when(clientConfig).getExcludeNodesExpiryTime();
+//    doReturn(1).when(clientConfig).getStreamBufferSize();
+//    doReturn(300 * 1000L).when(clientConfig).getExcludeNodesExpiryTime();
 
     KeyOutputStream.Builder builder;
 
@@ -121,8 +118,12 @@ public class TestKeyOutputStream {
 
     doThrow(IOException.class).when(blockOutputStreamEntry)
         .write(any(byte[].class), anyInt(), anyInt());
-    doReturn(pipeline).when(blockOutputStreamEntry).getPipeline();
-    doReturn(new BlockID(1, 1)).when(blockOutputStreamEntry).getBlockID();
+//    doReturn(pipeline).when(blockOutputStreamEntry).getPipeline();
+    when(blockOutputStreamEntry.getPipeline()).thenReturn(pipeline);
+
+//    doReturn(new BlockID(1, 1)).when(blockOutputStreamEntry).getBlockID();
+    when(blockOutputStreamEntry.getBlockID()).thenReturn(new BlockID(1, 1));
+
 
     // mock the datanodes for getFailedServers()
     List<DatanodeDetails> datanodeDetails = new ArrayList<>(3);
