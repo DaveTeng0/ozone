@@ -50,6 +50,8 @@ import org.apache.hadoop.ozone.client.ObjectStore;
 import org.apache.hadoop.ozone.client.OzoneClient;
 import org.apache.hadoop.ozone.client.OzoneClientFactory;
 import org.apache.hadoop.ozone.client.io.BlockOutputStreamEntry;
+import org.apache.hadoop.ozone.client.io.BlockOutputStreamEntryPool;
+import org.apache.hadoop.ozone.client.io.BlockOutputStreamEntryPool.CustomClock;
 import org.apache.hadoop.ozone.client.io.KeyOutputStream;
 import org.apache.hadoop.ozone.client.io.OzoneOutputStream;
 import org.apache.hadoop.ozone.container.ContainerTestHelper;
@@ -193,7 +195,8 @@ public class TestFailureHandlingByClient {
     Assert.assertEquals(3,
         groupOutputStream.getExcludeList().getDatanodes().size());
 
-    ((TestClock)groupOutputStream.getExcludeList().getClock()).fastForward(700 * 1000);
+    ((CustomClock)groupOutputStream.getExcludeList().getClock())
+        .fastForward(700 * 1000);
     Assert.assertEquals(0,
         groupOutputStream.getExcludeList().getDatanodes().size());
   }

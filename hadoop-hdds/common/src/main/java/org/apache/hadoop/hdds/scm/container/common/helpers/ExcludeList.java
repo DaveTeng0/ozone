@@ -154,5 +154,4 @@ public class ExcludeList {
   public Clock getClock() {
     return clock;
   }
-
 }

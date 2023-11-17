@@ -89,7 +89,6 @@ public class BlockOutputStreamEntryPool {
 
   public Clock customClock = new CustomClock(Instant.now(), ZoneOffset.UTC);
 
-
   @SuppressWarnings({"parameternumber", "squid:S00107"})
   public BlockOutputStreamEntryPool(
       OzoneClientConfig config,
@@ -438,7 +437,7 @@ public class BlockOutputStreamEntryPool {
     return streamEntries.isEmpty();
   }
 
-  static class CustomClock extends Clock{
+  public static class CustomClock extends Clock{
     private Instant instant;
     private final ZoneId zoneId;
 
