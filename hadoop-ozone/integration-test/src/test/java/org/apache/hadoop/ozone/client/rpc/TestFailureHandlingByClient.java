@@ -67,6 +67,7 @@ import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.NET_TOPOLOGY_NO
 import static org.apache.hadoop.hdds.protocol.proto.HddsProtos.ReplicationFactor.THREE;
 import static org.apache.hadoop.hdds.scm.ScmConfigKeys.OZONE_SCM_STALENODE_INTERVAL;
 
+import org.apache.ozone.test.TestClock;
 import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -162,6 +163,41 @@ public class TestFailureHandlingByClient {
       cluster.shutdown();
     }
   }
+
+  @Test
+  public void testDNExcludeListExpire() throws Exception {
+    startCluster();
+    String keyName = "test_key";
+    OzoneOutputStream key = createKey(keyName, ReplicationType.RATIS, 0);
+
+    byte[] data = "test_key_data".getBytes(UTF_8);
+    key.write(data);
+
+    KeyOutputStream groupOutputStream =
+        (KeyOutputStream) key.getOutputStream();
+    List<OmKeyLocationInfo> locationInfoList =
+        groupOutputStream.getLocationInfoList();
+
+    long containerId = locationInfoList.get(0).getContainerID();
+    ContainerInfo container = cluster.getStorageContainerManager()
+        .getContainerManager()
+        .getContainer(ContainerID.valueOf(containerId));
+    Pipeline pipeline =
+        cluster.getStorageContainerManager().getPipelineManager()
+            .getPipeline(container.getPipelineID());
+    List<DatanodeDetails> datanodes = pipeline.getNodes();
+    cluster.shutdownHddsDatanode(datanodes.get(0));
+    cluster.shutdownHddsDatanode(datanodes.get(1));
+
+    key.flush();
+    Assert.assertEquals(3,
+        groupOutputStream.getExcludeList().getDatanodes().size());
+
+    ((TestClock)groupOutputStream.getExcludeList().getClock()).fastForward(700 * 1000);
+    Assert.assertEquals(0,
+        groupOutputStream.getExcludeList().getDatanodes().size());
+  }
+
 
   @Test
   public void testBlockWritesWithDnFailures() throws Exception {
