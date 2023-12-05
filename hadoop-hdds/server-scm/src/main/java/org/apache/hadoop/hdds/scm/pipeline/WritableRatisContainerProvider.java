@@ -86,7 +86,7 @@ public class WritableRatisContainerProvider
     //in downstream managers.
 
 
-    while (true) {
+//    while (true) {
       List<Pipeline> availablePipelines;
       Pipeline pipeline;
       // Acquire pipeline manager lock, to avoid any updates to pipeline
@@ -159,7 +159,11 @@ public class WritableRatisContainerProvider
           if (availablePipelines.size() == 0) {
             LOG.info("Could not find available pipeline of repConfig: {} "
                 + "even after retrying", repConfig);
-            break;
+//            break;
+            throw new IOException(
+                "Could not find available pipeline of repConfig: " + repConfig
+                    + " even after retrying");
+
           }
           containerInfo = selectContainer(availablePipelines, size, owner,
               excludeList);
@@ -170,7 +174,7 @@ public class WritableRatisContainerProvider
           pipelineManager.releaseReadLock();
         }
       }
-    }
+//    }
 
     // we have tried all strategies we know but somehow we are not able
     // to get a container for this block. Log that info and throw an exception.
