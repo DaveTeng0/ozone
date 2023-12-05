@@ -87,93 +87,93 @@ public class WritableRatisContainerProvider
 
 
 //    while (true) {
-      List<Pipeline> availablePipelines;
-      Pipeline pipeline;
-      // Acquire pipeline manager lock, to avoid any updates to pipeline
-      // while allocate container happens. This is to avoid scenario like
-      // mentioned in HDDS-5655.
+    List<Pipeline> availablePipelines;
+    Pipeline pipeline;
+    // Acquire pipeline manager lock, to avoid any updates to pipeline
+    // while allocate container happens. This is to avoid scenario like
+    // mentioned in HDDS-5655.
+    pipelineManager.acquireReadLock();
+    try {
+      availablePipelines =
+              findPipelinesByState(repConfig,
+                      excludeList,
+                      Pipeline.PipelineState.OPEN);
+      if (availablePipelines.size() != 0) {
+        containerInfo = selectContainer(availablePipelines, size, owner,
+            excludeList);
+      }
+      if (containerInfo != null) {
+        return containerInfo;
+      }
+    } finally {
+      pipelineManager.releaseReadLock();
+    }
+
+    if (availablePipelines.size() == 0) {
+      try {
+        // TODO: #CLUTIL Remove creation logic when all replication types
+        //  and factors are handled by pipeline creator
+        pipeline = pipelineManager.createPipeline(repConfig);
+
+        // wait until pipeline is ready
+        pipelineManager.waitPipelineReady(pipeline.getId(), 0);
+
+      } catch (SCMException se) {
+        LOG.warn("Pipeline creation failed for repConfig {} " +
+            "Datanodes may be used up. Try to see if any pipeline is in " +
+                "ALLOCATED state, and then will wait for it to be OPEN",
+                repConfig, se);
+        List<Pipeline> allocatedPipelines = findPipelinesByState(repConfig,
+                excludeList,
+                Pipeline.PipelineState.ALLOCATED);
+        if (!allocatedPipelines.isEmpty()) {
+          List<PipelineID> allocatedPipelineIDs =
+                  allocatedPipelines.stream()
+                          .map(p -> p.getId())
+                          .collect(Collectors.toList());
+          try {
+            pipelineManager
+                    .waitOnePipelineReady(allocatedPipelineIDs, 0);
+          } catch (IOException e) {
+            LOG.warn("Waiting for one of pipelines {} to be OPEN failed. ",
+                    allocatedPipelineIDs, e);
+            failureReason = "Waiting for one of pipelines to be OPEN failed. "
+                + e.getMessage();
+          }
+        } else {
+          failureReason = se.getMessage();
+        }
+      } catch (IOException e) {
+        LOG.warn("Pipeline creation failed for repConfig: {}. "
+            + "Retrying get pipelines call once.", repConfig, e);
+        failureReason = e.getMessage();
+      }
+
       pipelineManager.acquireReadLock();
       try {
-        availablePipelines =
-                findPipelinesByState(repConfig,
-                        excludeList,
-                        Pipeline.PipelineState.OPEN);
-        if (availablePipelines.size() != 0) {
-          containerInfo = selectContainer(availablePipelines, size, owner,
-              excludeList);
+        // If Exception occurred or successful creation of pipeline do one
+        // final try to fetch pipelines.
+        availablePipelines = findPipelinesByState(repConfig,
+                excludeList,
+                Pipeline.PipelineState.OPEN);
+        if (availablePipelines.size() == 0) {
+          LOG.info("Could not find available pipeline of repConfig: {} "
+              + "even after retrying", repConfig);
+//            break;
+          throw new IOException(
+              "Could not find available pipeline of repConfig: " + repConfig
+                  + " even after retrying");
+
         }
+        containerInfo = selectContainer(availablePipelines, size, owner,
+            excludeList);
         if (containerInfo != null) {
           return containerInfo;
         }
       } finally {
         pipelineManager.releaseReadLock();
       }
-
-      if (availablePipelines.size() == 0) {
-        try {
-          // TODO: #CLUTIL Remove creation logic when all replication types
-          //  and factors are handled by pipeline creator
-          pipeline = pipelineManager.createPipeline(repConfig);
-
-          // wait until pipeline is ready
-          pipelineManager.waitPipelineReady(pipeline.getId(), 0);
-
-        } catch (SCMException se) {
-          LOG.warn("Pipeline creation failed for repConfig {} " +
-              "Datanodes may be used up. Try to see if any pipeline is in " +
-                  "ALLOCATED state, and then will wait for it to be OPEN",
-                  repConfig, se);
-          List<Pipeline> allocatedPipelines = findPipelinesByState(repConfig,
-                  excludeList,
-                  Pipeline.PipelineState.ALLOCATED);
-          if (!allocatedPipelines.isEmpty()) {
-            List<PipelineID> allocatedPipelineIDs =
-                    allocatedPipelines.stream()
-                            .map(p -> p.getId())
-                            .collect(Collectors.toList());
-            try {
-              pipelineManager
-                      .waitOnePipelineReady(allocatedPipelineIDs, 0);
-            } catch (IOException e) {
-              LOG.warn("Waiting for one of pipelines {} to be OPEN failed. ",
-                      allocatedPipelineIDs, e);
-              failureReason = "Waiting for one of pipelines to be OPEN failed. "
-                  + e.getMessage();
-            }
-          } else {
-            failureReason = se.getMessage();
-          }
-        } catch (IOException e) {
-          LOG.warn("Pipeline creation failed for repConfig: {}. "
-              + "Retrying get pipelines call once.", repConfig, e);
-          failureReason = e.getMessage();
-        }
-
-        pipelineManager.acquireReadLock();
-        try {
-          // If Exception occurred or successful creation of pipeline do one
-          // final try to fetch pipelines.
-          availablePipelines = findPipelinesByState(repConfig,
-                  excludeList,
-                  Pipeline.PipelineState.OPEN);
-          if (availablePipelines.size() == 0) {
-            LOG.info("Could not find available pipeline of repConfig: {} "
-                + "even after retrying", repConfig);
-//            break;
-            throw new IOException(
-                "Could not find available pipeline of repConfig: " + repConfig
-                    + " even after retrying");
-
-          }
-          containerInfo = selectContainer(availablePipelines, size, owner,
-              excludeList);
-          if (containerInfo != null) {
-            return containerInfo;
-          }
-        } finally {
-          pipelineManager.releaseReadLock();
-        }
-      }
+    }
 //    }
 
     // we have tried all strategies we know but somehow we are not able
