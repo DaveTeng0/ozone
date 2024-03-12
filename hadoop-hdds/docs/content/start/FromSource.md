@@ -57,12 +57,12 @@ mvn clean package -DskipTests=true -Pdist
 
 ## How to run Ozone from build
 
-When you have the new distribution, you can start a local cluster [with docker-compose]({{< ref "start/RunningViaDocker.md">}}).
+When you have the new distribution, you can start a local cluster [with docker compose]({{< ref "start/RunningViaDocker.md">}}).
 
 ```bash
 cd hadoop-ozone/dist/target/ozone-X.X.X...
 cd compose/ozone
-docker-compose up -d
+docker compose up -d
 ```
 
 ## How to test the build

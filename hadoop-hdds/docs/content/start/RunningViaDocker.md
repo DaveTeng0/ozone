@@ -21,19 +21,19 @@ weight: 23
 -->
 
 {{< requirements >}}
- * docker and docker-compose
+ * docker
 {{< /requirements >}}
 
 * Download the Ozone binary tarball and untar it.
 
 * Go to the directory where the docker compose files exist and tell
-`docker-compose` to start Ozone in the background. This will start a small
+`docker compose` to start Ozone in the background. This will start a small
 ozone instance on your machine.
 
 {{< highlight bash >}}
 cd compose/ozone/
 
-docker-compose up -d
+docker compose up -d
 {{< /highlight >}}
 
 To verify that ozone is working as expected, let us log into a data node and
@@ -44,7 +44,7 @@ The `ozone freon` command is executed within the datanode container. You can qui
 ```rk``` profile instructs freon to generate random keys.
 
 {{< highlight bash >}}
-docker-compose exec datanode bash
+docker compose exec datanode bash
 ozone freon rk
 {{< /highlight >}}
 
@@ -56,6 +56,6 @@ While you are there, please don't forget to check out the ozone configuration ex
 
 To shutdown the cluster, please run
 {{< highlight bash >}}
-docker-compose down
+docker compose down
 {{< /highlight >}}
 

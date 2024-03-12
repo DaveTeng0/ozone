@@ -65,7 +65,6 @@ mvn clean verify -DskipTests
 Additional requirements for running Ozone in pseudo cluster (including acceptance tests):
 
 * docker
-* docker-compose
 * [jq](https://stedolan.github.io/jq/) (utility used heavily by acceptance tests)
 
 After building Ozone locally, you can start your first pseudo cluster:

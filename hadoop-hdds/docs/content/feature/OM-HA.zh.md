@@ -115,4 +115,4 @@ RocksDB 由后台的批处理事务线程负责更新（这也就是所谓的"�
 ## 参考文档
 
 * 查看 [该页面]({{< ref path="design/omha.md" lang="en">}}) 以获取详细设计文档；
-* Ozone 的分发包中的 `compose/ozone-om-ha` 目录下提供了一个配置 OM 高可用的示例，可以借助 [docker-compose]({{< ref path="start/RunningViaDocker.md" lang="en">}}) 进行测试。
+* Ozone 的分发包中的 `compose/ozone-om-ha` 目录下提供了一个配置 OM 高可用的示例，可以借助 [docker compose]({{< ref path="start/RunningViaDocker.md" lang="en">}}) 进行测试。

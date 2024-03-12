@@ -40,7 +40,7 @@ Ozone 原生支持 Prometheus，各个组件会启动一个兼容 Prometheus 的
   </property>
 ```
 
-_注意_: 对于基于 docker-compose 方式的伪集群，在 `docker-config` 文件中添加 `OZONE-SITE.XML_hdds.prometheus.endpoint.enabled=true`。
+_注意_: 对于基于 docker compose 方式的伪集群，在 `docker-config` 文件中添加 `OZONE-SITE.XML_hdds.prometheus.endpoint.enabled=true`。
 
 * 重启 OM 和 SCM，检查端点：
 
@@ -90,5 +90,5 @@ Ozone 发行包中包含了一个即开即用的容器化环境来试用 Ozone �
 ```bash
 cd compose/ozone
 export COMPOSE_FILE=docker-compose.yaml:monitoring.yaml
-docker-compose up -d
+docker compose up -d
 ```

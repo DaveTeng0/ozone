@@ -92,5 +92,5 @@ The ozone distribution contains a ready-to-use, dockerized environment to try ou
 ```bash
 cd compose/ozone
 export COMPOSE_FILE=docker-compose.yaml:monitoring.yaml
-docker-compose up -d
+docker compose up -d
 ```

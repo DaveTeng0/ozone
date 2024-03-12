@@ -50,7 +50,7 @@ To try it out, you can start a Docker Compose dev cluster that has an HttpFS gat
 Extract the release tarball, go to the `compose/ozone` directory and start the cluster:
 
 ```bash
-docker-compose up -d --scale datanode=3
+docker compose up -d --scale datanode=3
 ```
 
 You can/should find now the HttpFS gateway in docker with the name `ozone_httpfs`.

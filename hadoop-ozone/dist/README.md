@@ -26,7 +26,7 @@ Usually, you can start the cluster with:
 
 ```
 cd compose/ozone
-docker-compose up -d
+docker compose up -d
 ```
 
 More information can be found in the Getting Started Guide:

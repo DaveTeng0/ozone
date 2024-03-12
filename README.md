@@ -60,7 +60,7 @@ After you untar the binary:
 
 ```
 cd compose/ozone
-docker-compose up -d --scale datanode=3
+docker compose up -d --scale datanode=3
 ```
 
 The `compose` folder contains different sets of configured clusters (secure, HA, mapreduce example), you can check the various subfolders for more examples.
@@ -81,7 +81,7 @@ And can be started with the help of Docker:
 
 ```
 cd hadoop-ozone/dist/target/ozone-*/compose/ozone
-docker-compose up -d --scale datanode=3
+docker compose up -d --scale datanode=3
 ```
 For more information, you can check the [Contribution guideline](./CONTRIBUTING.md)
 

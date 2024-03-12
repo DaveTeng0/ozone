@@ -56,4 +56,4 @@ fi
 
 export OZONE_DATANODES OZONE_REPLICATION_FACTOR OZONE_SAFEMODE_MIN_DATANODES
 
-docker-compose up --scale datanode=${OZONE_DATANODES} --no-recreate "$@"
+docker compose up --scale datanode=${OZONE_DATANODES} --no-recreate "$@"

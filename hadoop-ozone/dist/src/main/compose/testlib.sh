@@ -101,9 +101,9 @@ wait_for_om_leader() {
   while [[ $SECONDS -lt 120 ]]; do
     local command="ozone admin om getserviceroles --service-id '${OM_SERVICE_ID}'"
     if [[ "${SECURITY_ENABLED}" == 'true' ]]; then
-      status=$(docker-compose exec -T ${SCM} bash -c "kinit -k scm/scm@EXAMPLE.COM -t /etc/security/keytabs/scm.keytab && $command" | grep LEADER || true)
+      status=$(docker compose exec -T ${SCM} bash -c "kinit -k scm/scm@EXAMPLE.COM -t /etc/security/keytabs/scm.keytab && $command" | grep LEADER || true)
     else
-      status=$(docker-compose exec -T ${SCM} bash -c "$command" | grep LEADER || true)
+      status=$(docker compose exec -T ${SCM} bash -c "$command" | grep LEADER || true)
     fi
     if [[ -n "${status}" ]]; then
       echo "Found OM leader for service ${OM_SERVICE_ID}: $status"
@@ -111,9 +111,9 @@ wait_for_om_leader() {
       local grep_command="grep -e FOLLOWER -e LEADER | sort -r -k3 | awk '{ print \$1 }' | xargs echo | sed 's/ /,/g'"
       local new_order
       if [[ "${SECURITY_ENABLED}" == 'true' ]]; then
-        new_order=$(docker-compose exec -T ${SCM} bash -c "kinit -k scm/scm@EXAMPLE.COM -t /etc/security/keytabs/scm.keytab && $command | ${grep_command}")
+        new_order=$(docker compose exec -T ${SCM} bash -c "kinit -k scm/scm@EXAMPLE.COM -t /etc/security/keytabs/scm.keytab && $command | ${grep_command}")
       else
-        new_order=$(docker-compose exec -T ${SCM} bash -c "$command | ${grep_command}")
+        new_order=$(docker compose exec -T ${SCM} bash -c "$command | ${grep_command}")
       fi
 
       reorder_om_nodes "${new_order}"
@@ -138,11 +138,11 @@ start_docker_env(){
   create_results_dir
   export OZONE_SAFEMODE_MIN_DATANODES="${datanode_count}"
 
-  docker-compose --ansi never down
+  docker compose --ansi never down
 
   trap stop_docker_env EXIT HUP INT TERM
 
-  docker-compose --ansi never up -d --scale datanode="${datanode_count}"
+  docker compose --ansi never up -d --scale datanode="${datanode_count}"
   wait_for_safemode_exit
   wait_for_om_leader
 }
@@ -177,8 +177,8 @@ execute_robot_test(){
   set +e
 
   # shellcheck disable=SC2068
-  docker-compose exec -T "$CONTAINER" mkdir -p "$RESULT_DIR_INSIDE" \
-    && docker-compose exec -T "$CONTAINER" robot \
+  docker compose exec -T "$CONTAINER" mkdir -p "$RESULT_DIR_INSIDE" \
+    && docker compose exec -T "$CONTAINER" robot \
       -v KEY_NAME:"${OZONE_BUCKET_KEY_NAME}" \
       -v OM_HA_PARAM:"${OM_HA_PARAM}" \
       -v OM_SERVICE_ID:"${OM_SERVICE_ID:-om}" \
@@ -189,7 +189,7 @@ execute_robot_test(){
       "$SMOKETEST_DIR_INSIDE/$TEST"
   local -i rc=$?
 
-  FULL_CONTAINER_NAME=$(docker-compose ps | grep "_${CONTAINER}_" | head -n 1 | awk '{print $1}')
+  FULL_CONTAINER_NAME=$(docker compose ps | grep "_${CONTAINER}_" | head -n 1 | awk '{print $1}')
   docker cp "$FULL_CONTAINER_NAME:$OUTPUT_PATH" "$RESULT_DIR/"
 
   if [[ ${rc} -gt 0 ]] && [[ ${rc} -le 250 ]]; then
@@ -207,7 +207,7 @@ reorder_om_nodes() {
   local new_order="$1"
 
   if [[ -n "${new_order}" ]] && [[ "${new_order}" != "om1,om2,om3" ]]; then
-    for c in $(docker-compose ps | cut -f1 -d' ' | grep -e datanode -e recon -e s3g -e scm); do
+    for c in $(docker compose ps | cut -f1 -d' ' | grep -e datanode -e recon -e s3g -e scm); do
       docker exec "${c}" sed -i -e "s/om1,om2,om3/${new_order}/" /etc/hadoop/ozone-site.xml
       echo "Replaced OM order with ${new_order} in ${c}"
     done
@@ -217,7 +217,7 @@ reorder_om_nodes() {
 ## @description Create stack dump of each java process in each container
 create_stack_dumps() {
   local c pid procname
-  for c in $(docker-compose ps | cut -f1 -d' ' | grep -e datanode -e om -e recon -e s3g -e scm); do
+  for c in $(docker compose ps | cut -f1 -d' ' | grep -e datanode -e om -e recon -e s3g -e scm); do
     while read -r pid procname; do
       echo "jstack $pid > ${RESULT_DIR}/${c}_${procname}.stack"
       docker exec "${c}" bash -c "jstack $pid" > "${RESULT_DIR}/${c}_${procname}.stack"

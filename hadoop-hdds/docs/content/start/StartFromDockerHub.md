@@ -53,16 +53,16 @@ docker run apache/ozone cat docker-compose.yaml > docker-compose.yaml
 docker run apache/ozone cat docker-config > docker-config
 ```
 
- Now you can start the cluster with docker-compose:
+ Now you can start the cluster with docker compose:
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 If you need multiple datanodes, we can just scale it up:
 
 ```bash
-docker-compose up -d --scale datanode=3
+docker compose up -d --scale datanode=3
 ```
 
 # Running S3 Clients

@@ -30,7 +30,7 @@ Clusters are defined in `docker-compose.yaml`, cluster-wide settings are externa
 
 ## Usage
 
-Standard `docker-compose` commands can be used to start, stop, or destroy the cluster, check logs, or execute commands in the containers.
+Standard `docker compose` commands can be used to start, stop, or destroy the cluster, check logs, or execute commands in the containers.
 
 Most environments allow scaling the number of datanodes.
 
@@ -39,42 +39,42 @@ Key ports (web UI, RPC) are usually published on the docker host.  Datanode port
 ### Starting the Cluster
 
 ```
-docker-compose up -d
+docker compose up -d
 ```
 
 ### Checking Service Logs
 
 ```
-docker-compose logs              # all services
-docker-compose logs <service>    # specific service, e.g. `scm`
-docker-compose logs -f <service> # follow logs, as in `tail -f`
+docker compose logs              # all services
+docker compose logs <service>    # specific service, e.g. `scm`
+docker compose logs -f <service> # follow logs, as in `tail -f`
 ```
 
 ### Scaling Services
 
 ```
-docker-compose up -d --no-restart --scale datanode=5
+docker compose up -d --no-restart --scale datanode=5
 ```
 
 ### Executing Commands
 
 ```
-docker-compose exec <service> ozone version # one-off command
-docker-compose exec <service> bash          # interactive shell
+docker compose exec <service> ozone version # one-off command
+docker compose exec <service> bash          # interactive shell
 ```
 
 ### Stopping the Cluster
 
 ```
-docker-compose stop <service>
-docker-compose start <service> # start specific service (again)
-docker-compose stop            # stop the cluster
-docker-compose down  -v        # stop and destroy
+docker compose stop <service>
+docker compose start <service> # start specific service (again)
+docker compose stop            # stop the cluster
+docker compose down  -v        # stop and destroy
 ```
 
 ## Tests
 
-Most subdirectories contain `test.sh`, some also have other `test-*.sh` scripts.  These are run in CI by Github Actions, but can also be run locally (requires: bash, docker, docker-compose, jq).
+Most subdirectories contain `test.sh`, some also have other `test-*.sh` scripts.  These are run in CI by Github Actions, but can also be run locally (requires: bash, docker, jq).
 
 Tests are implemented in `../smoketest/` using Robot Framework.
 

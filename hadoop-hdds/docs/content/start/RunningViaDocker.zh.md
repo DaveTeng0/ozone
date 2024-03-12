@@ -21,23 +21,23 @@ weight: 23
 -->
 
 {{< requirements >}}
- * docker 和 docker-compose
+ * docker
 {{< /requirements >}}
 
 * 下载 Ozone 二进制压缩包并解压。
 
-* 进入 docker compose 文件所在的目录，执行 `docker-compose` 命令，你的机器会启动一个运行在后台的 ozone 伪集群。
+* 进入 docker compose 文件所在的目录，执行 `docker compose` 命令，你的机器会启动一个运行在后台的 ozone 伪集群。
 
 {{< highlight bash >}}
 cd compose/ozone/
 
-docker-compose up -d
+docker compose up -d
 {{< /highlight >}}
 
 为了验证 Ozone 正常运行，我们可以登录到 Datanode 并运行 Ozone 的负载生成工具 _freon_。 ```exec datanode bash``` 命令会在 Datanode 上启动一个 bash，`ozone freon` 命令在 Datanode 所在的容器内执行，你随时可以通过  CTRL-C 退出 freon，命令行选项 ```rk``` 会让 freon 生成随机的键。
 
 {{< highlight bash >}}
-docker-compose exec datanode bash
+docker compose exec datanode bash
 ozone freon rk
 {{< /highlight >}}
 
@@ -47,6 +47,6 @@ ozone freon rk
 
 关闭集群的命令为：
 {{< highlight bash >}}
-docker-compose down
+docker compose down
 {{< /highlight >}}
 

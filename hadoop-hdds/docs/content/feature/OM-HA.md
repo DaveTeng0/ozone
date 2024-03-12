@@ -136,4 +136,4 @@ Note that using the _force_ option during bootstrap could crash the OM process i
 ## References
 
  * Check [this page]({{< ref "design/omha.md" >}}) for the links to the original design docs
- * Ozone distribution contains an example OM HA configuration, under the `compose/ozone-om-ha` directory which can be tested with the help of [docker-compose]({{< ref "start/RunningViaDocker.md" >}}).
+ * Ozone distribution contains an example OM HA configuration, under the `compose/ozone-om-ha` directory which can be tested with the help of [docker compose]({{< ref "start/RunningViaDocker.md" >}}).

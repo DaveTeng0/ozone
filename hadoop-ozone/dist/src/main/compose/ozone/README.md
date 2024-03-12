@@ -38,13 +38,13 @@ TL;DR:
 
 ### Basics
 
-The cluster can be started with regular `docker-compose up` command.  Use `-d` to start the cluster in the background.
+The cluster can be started with regular `docker compose up` command.  Use `-d` to start the cluster in the background.
 
-You can change the number of datanodes to start using the `--scale` option.  Eg. to start 3 datanodes: `docker-compose up -d --scale datanode=3`.
+You can change the number of datanodes to start using the `--scale` option.  Eg. to start 3 datanodes: `docker compose up -d --scale datanode=3`.
 
 The cluster's replication factor (1 or 3) can be controlled by setting the `OZONE_REPLICATION_FACTOR` environment variable.  It defaults to 1 to match the number of datanodes started by default, without the `--scale` option.
 
-For convenience the `run.sh` script can be used to start multiple datanodes (by setting the `OZONE_DATANODES` variable), while making sure the replication factor and the number of datanodes are compatible.  It also passes any additional arguments provided on the command-line (eg. `-d`) to `docker-compose`.
+For convenience the `run.sh` script can be used to start multiple datanodes (by setting the `OZONE_DATANODES` variable), while making sure the replication factor and the number of datanodes are compatible.  It also passes any additional arguments provided on the command-line (eg. `-d`) to `docker compose`.
 
 ### Add-ons
 
@@ -57,7 +57,7 @@ export COMPOSE_FILE=docker-compose.yaml:profiling.yaml                 # => add 
 export COMPOSE_FILE=docker-compose.yaml:monitoring.yaml:profiling.yaml # => add both
 ```
 
-Once the variable is defined, Ozone cluster with add-ons can be started/scaled/stopped etc. using the same `docker-compose` commands as for the base cluster.
+Once the variable is defined, Ozone cluster with add-ons can be started/scaled/stopped etc. using the same `docker compose` commands as for the base cluster.
 
 ### Load generator
 
@@ -66,11 +66,11 @@ Ozone comes with a load generator called Freon.
 You can enter one of the containers (eg. SCM) and start a Freon test:
 
 ```
-docker-compose exec scm bash
+docker compose exec scm bash
 ozone freon ockg -n1000
 ```
 
-You can also start two flavors of Freon as separate services, which allows scaling them up.  Once all the datanodes are started, start Freon by adding its definition to `COMPOSE_FILE` and re-running the `docker-compose up` or `run.sh` command:
+You can also start two flavors of Freon as separate services, which allows scaling them up.  Once all the datanodes are started, start Freon by adding its definition to `COMPOSE_FILE` and re-running the `docker compose up` or `run.sh` command:
 
 ```
 export COMPOSE_FILE="${COMPOSE_FILE}:freon-ockg.yaml"

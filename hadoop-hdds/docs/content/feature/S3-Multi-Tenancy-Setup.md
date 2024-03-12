@@ -101,8 +101,8 @@ To launch the Docker Compose cluster locally, from Ozone distribution root:
 
 ```shell
 cd compose/ozonesecure
-docker-compose up -d --scale datanode=3
-docker-compose exec scm bash
+docker compose up -d --scale datanode=3
+docker compose exec scm bash
 ```
 
 Operations requiring Ozone cluster administrator privilege should be run as `om` user:

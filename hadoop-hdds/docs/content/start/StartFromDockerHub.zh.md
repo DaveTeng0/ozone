@@ -47,16 +47,16 @@ docker run apache/ozone cat docker-compose.yaml > docker-compose.yaml
 docker run apache/ozone cat docker-config > docker-config
 ```
 
-现在你可以用 docker-compose 命令来启动集群：
+现在你可以用 docker compose 命令来启动集群：
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 如果你需要多个数据节点，可以通过下面的命令增加：
 
 ```bash
- docker-compose scale datanode=3
+ docker compose scale datanode=3
  ```
 # 运行 S3 客户端
 
