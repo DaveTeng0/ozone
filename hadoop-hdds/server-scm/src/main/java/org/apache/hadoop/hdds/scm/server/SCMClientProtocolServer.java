@@ -545,7 +545,7 @@ public class SCMClientProtocolServer implements
     }
     try {
       final ContainerID containerId = ContainerID.valueOf(startContainerID);
-      StorageContainerManager scm = getScm();
+//      StorageContainerManager scm = getScm();
       if (state == null && replicationType == null && repConfig == null) {
         // Not filters, so just return everything
         return scm.getContainerManager().getContainers(containerId, count);

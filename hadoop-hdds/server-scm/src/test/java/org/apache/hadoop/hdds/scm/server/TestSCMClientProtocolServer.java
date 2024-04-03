@@ -51,8 +51,7 @@ import static org.apache.hadoop.ozone.OzoneConfigKeys.OZONE_READONLY_ADMINISTRAT
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.*;
 
 /**
  * Unit tests to validate the SCMClientProtocolServer
@@ -160,21 +159,28 @@ public class TestSCMClientProtocolServer {
 //    assertEquals(err, resp.getErrorMsg());
   }
 
+//  @SuppressWarnings("ResultOfMethodCallIgnored")
+
   private StorageContainerManager mockStorageContainerManager() {
     List<ContainerInfo> infos = new ArrayList<>();
     for (int i = 0; i < 20; i++) {
       infos.add(newContainerInfoForTest());
     }
     ContainerManagerImpl containerManager = mock(ContainerManagerImpl.class);
-    doReturn(infos).when(containerManager).getContainers();
+//    doReturn(infos).when(containerManager).getContainers();
+    when(containerManager.getContainers()).thenReturn(infos);
     StorageContainerManager storageContainerManager = mock(StorageContainerManager.class);
-    doReturn(containerManager).when(storageContainerManager).getContainerManager();
+//    doReturn(containerManager).when(storageContainerManager).getContainerManager();
+    when(storageContainerManager.getContainerManager()).thenReturn(containerManager);
 
     SCMNodeDetails scmNodeDetails = mock(SCMNodeDetails.class);
-    doReturn(new InetSocketAddress("localhost", 9876))
-        .when(scmNodeDetails).getClientProtocolServerAddress();
-    doReturn("test").when(scmNodeDetails).getClientProtocolServerAddressKey();
-    doReturn(scmNodeDetails).when(storageContainerManager).getScmNodeDetails();
+//    doReturn(new InetSocketAddress("localhost", 9876))
+//        .when(scmNodeDetails).getClientProtocolServerAddress();
+    when(scmNodeDetails.getClientProtocolServerAddress()).thenReturn(new InetSocketAddress("localhost", 9876));
+//    doReturn("test").when(scmNodeDetails).getClientProtocolServerAddressKey();
+    when(scmNodeDetails.getClientProtocolServerAddressKey()).thenReturn("test");
+//    doReturn(scmNodeDetails).when(storageContainerManager).getScmNodeDetails();
+    when(storageContainerManager.getScmNodeDetails()).thenReturn(scmNodeDetails);
     return storageContainerManager;
   }
 
