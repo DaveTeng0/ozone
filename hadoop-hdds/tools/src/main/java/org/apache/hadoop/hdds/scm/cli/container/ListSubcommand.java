@@ -56,7 +56,7 @@ public class ListSubcommand extends ScmSubcommand {
 
   @Option(names = {"-c", "--count"},
       description = "Maximum number of containers to list",
-      defaultValue = "20", showDefaultValue = Visibility.ALWAYS)
+      defaultValue = "-1", showDefaultValue = Visibility.ALWAYS)
   private int count;
 
   @Option(names = {"--state"},
