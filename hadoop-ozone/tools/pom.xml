@@ -29,6 +29,43 @@ https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <packaging>jar</packaging>
 
   <dependencies>
+<!--    <dependency>-->
+<!--      <groupId>org.apache.ratis</groupId>-->
+<!--      <artifactId>ratis-proto-shaded</artifactId>-->
+<!--      <version>${ratis.version}</version>-->
+<!--    </dependency>-->
+    <dependency>
+      <artifactId>ratis-common</artifactId>
+      <groupId>org.apache.ratis</groupId>
+      <version>${ratis.version}</version>
+    </dependency>
+<!--    <dependency>-->
+<!--      <artifactId>ratis-client</artifactId>-->
+<!--      <groupId>org.apache.ratis</groupId>-->
+<!--      <version>${ratis.version}</version>-->
+<!--    </dependency>-->
+<!--    <dependency>-->
+<!--      <artifactId>ratis-server</artifactId>-->
+<!--      <groupId>org.apache.ratis</groupId>-->
+<!--      <version>${ratis.version}</version>-->
+<!--    </dependency>-->
+<!--    <dependency>-->
+<!--      <artifactId>ratis-netty</artifactId>-->
+<!--      <groupId>org.apache.ratis</groupId>-->
+<!--      <version>${ratis.version}</version>-->
+<!--    </dependency>-->
+<!--    <dependency>-->
+<!--      <artifactId>ratis-grpc</artifactId>-->
+<!--      <groupId>org.apache.ratis</groupId>-->
+<!--      <version>${ratis.version}</version>-->
+<!--    </dependency>-->
+    <dependency>
+          <artifactId>ratis-shell</artifactId>
+          <groupId>org.apache.ratis</groupId>
+          <version>${ratis.version}</version>
+        </dependency>
+
+
     <dependency>
       <groupId>org.apache.ozone</groupId>
       <artifactId>ozone-manager</artifactId>

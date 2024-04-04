@@ -57,6 +57,19 @@ https://maven.apache.org/xsd/maven-4.0.0.xsd">
       </exclusions>
     </dependency>
     <dependency>
+      <artifactId>ratis-shell</artifactId>
+      <groupId>org.apache.ratis</groupId>
+      <version>${ratis.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.ratis</groupId>
+          <artifactId>ratis-examples</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+
+    <dependency>
       <groupId>commons-cli</groupId>
       <artifactId>commons-cli</artifactId>
     </dependency>
