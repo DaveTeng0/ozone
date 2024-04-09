@@ -22,10 +22,17 @@ import org.apache.hadoop.hdds.cli.HddsVersionProvider;
 import org.apache.hadoop.hdds.cli.OzoneAdmin;
 import org.apache.hadoop.hdds.cli.SubcommandWithParent;
 import org.apache.hadoop.hdds.conf.OzoneConfiguration;
+import org.apache.hadoop.ipc.ProtobufRpcEngine;
+import org.apache.hadoop.ipc.RPC;
 import org.apache.hadoop.ozone.OmUtils;
 import org.apache.hadoop.ozone.client.OzoneClientException;
 import org.apache.hadoop.ozone.client.OzoneClientFactory;
 import org.apache.hadoop.ozone.client.protocol.ClientProtocol;
+import org.apache.hadoop.ozone.om.protocolPB.Hadoop3OmTransportFactory;
+import org.apache.hadoop.ozone.om.protocolPB.OmTransport;
+import org.apache.hadoop.ozone.om.protocolPB.OzoneManagerProtocolClientSideTranslatorPB;
+import org.apache.hadoop.ozone.om.protocolPB.OzoneManagerProtocolPB;
+import org.apache.ratis.protocol.ClientId;
 import org.kohsuke.MetaInfServices;
 
 import org.apache.ratis.shell.cli.sh.command.GroupCommand;
@@ -36,6 +43,7 @@ import picocli.CommandLine.Spec;
 
 import java.util.Collection;
 
+import static org.apache.hadoop.ozone.om.OMConfigKeys.OZONE_OM_ADDRESS_KEY;
 import static org.apache.hadoop.ozone.om.OMConfigKeys.OZONE_OM_SERVICE_IDS_KEY;
 
 /**
@@ -75,19 +83,55 @@ public class RatisAdmin extends GenericCli implements SubcommandWithParent {
     return null;
   }
 
-  public ClientProtocol createClient(String omServiceId) throws Exception {
+  public OzoneManagerProtocolClientSideTranslatorPB createOmClient(
+      String omServiceID
+  ) throws Exception {
+    return createOmClient(omServiceID, null, true);
+  }
+
+  public OzoneManagerProtocolClientSideTranslatorPB createOmClient(
+      String omServiceID,
+      String omHost,
+      boolean forceHA
+  ) throws Exception {
     OzoneConfiguration conf = parent.getOzoneConf();
-    if (OmUtils.isOmHAServiceId(conf, omServiceId)) {
-      return OzoneClientFactory.getRpcClient(omServiceId, conf).getObjectStore()
-        .getClientProxy();
+    if (omHost != null && !omHost.isEmpty()) {
+      omServiceID = null;
+      conf.set(OZONE_OM_ADDRESS_KEY, omHost);
+    } else if (omServiceID == null || omServiceID.isEmpty()) {
+      omServiceID = getTheOnlyConfiguredOmServiceIdOrThrow();
+    }
+    RPC.setProtocolEngine(conf, OzoneManagerProtocolPB.class,
+        ProtobufRpcEngine.class);
+    String clientId = ClientId.randomId().toString();
+    if (!forceHA || (forceHA && OmUtils.isOmHAServiceId(conf, omServiceID))) {
+      OmTransport omTransport = new Hadoop3OmTransportFactory()
+          .createOmTransport(conf, parent.getUser(), omServiceID);
+      return new OzoneManagerProtocolClientSideTranslatorPB(omTransport,
+          clientId);
     } else {
       throw new OzoneClientException("This command works only on OzoneManager" +
-            " HA cluster. Service ID specified does not match" +
-            " with " + OZONE_OM_SERVICE_IDS_KEY + " defined in the " +
-            "configuration. Configured " + OZONE_OM_SERVICE_IDS_KEY + " are " +
-            conf.getTrimmedStringCollection(OZONE_OM_SERVICE_IDS_KEY) + "\n");
+          " HA cluster. Service ID specified does not match" +
+          " with " + OZONE_OM_SERVICE_IDS_KEY + " defined in the " +
+          "configuration. Configured " + OZONE_OM_SERVICE_IDS_KEY + " are " +
+          conf.getTrimmedStringCollection(OZONE_OM_SERVICE_IDS_KEY) + "\n");
     }
   }
+
+
+//  public ClientProtocol createClient(String omServiceId) throws Exception {
+//    OzoneConfiguration conf = parent.getOzoneConf();
+//    if (OmUtils.isOmHAServiceId(conf, omServiceId)) {
+//      return OzoneClientFactory.getRpcClient(omServiceId, conf).getObjectStore()
+//        .getClientProxy();
+//    } else {
+//      throw new OzoneClientException("This command works only on OzoneManager" +
+//            " HA cluster. Service ID specified does not match" +
+//            " with " + OZONE_OM_SERVICE_IDS_KEY + " defined in the " +
+//            "configuration. Configured " + OZONE_OM_SERVICE_IDS_KEY + " are " +
+//            conf.getTrimmedStringCollection(OZONE_OM_SERVICE_IDS_KEY) + "\n");
+//    }
+//  }
 
   private String getTheOnlyConfiguredOmServiceIdOrThrow() {
     if (getConfiguredServiceIds().size() != 1) {

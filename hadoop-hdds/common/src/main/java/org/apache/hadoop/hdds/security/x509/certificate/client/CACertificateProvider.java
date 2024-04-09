@@ -26,6 +26,6 @@ import java.util.List;
  * An interface that defines a trust anchor provider API this class relies on.
  */
 @FunctionalInterface
-public interface CACertificateProvider {
+public interface CACertificateProvider { // hhhhhhhhhhhhhhhhhhh
   List<X509Certificate> provideCACerts() throws IOException;
 }
