@@ -28,7 +28,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.protobuf.BlockingService;
 import com.google.protobuf.ProtocolMessageEnum;
-import org.apache.commons.lang3.tuple.Pair;
+
 import org.apache.hadoop.fs.CommonConfigurationKeys;
 import org.apache.hadoop.hdds.client.ReplicationConfig;
 import org.apache.hadoop.hdds.conf.OzoneConfiguration;
@@ -416,8 +416,7 @@ public class SCMClientProtocolServer implements
   @Override
 //  public List<ContainerInfo>
   public Pair<List<ContainerInfo>, Long>
-
-  listContainer(long startContainerID,
+      listContainer(long startContainerID,
       int count) throws IOException {
     return listContainer(startContainerID, count, null, null, null);
   }
@@ -436,7 +435,7 @@ public class SCMClientProtocolServer implements
 //  public List<ContainerInfo>
   public Pair<List<ContainerInfo>, Long>
 
-  listContainer(long startContainerID,
+      listContainer(long startContainerID,
       int count, HddsProtos.LifeCycleState state) throws IOException {
     return listContainer(startContainerID, count, state, null, null);
   }
@@ -455,7 +454,7 @@ public class SCMClientProtocolServer implements
   @Deprecated
 //  public List<ContainerInfo>
   public Pair<List<ContainerInfo>, Long>
-  listContainer(long startContainerID,
+      listContainer(long startContainerID,
       int count, HddsProtos.LifeCycleState state,
       HddsProtos.ReplicationFactor factor) throws IOException {
     boolean auditSuccess = true;

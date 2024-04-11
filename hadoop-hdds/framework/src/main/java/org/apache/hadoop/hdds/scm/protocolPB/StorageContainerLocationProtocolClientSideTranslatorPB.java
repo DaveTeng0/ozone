@@ -382,8 +382,7 @@ public final class StorageContainerLocationProtocolClientSideTranslatorPB
   @Override
 //  public List<ContainerInfo>
   public Pair<List<ContainerInfo>, Long>
-
-  listContainer(long startContainerID, int count)
+      listContainer(long startContainerID, int count)
       throws IOException {
     return listContainer(startContainerID, count, null, null, null);
   }
@@ -391,8 +390,7 @@ public final class StorageContainerLocationProtocolClientSideTranslatorPB
   @Override
 //  public List<ContainerInfo>
   public Pair<List<ContainerInfo>, Long>
-
-  listContainer(long startContainerID, int count,
+      listContainer(long startContainerID, int count,
       HddsProtos.LifeCycleState state) throws IOException {
     return listContainer(startContainerID, count, state, null, null);
   }
@@ -400,8 +398,7 @@ public final class StorageContainerLocationProtocolClientSideTranslatorPB
   @Override
 //  public List<ContainerInfo>
   public Pair<List<ContainerInfo>, Long>
-
-  listContainer(long startContainerID, int count,
+      listContainer(long startContainerID, int count,
       HddsProtos.LifeCycleState state,
       HddsProtos.ReplicationType replicationType,
       ReplicationConfig replicationConfig)
@@ -450,7 +447,7 @@ public final class StorageContainerLocationProtocolClientSideTranslatorPB
   @Override
 //  public List<ContainerInfo>
   public Pair<List<ContainerInfo>, Long>
-  listContainer(long startContainerID, int count,
+      listContainer(long startContainerID, int count,
       HddsProtos.LifeCycleState state, HddsProtos.ReplicationFactor factor)
       throws IOException {
     throw new UnsupportedOperationException("Should no longer be called from " +

@@ -126,8 +126,7 @@ public interface ScmClient extends Closeable {
    */
 //  List<ContainerInfo>
   Pair<List<ContainerInfo>, Long>
-
-  listContainer(long startContainerID,
+      listContainer(long startContainerID,
       int count) throws IOException;
 
   /**
@@ -142,11 +141,10 @@ public interface ScmClient extends Closeable {
    */
 //  List<ContainerInfo>
   Pair<List<ContainerInfo>, Long>
-
-  listContainer(long startContainerID, int count,
-      HddsProtos.LifeCycleState state,
-      HddsProtos.ReplicationType replicationType,
-      ReplicationConfig replicationConfig)
+      listContainer(long startContainerID, int count,
+          HddsProtos.LifeCycleState state,
+          HddsProtos.ReplicationType replicationType,
+          ReplicationConfig replicationConfig)
       throws IOException;
 
   /**

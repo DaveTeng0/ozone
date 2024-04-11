@@ -19,7 +19,6 @@ package org.apache.hadoop.ozone;
 
 import org.apache.hadoop.hdds.conf.OzoneConfiguration;
 import org.apache.hadoop.hdds.protocol.DatanodeDetails;
-import org.apache.hadoop.hdds.scm.container.ContainerID;
 import org.apache.hadoop.hdds.scm.container.common.helpers.ContainerWithPipeline;
 import org.apache.hadoop.hdds.protocol.proto.HddsProtos;
 import org.apache.hadoop.hdds.scm.PlacementPolicy;
@@ -97,10 +96,10 @@ public class TestContainerOperations {
    * @throws Exception
    */
   @Test
-  public void TestContainerOperations() throws Exception {
+  public void testListContainerOperations() throws Exception {
     // create 2 containers in cluster where the max limit of
     // listing container is set to 1
-    for(int i = 0 ; i < 2; i++) {
+    for (int i = 0; i < 2; i++) {
       storageClient.createContainer(HddsProtos
           .ReplicationType.STAND_ALONE, HddsProtos.ReplicationFactor
           .ONE, OzoneConsts.OZONE);
