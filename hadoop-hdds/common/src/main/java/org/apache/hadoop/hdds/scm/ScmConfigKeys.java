@@ -453,6 +453,14 @@ public final class ScmConfigKeys {
       "ozone.scm.block.deletion.max.retry";
   public static final int OZONE_SCM_BLOCK_DELETION_MAX_RETRY_DEFAULT = 4096;
 
+
+  public static final String HDDS_CONTAINER_LIST_MAX_COUNT =
+      "hdds.container.list.max.count";
+
+  public static final int HDDS_CONTAINER_LIST_MAX_COUNT_DEFAULT = 4096;
+
+
+
   public static final String OZONE_SCM_SEQUENCE_ID_BATCH_SIZE =
       "ozone.scm.sequence.id.batch.size";
   public static final int OZONE_SCM_SEQUENCE_ID_BATCH_SIZE_DEFAULT = 1000;

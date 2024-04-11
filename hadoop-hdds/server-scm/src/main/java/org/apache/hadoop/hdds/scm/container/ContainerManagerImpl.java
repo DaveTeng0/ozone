@@ -86,6 +86,8 @@ public class ContainerManagerImpl implements ContainerManager {
   @SuppressWarnings("java:S2245") // no need for secure random
   private final Random random = new Random();
 
+  private final int maxCountOfContainerList;
+
   /**
    *
    */
@@ -114,6 +116,10 @@ public class ContainerManagerImpl implements ContainerManager {
     this.numContainerPerVolume = conf
         .getInt(ScmConfigKeys.OZONE_SCM_PIPELINE_OWNER_CONTAINER_COUNT,
             ScmConfigKeys.OZONE_SCM_PIPELINE_OWNER_CONTAINER_COUNT_DEFAULT);
+
+    this.maxCountOfContainerList = conf
+        .getInt(ScmConfigKeys.HDDS_CONTAINER_LIST_MAX_COUNT,
+            ScmConfigKeys.HDDS_CONTAINER_LIST_MAX_COUNT_DEFAULT);
 
     this.scmContainerManagerMetrics = SCMContainerManagerMetrics.create();
   }
@@ -451,8 +457,11 @@ public class ContainerManagerImpl implements ContainerManager {
   private static List<ContainerID> filterSortAndLimit(
       ContainerID startID, int count, Set<ContainerID> set) {
 
+//    if (count <= this.maxCountOfContainerList) {
+//
+//    }
     if (ContainerID.MIN.equals(startID) &&
-          (count >= set.size() || count == -1)) {
+          (count >= set.size())) {
       List<ContainerID> list = new ArrayList<>(set);
       Collections.sort(list);
       return list;
@@ -460,6 +469,7 @@ public class ContainerManagerImpl implements ContainerManager {
 
     return findTopN(set, count, reverseOrder(),
         id -> id.compareTo(startID) >= 0);
+
   }
 
   /**

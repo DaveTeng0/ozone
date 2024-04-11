@@ -21,6 +21,8 @@
  */
 package org.apache.hadoop.hdds.scm.server;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
@@ -412,7 +414,10 @@ public class SCMClientProtocolServer implements
    * @throws IOException
    */
   @Override
-  public List<ContainerInfo> listContainer(long startContainerID,
+//  public List<ContainerInfo>
+  public Pair<List<ContainerInfo>, Long>
+
+  listContainer(long startContainerID,
       int count) throws IOException {
     return listContainer(startContainerID, count, null, null, null);
   }
@@ -428,7 +433,10 @@ public class SCMClientProtocolServer implements
    * @throws IOException
    */
   @Override
-  public List<ContainerInfo> listContainer(long startContainerID,
+//  public List<ContainerInfo>
+  public Pair<List<ContainerInfo>, Long>
+
+  listContainer(long startContainerID,
       int count, HddsProtos.LifeCycleState state) throws IOException {
     return listContainer(startContainerID, count, state, null, null);
   }
@@ -445,7 +453,9 @@ public class SCMClientProtocolServer implements
    */
   @Override
   @Deprecated
-  public List<ContainerInfo> listContainer(long startContainerID,
+//  public List<ContainerInfo>
+  public Pair<List<ContainerInfo>, Long>
+  listContainer(long startContainerID,
       int count, HddsProtos.LifeCycleState state,
       HddsProtos.ReplicationFactor factor) throws IOException {
     boolean auditSuccess = true;
@@ -470,15 +480,18 @@ public class SCMClientProtocolServer implements
                     .getReplicationType() != HddsProtos.ReplicationType.EC)
                 .filter(info -> (info.getReplicationFactor() == factor))
                 .sorted();
-          return count == -1 ? containerInfoStream.collect(Collectors.toList()) :
-              containerInfoStream.limit(count).collect(Collectors.toList());
+//          if (containerInfoStream.count() > count) {
+//            return containerInfoStream.limit(count).collect(Collectors.toList());
+//          }
+
+          return Pair.of(containerInfoStream.limit(count).collect(Collectors.toList()), containerInfoStream.count());
         } else {
           Stream<ContainerInfo> containerInfoStream =
               scm.getContainerManager().getContainers(state).stream()
                   .filter(info -> info.containerID().getId() >= startContainerID)
                   .sorted();
-          return count == -1 ? containerInfoStream.collect(Collectors.toList()) :
-              containerInfoStream.limit(count).collect(Collectors.toList());
+          return Pair.of(
+              containerInfoStream.limit(count).collect(Collectors.toList()), containerInfoStream.count());
         }
       } else {
         if (factor != null) {
@@ -490,10 +503,10 @@ public class SCMClientProtocolServer implements
                       .getReplicationType() != HddsProtos.ReplicationType.EC)
                   .filter(info -> info.getReplicationFactor() == factor)
                   .sorted();
-          return count == -1 ? containerInfoStream.collect(Collectors.toList())
-              : containerInfoStream.limit(count).collect(Collectors.toList());
+          return Pair.of(containerInfoStream.limit(count).collect(Collectors.toList()), containerInfoStream.count());
         } else {
-          return scm.getContainerManager().getContainers(containerId, count);
+          List<ContainerInfo> containerInfos = scm.getContainerManager().getContainers(containerId, count);
+          return Pair.of(containerInfos, (long)(containerInfos.size()));
         }
       }
     } catch (Exception ex) {
@@ -520,7 +533,9 @@ public class SCMClientProtocolServer implements
    * @throws IOException
    */
   @Override
-  public List<ContainerInfo> listContainer(long startContainerID,
+//  public List<ContainerInfo> listContainer(long startContainerID,
+  public Pair<List<ContainerInfo>, Long> listContainer(long startContainerID,
+
       int count, HddsProtos.LifeCycleState state,
       HddsProtos.ReplicationType replicationType,
       ReplicationConfig repConfig) throws IOException {
@@ -541,7 +556,8 @@ public class SCMClientProtocolServer implements
       final ContainerID containerId = ContainerID.valueOf(startContainerID);
       if (state == null && replicationType == null && repConfig == null) {
         // Not filters, so just return everything
-        return scm.getContainerManager().getContainers(containerId, count);
+        List<ContainerInfo> containerInfos = scm.getContainerManager().getContainers(containerId, count);
+        return Pair.of(containerInfos, (long)containerInfos.size());
       }
 
       List<ContainerInfo> containerList;
@@ -564,8 +580,7 @@ public class SCMClientProtocolServer implements
             .filter(info -> info.getReplicationType() == replicationType);
       }
       Stream<ContainerInfo> containerInfoStream = containerStream.sorted();
-      return count == -1 ? containerInfoStream.collect(Collectors.toList()) :
-          containerInfoStream.limit(count).collect(Collectors.toList());
+      return Pair.of(containerInfoStream.limit(count).collect(Collectors.toList()), containerInfoStream.count());
     } catch (Exception ex) {
       auditSuccess = false;
       AUDIT.logReadFailure(

@@ -19,6 +19,7 @@ package org.apache.hadoop.ozone;
 
 import org.apache.hadoop.hdds.conf.OzoneConfiguration;
 import org.apache.hadoop.hdds.protocol.DatanodeDetails;
+import org.apache.hadoop.hdds.scm.container.ContainerID;
 import org.apache.hadoop.hdds.scm.container.common.helpers.ContainerWithPipeline;
 import org.apache.hadoop.hdds.protocol.proto.HddsProtos;
 import org.apache.hadoop.hdds.scm.PlacementPolicy;
@@ -62,6 +63,9 @@ public class TestContainerOperations {
     ozoneConf = new OzoneConfiguration();
     ozoneConf.setClass(ScmConfigKeys.OZONE_SCM_CONTAINER_PLACEMENT_IMPL_KEY,
         SCMContainerPlacementCapacity.class, PlacementPolicy.class);
+//    ozoneConf.set(ScmConfigKeys.OZONE_SCM_CONTAINER_SIZE, "100MB");
+//    ozoneConf.set(ScmConfigKeys.HDDS_CONTAINER_LIST_MAX_COUNT, "1");
+
     cluster = MiniOzoneCluster.newBuilder(ozoneConf).setNumDatanodes(3).build();
     storageClient = new ContainerOperationClient(ozoneConf);
     cluster.waitForClusterToBeReady();
@@ -87,6 +91,25 @@ public class TestContainerOperations {
         .getContainer(container.getContainerInfo().getContainerID())
         .getContainerID());
   }
+
+  /**
+   * A simple test to list number of container above the max number Ozone allows.
+   * @throws Exception
+   */
+  @Test
+  public void TestContainerOperations() throws Exception {
+    // create 2 containers in cluster where the max limit of
+    // listing container is set to 1
+    for(int i = 0 ; i < 2; i++) {
+      storageClient.createContainer(HddsProtos
+          .ReplicationType.STAND_ALONE, HddsProtos.ReplicationFactor
+          .ONE, OzoneConsts.OZONE);
+    }
+
+    assertEquals(1, storageClient.listContainer(0, 2)
+        .getLeft().size());
+  }
+
 
   /**
    * A simple test to get Pipeline with {@link ContainerOperationClient}.

@@ -380,30 +380,36 @@ public final class StorageContainerLocationProtocolClientSideTranslatorPB
    * {@inheritDoc}
    */
   @Override
-  public List<ContainerInfo> listContainer(long startContainerID, int count)
+//  public List<ContainerInfo>
+  public Pair<List<ContainerInfo>, Long>
+
+  listContainer(long startContainerID, int count)
       throws IOException {
     return listContainer(startContainerID, count, null, null, null);
   }
 
   @Override
-  public List<ContainerInfo> listContainer(long startContainerID, int count,
+//  public List<ContainerInfo>
+  public Pair<List<ContainerInfo>, Long>
+
+  listContainer(long startContainerID, int count,
       HddsProtos.LifeCycleState state) throws IOException {
     return listContainer(startContainerID, count, state, null, null);
   }
 
   @Override
-  public List<ContainerInfo> listContainer(long startContainerID, int count,
+//  public List<ContainerInfo>
+  public Pair<List<ContainerInfo>, Long>
+
+  listContainer(long startContainerID, int count,
       HddsProtos.LifeCycleState state,
       HddsProtos.ReplicationType replicationType,
       ReplicationConfig replicationConfig)
       throws IOException {
     Preconditions.checkState(startContainerID >= 0,
         "Container ID cannot be negative.");
-    if (count <= 0 && count != -1) {
-      throw new IllegalStateException(
-        "Container count must be either greater than 0 " +
-        "or equal to -1 (list all containers)");
-    }        
+    Preconditions.checkState(count > 0,
+        "Container count must be greater than 0.");
     SCMListContainerRequestProto.Builder builder = SCMListContainerRequestProto
         .newBuilder();
     builder.setStartContainerID(startContainerID);
@@ -437,12 +443,14 @@ public final class StorageContainerLocationProtocolClientSideTranslatorPB
         .getContainersList()) {
       containerList.add(ContainerInfo.fromProtobuf(containerInfoProto));
     }
-    return containerList;
+    return Pair.of(containerList, response.getContainerCount());
   }
 
   @Deprecated
   @Override
-  public List<ContainerInfo> listContainer(long startContainerID, int count,
+//  public List<ContainerInfo>
+  public Pair<List<ContainerInfo>, Long>
+  listContainer(long startContainerID, int count,
       HddsProtos.LifeCycleState state, HddsProtos.ReplicationFactor factor)
       throws IOException {
     throw new UnsupportedOperationException("Should no longer be called from " +
@@ -1174,7 +1182,7 @@ public final class StorageContainerLocationProtocolClientSideTranslatorPB
   public List<ContainerInfo> getListOfContainers(
       long startContainerID, int count, HddsProtos.LifeCycleState state)
       throws IOException {
-    return listContainer(startContainerID, count, state);
+    return listContainer(startContainerID, count, state).getLeft();
   }
 
   @Override

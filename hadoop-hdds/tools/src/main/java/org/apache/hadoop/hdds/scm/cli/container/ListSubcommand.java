@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.List;
 
 import com.google.common.base.Strings;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hdds.cli.HddsVersionProvider;
 import org.apache.hadoop.hdds.client.ReplicationConfig;
 import org.apache.hadoop.hdds.client.ReplicationType;
@@ -55,10 +56,14 @@ public class ListSubcommand extends ScmSubcommand {
   private long startId;
 
   @Option(names = {"-c", "--count"},
-      description = "Maximum number of containers to list." +
-          "Make count=-1 default to list all containers",
-      defaultValue = "-1", showDefaultValue = Visibility.ALWAYS)
+      description = "Maximum number of containers to list.",
+      defaultValue = "20", showDefaultValue = Visibility.ALWAYS)
   private int count;
+
+  @Option(names = {"--all", "-a"},
+        description = "List all results",
+        defaultValue = "false")
+  private boolean all;
 
   @Option(names = {"--state"},
       description = "Container state(OPEN, CLOSING, QUASI_CLOSED, CLOSED, " +
@@ -106,12 +111,37 @@ public class ListSubcommand extends ScmSubcommand {
           ReplicationType.fromProto(type),
           replication, new OzoneConfiguration());
     }
-    List<ContainerInfo> containerList =
+
+    if (all) {
+//      count = Integer.MAX_VALUE;
+      count = 5;
+
+    }
+
+//    List<ContainerInfo> containerList =
+    Pair<List<ContainerInfo>, Long> containerListInfo =
+
         scmClient.listContainer(startId, count, state, type, repConfig);
 
     // Output data list
-    for (ContainerInfo container : containerList) {
+    for (ContainerInfo container : containerListInfo.getLeft()) {
       outputContainerInfo(container);
     }
+
+    if (containerListInfo.getRight() > count) {
+      System.out.printf("Container List is truncated since it's too long. List the first %d records of %d. " +
+              "User won't be able to view the full list of containers until pagination is supported.  %n",
+          count, containerListInfo.getRight());
+    }
+
   }
+
+//  private int getLimit() {
+//    if (all) {
+//      return Integer.MAX_VALUE;
+//    }
+//
+//    return count;
+//  }
+
 }
