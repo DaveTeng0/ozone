@@ -350,7 +350,7 @@ public class ContainerOperationClient implements ScmClient {
       listContainer(long startContainerID,
       int count) throws IOException {
     if (count > maxCountOfContainerList) {
-      LOG.info("Attempting to list {} containers. However, this exceeds" +
+      LOG.error("Attempting to list {} containers. However, this exceeds" +
           " the cluster's current limit of {}. The results will be capped at the" +
           " maximum allowed count.", count, maxCountOfContainerList);
       count = maxCountOfContainerList;
