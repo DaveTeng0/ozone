@@ -22,6 +22,8 @@ import org.apache.hadoop.hdds.conf.OzoneConfiguration;
 import org.apache.hadoop.hdds.scm.container.replication.ReplicationManager;
 import org.apache.hadoop.ozone.MiniOzoneCluster;
 import org.apache.hadoop.ozone.client.OzoneClient;
+import org.apache.hadoop.ozone.debug.DBScanner;
+import org.apache.hadoop.ozone.debug.RDBParser;
 import org.apache.hadoop.ozone.om.OMConfigKeys;
 import org.apache.hadoop.ozone.om.OMStorage;
 //import org.apache.hadoop.ozone.repair.OzoneRepair;
@@ -95,11 +97,9 @@ public class TestOzoneRepairShell {
 
   @Test
   public void testUpdateTransactionInfoTable() throws Exception {
-    StringWriter stdout = new StringWriter();
-    PrintWriter pstdout = new PrintWriter(stdout);
     CommandLine cmd = new CommandLine(new RDBRepair())
-        .addSubcommand(new TransactionInfoRepair())
-        .setOut(pstdout);
+        .addSubcommand(new TransactionInfoRepair());
+//        .setOut(pstdout);
 
     String dbPath = getOMDBPath();
 
@@ -108,6 +108,15 @@ public class TestOzoneRepairShell {
         new String[] {"--db=" + dbPath, "tr", "--highest-transaction", testTermIndex};
     int exitCode = cmd.execute(args);
     assertEquals(0, exitCode);
+
+    StringWriter stdout = new StringWriter();
+    PrintWriter pstdout = new PrintWriter(stdout);
+    CommandLine cmdDBScanner = new CommandLine(new RDBParser())
+        .addSubcommand(new DBScanner())
+        .setOut(pstdout);
+    String[] argsDBScanner =
+        new String[] {"--db=" + dbPath, "scan", "--column_family", "transactionInfoTable"};
+    cmdDBScanner.execute(argsDBScanner);
     String cmdOut = stdout.toString();
     assertThat(cmdOut).contains(testTermIndex);
 
