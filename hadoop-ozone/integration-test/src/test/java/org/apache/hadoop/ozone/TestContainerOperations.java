@@ -97,7 +97,7 @@ public class TestContainerOperations {
    */
   @Test
   public void testListContainerOperations() throws Exception {
-    // create 2 containers in cluster where the max limit of
+    // create 2 containers in cluster where the limit of max count for
     // listing container is set to 1
     for (int i = 0; i < 2; i++) {
       storageClient.createContainer(HddsProtos

@@ -61,7 +61,7 @@ public class ListSubcommand extends ScmSubcommand {
       defaultValue = "20", showDefaultValue = Visibility.ALWAYS)
   private int count;
 
-  @Option(names = {"--all", "-a"},
+  @Option(names = {"-a", "--all"},
         description = "List all results",
         defaultValue = "false")
   private boolean all;
@@ -115,7 +115,7 @@ public class ListSubcommand extends ScmSubcommand {
 
     if (all) {
 //      count = Integer.MAX_VALUE;
-      count = 5;
+//      count = 5;
       count = getOzoneConfiguration().getInt(ScmConfigKeys.HDDS_CONTAINER_LIST_MAX_COUNT,
           ScmConfigKeys.HDDS_CONTAINER_LIST_MAX_COUNT_DEFAULT);
       System.out.println("****___________ ppppppppppp count = " + count);
@@ -123,7 +123,6 @@ public class ListSubcommand extends ScmSubcommand {
 
 //    List<ContainerInfo> containerList =
     Pair<List<ContainerInfo>, Long> containerListAndTotalCount =
-
         scmClient.listContainer(startId, count, state, type, repConfig);
 
     // Output data list
@@ -133,7 +132,8 @@ public class ListSubcommand extends ScmSubcommand {
 
     if (containerListAndTotalCount.getRight() > count) {
       System.out.printf("Container List is truncated since it's too long. List the first %d records of %d. " +
-              "User won't be able to view the full list of containers until pagination is supported.  %n",
+              "User won't be able to view the full list of containers until " +
+              "pagination feature is supported.  %n",
           count, containerListAndTotalCount.getRight());
     }
 
