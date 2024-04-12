@@ -486,7 +486,8 @@ public class SCMClientProtocolServer implements
           List<ContainerInfo> containerInfos = containerInfoStream.collect(
               Collectors.toList());
 
-          return Pair.of(containerInfos.stream().limit(count).collect(Collectors.toList()), (long)containerInfos.size());
+          return Pair.of(containerInfos.stream().limit(count).collect(Collectors.toList()),
+              (long)containerInfos.size());
         } else {
           Stream<ContainerInfo> containerInfoStream =
               scm.getContainerManager().getContainers(state).stream()
@@ -511,7 +512,8 @@ public class SCMClientProtocolServer implements
 
           List<ContainerInfo> containerInfos = containerInfoStream.collect(
               Collectors.toList());
-          return Pair.of(containerInfos.stream().limit(count).collect(Collectors.toList()), (long)containerInfos.size());
+          return Pair.of(containerInfos.stream().limit(count).collect(Collectors.toList()),
+              (long)containerInfos.size());
         } else {
           List<ContainerInfo> containerInfos = scm.getContainerManager().getContainers(containerId, count);
           return Pair.of(containerInfos, (long)(containerInfos.size()));
