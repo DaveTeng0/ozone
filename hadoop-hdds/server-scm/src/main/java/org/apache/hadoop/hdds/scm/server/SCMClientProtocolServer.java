@@ -483,14 +483,20 @@ public class SCMClientProtocolServer implements
 //            return containerInfoStream.limit(count).collect(Collectors.toList());
 //          }
 
-          return Pair.of(containerInfoStream.limit(count).collect(Collectors.toList()), containerInfoStream.count());
+          List<ContainerInfo> containerInfos = containerInfoStream.collect(
+              Collectors.toList());
+
+          return Pair.of(containerInfos.stream().limit(count).collect(Collectors.toList()), (long)containerInfos.size());
         } else {
           Stream<ContainerInfo> containerInfoStream =
               scm.getContainerManager().getContainers(state).stream()
                   .filter(info -> info.containerID().getId() >= startContainerID)
                   .sorted();
+          List<ContainerInfo> containerInfos = containerInfoStream.collect(
+              Collectors.toList());
+
           return Pair.of(
-              containerInfoStream.limit(count).collect(Collectors.toList()), containerInfoStream.count());
+              containerInfos.stream().limit(count).collect(Collectors.toList()), (long)containerInfos.size());
         }
       } else {
         if (factor != null) {
@@ -502,7 +508,10 @@ public class SCMClientProtocolServer implements
                       .getReplicationType() != HddsProtos.ReplicationType.EC)
                   .filter(info -> info.getReplicationFactor() == factor)
                   .sorted();
-          return Pair.of(containerInfoStream.limit(count).collect(Collectors.toList()), containerInfoStream.count());
+
+          List<ContainerInfo> containerInfos = containerInfoStream.collect(
+              Collectors.toList());
+          return Pair.of(containerInfos.stream().limit(count).collect(Collectors.toList()), (long)containerInfos.size());
         } else {
           List<ContainerInfo> containerInfos = scm.getContainerManager().getContainers(containerId, count);
           return Pair.of(containerInfos, (long)(containerInfos.size()));
@@ -579,7 +588,9 @@ public class SCMClientProtocolServer implements
             .filter(info -> info.getReplicationType() == replicationType);
       }
       Stream<ContainerInfo> containerInfoStream = containerStream.sorted();
-      return Pair.of(containerInfoStream.limit(count).collect(Collectors.toList()), containerInfoStream.count());
+      List<ContainerInfo> containerInfos = containerInfoStream.collect(
+          Collectors.toList());
+      return Pair.of(containerInfos.stream().limit(count).collect(Collectors.toList()), (long)containerInfos.size());
     } catch (Exception ex) {
       auditSuccess = false;
       AUDIT.logReadFailure(
