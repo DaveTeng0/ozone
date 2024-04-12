@@ -25,6 +25,7 @@ import org.apache.hadoop.ozone.client.OzoneClient;
 import org.apache.hadoop.ozone.om.OMConfigKeys;
 import org.apache.hadoop.ozone.om.OMStorage;
 import org.apache.hadoop.ozone.repair.OzoneRepair;
+import org.apache.hadoop.ozone.repair.RDBRepair;
 import org.apache.hadoop.ozone.repair.om.TransactionInfoRepair;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -96,18 +97,19 @@ public class TestOzoneRepairShell {
   public void testUpdateTransactionInfoTable() throws Exception {
     StringWriter stdout = new StringWriter();
     PrintWriter pstdout = new PrintWriter(stdout);
-    CommandLine cmd = new CommandLine(new OzoneRepair())
+    CommandLine cmd = new CommandLine(new RDBRepair())
         .addSubcommand(new TransactionInfoRepair())
         .setOut(pstdout);
 
     String dbPath = getOMDBPath();
 
+    String testTermIndex = "111#111";
     String[] args =
-        new String[] {"--db=" + dbPath, "tr", "--highest-transaction", "111#111"};
+        new String[] {"--db=" + dbPath, "tr", "--highest-transaction", testTermIndex};
     int exitCode = cmd.execute(args);
     assertEquals(0, exitCode);
     String cmdOut = stdout.toString();
-    assertThat(cmdOut).contains("111#111");
+    assertThat(cmdOut).contains(testTermIndex);
 
   }
 
