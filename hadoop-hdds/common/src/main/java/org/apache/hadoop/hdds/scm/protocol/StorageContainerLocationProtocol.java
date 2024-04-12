@@ -214,7 +214,6 @@ public interface StorageContainerLocationProtocol extends Closeable {
    */
 //  List<ContainerInfo> listContainer(long startContainerID,
   Pair<List<ContainerInfo>, Long> listContainer(long startContainerID,
-
       int count, HddsProtos.LifeCycleState state,
       HddsProtos.ReplicationType replicationType,
       ReplicationConfig replicationConfig) throws IOException;

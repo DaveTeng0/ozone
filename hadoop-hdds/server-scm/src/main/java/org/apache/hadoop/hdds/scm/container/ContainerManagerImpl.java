@@ -86,7 +86,7 @@ public class ContainerManagerImpl implements ContainerManager {
   @SuppressWarnings("java:S2245") // no need for secure random
   private final Random random = new Random();
 
-  private final int maxCountOfContainerList;
+  private static int maxCountOfContainerList;
 
   /**
    *
@@ -457,18 +457,20 @@ public class ContainerManagerImpl implements ContainerManager {
   private static List<ContainerID> filterSortAndLimit(
       ContainerID startID, int count, Set<ContainerID> set) {
 
-//    if (count <= this.maxCountOfContainerList) {
-//
-//    }
-    if (ContainerID.MIN.equals(startID) &&
-          (count >= set.size())) {
-      List<ContainerID> list = new ArrayList<>(set);
-      Collections.sort(list);
-      return list;
-    }
+//    if (count <= maxCountOfContainerList && set.size() <= maxCountOfContainerList) {
+      if (ContainerID.MIN.equals(startID) &&
+            (count >= set.size())) {
+//        if (set.size() > maxCountOfContainerList) {
+//          findTopN(set, maxCountOfContainerList, reverseOrder());
+//        } else {
+          List<ContainerID> list = new ArrayList<>(set);
+          Collections.sort(list);
+          return list;
+//        }
+      }
 
-    return findTopN(set, count, reverseOrder(),
-        id -> id.compareTo(startID) >= 0);
+      return findTopN(set, count, reverseOrder(),
+          id -> id.compareTo(startID) >= 0);
 
   }
 

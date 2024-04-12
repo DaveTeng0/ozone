@@ -850,24 +850,24 @@ public final class StorageContainerLocationProtocolServerSideTranslatorPB
       factor = request.getFactor();
     }
 //    List<ContainerInfo> containerList;
-    Pair<List<ContainerInfo>, Long> containerListInfo;
+    Pair<List<ContainerInfo>, Long> containerListAndTotalCount;
 
     if (factor != null) {
       // Call from a legacy client
-      containerListInfo =
+      containerListAndTotalCount =
           impl.listContainer(startContainerID, count, state, factor);
     } else {
-      containerListInfo =
+      containerListAndTotalCount =
           impl.listContainer(startContainerID, count, state, replicationType,
               repConfig);
     }
     SCMListContainerResponseProto.Builder builder =
         SCMListContainerResponseProto.newBuilder();
-    for (ContainerInfo container : containerListInfo.getLeft()) {
+    for (ContainerInfo container : containerListAndTotalCount.getLeft()) {
       builder.addContainers(container.getProtobuf());
     }
-    LOG.warn("********_________________ssssssssssssssssss, container cnt: " + containerListInfo.getRight());
-    builder.setContainerCount(containerListInfo.getRight());
+    LOG.warn("********_________________ssssssssssssssssss, container cnt: " + containerListAndTotalCount.getRight());
+    builder.setContainerCount(containerListAndTotalCount.getRight());
     return builder.build();
   }
 

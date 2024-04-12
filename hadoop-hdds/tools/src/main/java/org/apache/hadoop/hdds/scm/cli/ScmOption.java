@@ -52,13 +52,19 @@ public class ScmOption {
       "ServiceId of SCM HA Cluster")
   private String scmServiceId;
 
+  private OzoneConfiguration ozoneConfiguration;
+
   public ScmClient createScmClient() throws IOException {
     GenericParentCommand parent = (GenericParentCommand)
         spec.root().userObject();
     OzoneConfiguration conf = parent.createOzoneConfiguration();
     checkAndSetSCMAddressArg(conf);
-
+    this.ozoneConfiguration = conf;
     return new ContainerOperationClient(conf);
+  }
+
+  public OzoneConfiguration getOzoneConfiguration() {
+    return this.ozoneConfiguration;
   }
 
   public ScmClient createScmClient(OzoneConfiguration conf) throws IOException {

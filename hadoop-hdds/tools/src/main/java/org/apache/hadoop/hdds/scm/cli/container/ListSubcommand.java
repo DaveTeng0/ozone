@@ -27,6 +27,7 @@ import org.apache.hadoop.hdds.client.ReplicationConfig;
 import org.apache.hadoop.hdds.client.ReplicationType;
 import org.apache.hadoop.hdds.conf.OzoneConfiguration;
 import org.apache.hadoop.hdds.protocol.proto.HddsProtos;
+import org.apache.hadoop.hdds.scm.ScmConfigKeys;
 import org.apache.hadoop.hdds.scm.cli.ScmSubcommand;
 import org.apache.hadoop.hdds.scm.client.ScmClient;
 import org.apache.hadoop.hdds.scm.container.ContainerInfo;
@@ -115,23 +116,25 @@ public class ListSubcommand extends ScmSubcommand {
     if (all) {
 //      count = Integer.MAX_VALUE;
       count = 5;
-
+      count = getOzoneConfiguration().getInt(ScmConfigKeys.HDDS_CONTAINER_LIST_MAX_COUNT,
+          ScmConfigKeys.HDDS_CONTAINER_LIST_MAX_COUNT_DEFAULT);
+      System.out.println("****___________ ppppppppppp count = " + count);
     }
 
 //    List<ContainerInfo> containerList =
-    Pair<List<ContainerInfo>, Long> containerListInfo =
+    Pair<List<ContainerInfo>, Long> containerListAndTotalCount =
 
         scmClient.listContainer(startId, count, state, type, repConfig);
 
     // Output data list
-    for (ContainerInfo container : containerListInfo.getLeft()) {
+    for (ContainerInfo container : containerListAndTotalCount.getLeft()) {
       outputContainerInfo(container);
     }
 
-    if (containerListInfo.getRight() > count) {
+    if (containerListAndTotalCount.getRight() > count) {
       System.out.printf("Container List is truncated since it's too long. List the first %d records of %d. " +
               "User won't be able to view the full list of containers until pagination is supported.  %n",
-          count, containerListInfo.getRight());
+          count, containerListAndTotalCount.getRight());
     }
 
   }
