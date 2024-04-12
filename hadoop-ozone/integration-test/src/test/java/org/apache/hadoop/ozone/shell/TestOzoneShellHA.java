@@ -33,6 +33,7 @@ import java.util.UUID;
 import org.apache.hadoop.crypto.key.KeyProvider;
 import org.apache.hadoop.crypto.key.kms.KMSClientProvider;
 import org.apache.hadoop.crypto.key.kms.server.MiniKMS;
+import org.apache.hadoop.hdds.scm.ScmConfigKeys;
 import org.apache.hadoop.hdds.utils.IOUtils;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.fs.FileChecksum;
@@ -186,7 +187,7 @@ public class TestOzoneShellHA {
     conf.set(CommonConfigurationKeysPublic.HADOOP_SECURITY_KEY_PROVIDER_PATH,
         getKeyProviderURI(miniKMS));
     conf.setBoolean(OMConfigKeys.OZONE_OM_ENABLE_FILESYSTEM_PATHS, true);
-//    conf.setInt(ScmConfigKeys.HDDS_CONTAINER_LIST_MAX_COUNT, 1);
+    conf.setInt(ScmConfigKeys.HDDS_CONTAINER_LIST_MAX_COUNT, 1);
     MiniOzoneHAClusterImpl.Builder builder = MiniOzoneCluster.newHABuilder(conf);
     builder.setOMServiceId(omServiceId)
         .setNumOfOzoneManagers(numOfOMs)
