@@ -24,7 +24,7 @@ import org.apache.hadoop.ozone.MiniOzoneCluster;
 import org.apache.hadoop.ozone.client.OzoneClient;
 import org.apache.hadoop.ozone.om.OMConfigKeys;
 import org.apache.hadoop.ozone.om.OMStorage;
-import org.apache.hadoop.ozone.repair.OzoneRepair;
+//import org.apache.hadoop.ozone.repair.OzoneRepair;
 import org.apache.hadoop.ozone.repair.RDBRepair;
 import org.apache.hadoop.ozone.repair.om.TransactionInfoRepair;
 import org.junit.jupiter.api.BeforeAll;
