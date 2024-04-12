@@ -45,6 +45,17 @@
       the same time. This setting controls the lock stripes.
     </description>
   </property>
+
+  <property>
+    <name>hdds.container.list.max.count</name>
+    <value>4096</value>
+    <tag>OZONE, CONTAINER, MANAGEMENT</tag>
+    <description>The max number of containers info could be included in
+      response of ListContainer request.</description>
+  </property>
+
+
+
   <property>
     <name>hdds.container.ipc.port</name>
     <value>9859</value>
