@@ -100,8 +100,10 @@ public class TestOzoneRepairShell {
     CommandLine cmd = new CommandLine(new RDBRepair())
         .addSubcommand(new TransactionInfoRepair());
 //        .setOut(pstdout);
-
     String dbPath = getOMDBPath();
+
+    System.err.println("****________ dddddddddd_01, dbPath = " + dbPath);
+    System.err.println("****________ dddddddddd-02, getOmStorage = " + cluster.getOzoneManager().getOmStorage().toString());
 
     String testTermIndex = "111#111";
     String[] args =
