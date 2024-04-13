@@ -103,7 +103,8 @@ public class TestOzoneRepairShell {
     String dbPath = getOMDBPath();
 
     System.err.println("****________ dddddddddd_01, dbPath = " + dbPath);
-    System.err.println("****________ dddddddddd-02, getOmStorage = " + cluster.getOzoneManager().getOmStorage().toString());
+    System.err.println("****________ dddddddddd-02, getOmStorage = " +
+        cluster.getOzoneManager().getOmStorage().toString());
 
     String testTermIndex = "111#111";
     String[] args =
