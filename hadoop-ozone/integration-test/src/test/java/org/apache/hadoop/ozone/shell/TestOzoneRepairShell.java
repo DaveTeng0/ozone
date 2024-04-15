@@ -106,7 +106,9 @@ public class TestOzoneRepairShell {
     System.err.println("****________ dddddddddd-02, getOmStorage = " +
         cluster.getOzoneManager().getOmStorage().toString());
 
-    String testTermIndex = "111#111";
+    cluster.getOzoneManager().stop();
+
+    String testTermIndex = "1#1";
     String[] args =
         new String[] {"--db=" + dbPath, "tr", "--highest-transaction", testTermIndex};
     int exitCode = cmd.execute(args);
