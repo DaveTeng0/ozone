@@ -29,6 +29,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
+//import java.util.regex.Matcher;
+//import java.util.regex.Pattern;
 
 import org.apache.hadoop.crypto.key.KeyProvider;
 import org.apache.hadoop.crypto.key.kms.KMSClientProvider;
@@ -146,6 +148,8 @@ public class TestOzoneShellHA {
   private static String omServiceId;
   private static int numOfOMs;
 
+  private static OzoneConfiguration ozoneConfiguration;
+
   /**
    * Create a MiniOzoneCluster for testing with using distributed Ozone
    * handler type.
@@ -188,6 +192,7 @@ public class TestOzoneShellHA {
         getKeyProviderURI(miniKMS));
     conf.setBoolean(OMConfigKeys.OZONE_OM_ENABLE_FILESYSTEM_PATHS, true);
     conf.setInt(ScmConfigKeys.HDDS_CONTAINER_LIST_MAX_COUNT, 1);
+    ozoneConfiguration = conf;
     MiniOzoneHAClusterImpl.Builder builder = MiniOzoneCluster.newHABuilder(conf);
     builder.setOMServiceId(omServiceId)
         .setNumOfOzoneManagers(numOfOMs)
@@ -223,7 +228,7 @@ public class TestOzoneShellHA {
   @BeforeEach
   public void setup() throws UnsupportedEncodingException {
     ozoneShell = new OzoneShell();
-    ozoneAdminShell = new OzoneAdmin();
+    ozoneAdminShell = new OzoneAdmin(ozoneConfiguration);
     System.setOut(new PrintStream(out, false, DEFAULT_ENCODING));
     System.setErr(new PrintStream(err, false, DEFAULT_ENCODING));
   }
@@ -538,7 +543,7 @@ public class TestOzoneShellHA {
     assertEquals(0, getNumOfBuckets("testbucket"));
   }
 
-  @Test
+  @Test //hhhhhhhhhhhhhhhhh
   public void testOzoneAdminCmdListOverMaxCount() throws UnsupportedEncodingException {
 
     String[] args1 = new String[] {"container", "create", "--scm",
@@ -552,12 +557,20 @@ public class TestOzoneShellHA {
         "localhost:" + cluster.getStorageContainerManager().getClientRpcPort()};
     execute(ozoneAdminShell, args);
     assertEquals(1, getNumOfContainers());
+//    assertEquals("test", out.toString());
 
   }
 
   private int getNumOfContainers()
       throws UnsupportedEncodingException {
-    return out.toString(DEFAULT_ENCODING).split("containerID").length - 1;
+//    int count = 0;
+//    Pattern p = Pattern.compile("\"containerID\" :");
+//    Matcher m = p.matcher(out.toString(DEFAULT_ENCODING) );
+//    while (m.find()) {
+//      count++;
+//    }
+//    return count;
+    return out.toString(DEFAULT_ENCODING).split("\"containerID\" :").length - 1;
   }
 
 

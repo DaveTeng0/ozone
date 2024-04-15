@@ -55,11 +55,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
+//import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
+import java.util.Map;
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Optional;
 
 import static org.apache.hadoop.hdds.HddsConfigKeys.HDDS_CONTAINER_TOKEN_ENABLED;
 import static org.apache.hadoop.hdds.HddsConfigKeys.HDDS_CONTAINER_TOKEN_ENABLED_DEFAULT;
@@ -349,6 +351,9 @@ public class ContainerOperationClient implements ScmClient {
   public Pair<List<ContainerInfo>, Long>
       listContainer(long startContainerID,
       int count) throws IOException {
+    LOG.error("****________ coc.lc.sc_c, count = " + count + ", maxCountOfContainerList = " + maxCountOfContainerList);
+
+
     if (count > maxCountOfContainerList) {
       LOG.error("Attempting to list {} containers. However, this exceeds" +
           " the cluster's current limit of {}. The results will be capped at the" +
@@ -367,6 +372,22 @@ public class ContainerOperationClient implements ScmClient {
       int count, HddsProtos.LifeCycleState state,
       HddsProtos.ReplicationType repType,
       ReplicationConfig replicationConfig) throws IOException {
+
+    LOG.warn("//////////////// begin //////////////// //////////////// ");
+    LOG.warn("******____ " + Arrays.toString(Thread.currentThread()
+        .getStackTrace()).replace(',', '\n'));
+    LOG.warn("//////////////// end //////////////// //////////////// ");
+
+    LOG.error("****________ coc.lc_sc_c_h_h_r, count = "
+        + count + ", maxCountOfContainerList = " + maxCountOfContainerList);
+    if (count > maxCountOfContainerList) {
+      LOG.error("Attempting to list {} containers. However, this exceeds" +
+          " the cluster's current limit of {}. The results will be capped at the" +
+          " maximum allowed count.", count, maxCountOfContainerList);
+      count = maxCountOfContainerList;
+    }
+
+
     return storageContainerLocationClient.listContainer(
         startContainerID, count, state, repType, replicationConfig);
   }

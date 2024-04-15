@@ -28,6 +28,7 @@ import org.apache.hadoop.hdds.client.ReplicationType;
 import org.apache.hadoop.hdds.conf.OzoneConfiguration;
 import org.apache.hadoop.hdds.protocol.proto.HddsProtos;
 import org.apache.hadoop.hdds.scm.ScmConfigKeys;
+//import org.apache.hadoop.hdds.scm.cli.ContainerOperationClient;
 import org.apache.hadoop.hdds.scm.cli.ScmSubcommand;
 import org.apache.hadoop.hdds.scm.client.ScmClient;
 import org.apache.hadoop.hdds.scm.container.ContainerInfo;
@@ -38,6 +39,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Help.Visibility;
 import picocli.CommandLine.Option;
@@ -51,6 +55,9 @@ import picocli.CommandLine.Option;
     mixinStandardHelpOptions = true,
     versionProvider = HddsVersionProvider.class)
 public class ListSubcommand extends ScmSubcommand {
+
+  private static final Logger LOG =
+      LoggerFactory.getLogger(ListSubcommand.class);
 
   @Option(names = {"-s", "--start"},
       description = "Container id to start the iteration")
@@ -81,6 +88,14 @@ public class ListSubcommand extends ScmSubcommand {
   private String replication;
 
   private static final ObjectWriter WRITER;
+
+//  @CommandLine.Spec
+//  private CommandLine.Model.CommandSpec spec;
+
+  @CommandLine.ParentCommand
+  private ContainerCommands parent;
+
+
 
   static {
     ObjectMapper mapper = new ObjectMapper()
@@ -113,12 +128,19 @@ public class ListSubcommand extends ScmSubcommand {
           replication, new OzoneConfiguration());
     }
 
+//    System.err.println("****___________ 111 count = " + count);
+    LOG.warn("****___________ 2222 count = " + count);
+
     if (all) {
 //      count = Integer.MAX_VALUE;
 //      count = 5;
-      count = getOzoneConfiguration().getInt(ScmConfigKeys.HDDS_CONTAINER_LIST_MAX_COUNT,
+      count = parent.getParent().getOzoneConf()
+          .getInt(ScmConfigKeys.HDDS_CONTAINER_LIST_MAX_COUNT,
+//      count = getOzoneConfiguration().getInt(ScmConfigKeys.HDDS_CONTAINER_LIST_MAX_COUNT,
           ScmConfigKeys.HDDS_CONTAINER_LIST_MAX_COUNT_DEFAULT);
-      System.out.println("****___________ ppppppppppp count = " + count);
+//      System.err.println("****___________ ppppppppppp count = " + count);
+      LOG.warn("****___________ 33333 count = " + count);
+
     }
 
 //    List<ContainerInfo> containerList =

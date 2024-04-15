@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hdds.scm.cli;
 
-import org.apache.hadoop.hdds.conf.OzoneConfiguration;
+//import org.apache.hadoop.hdds.conf.OzoneConfiguration;
 import org.apache.hadoop.hdds.scm.client.ScmClient;
 import picocli.CommandLine;
 
@@ -32,7 +32,7 @@ public abstract class ScmSubcommand implements Callable<Void> {
   @CommandLine.Mixin
   private ScmOption scmOption;
 
-  private OzoneConfiguration ozoneConfiguration;
+//  private OzoneConfiguration ozoneConfiguration;
 
 
   protected abstract void execute(ScmClient client) throws IOException;
@@ -40,13 +40,13 @@ public abstract class ScmSubcommand implements Callable<Void> {
   @Override
   public final Void call() throws Exception {
     try (ScmClient scmClient = scmOption.createScmClient()) {
-      this.ozoneConfiguration = scmOption.getOzoneConfiguration();
+//      this.ozoneConfiguration = scmOption.getOzoneConfiguration();
       execute(scmClient);
       return null;
     }
   }
 
-  public OzoneConfiguration getOzoneConfiguration() {
-    return ozoneConfiguration;
-  }
+//  public OzoneConfiguration getOzoneConfiguration() {
+//    return ozoneConfiguration;
+//  }
 }
