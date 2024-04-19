@@ -25,7 +25,9 @@ import org.apache.hadoop.hdds.conf.OzoneConfiguration;
 import org.apache.hadoop.security.UserGroupInformation;
 import picocli.CommandLine;
 
+import java.io.Console;
 import java.io.IOException;
+import java.io.PrintStream;
 
 import static org.apache.hadoop.fs.ozone.Constants.OZONE_DEFAULT_USER;
 
@@ -42,9 +44,19 @@ public class OzoneRepair extends GenericCli {
 
   private static UserGroupInformation user;
 
+  private PrintStream out;
+
+  private static Console console;
+
   public OzoneRepair() {
     super(OzoneRepair.class);
   }
+
+  public OzoneRepair(PrintStream out) {
+    super(OzoneRepair.class);
+    this.out = out;
+  }
+
 
   @VisibleForTesting
   public OzoneRepair(OzoneConfiguration configuration) {
@@ -66,21 +78,56 @@ public class OzoneRepair extends GenericCli {
    * @throws Exception
    */
   public static void main(String[] argv) throws Exception {
-    System.out.println("*****_________ or.m, user = " + getUser());
-    String currentUser = System.getProperty("user.name");
+//    System.out.println("*****_________ or.m, user = " + getUser());
+//    String currentUser = getSystemUserName();
+    String currentUser = "test";
+
+    boolean shouldProceed = true;
     if (!currentUser.equals(OZONE_DEFAULT_USER)) {
-      String s = System.console().readLine(String.format("ATTENTION: You are currently logged in as user '%s'. Ozone typically runs as user '%s'." +
-          " If you proceed with this command, it may change the ownership of RocksDB files used by the Ozone Manager (OM)." +
-          " This ownership change could prevent OM from starting successfully." +
-          " Are you sure you want to continue (y/N)? ", currentUser, OZONE_DEFAULT_USER));
-      boolean shouldProceed = Boolean.valueOf(s) || "y".equalsIgnoreCase(s);
-      if (!shouldProceed) {
-        System.out.println("Aborting command.");
-        return;
-      }
+//      String s = getConsole().readLine(String.format("ATTENTION: You are currently logged in as user '%s'. " +
+//          " Ozone typically runs as user '%s'." +
+//          " If you proceed with this command, it may change the ownership of RocksDB files used" +
+//          " by the Ozone Manager (OM)." +
+//          " This ownership change could prevent OM from starting successfully." +
+//          " Are you sure you want to continue (y/N)? ", currentUser, OZONE_DEFAULT_USER));
+
+      String s = getConsoleReadLineWithFormat(currentUser, OZONE_DEFAULT_USER);
+
+//      String s2 = getConsole().readLine();
+
+      shouldProceed = Boolean.valueOf(s) || "y".equalsIgnoreCase(s);
+//      if (!shouldProceed) {
+//        System.out.println("Aborting command.");
+//        return;
+//      }
     }
+    if (shouldProceed) {
+      executeOzoneRepair(argv);
+    } else {
+      System.out.println("Aborting command.");
+    }
+  }
+
+  public static void executeOzoneRepair(String[] argv) {
+    System.out.println("*****________ bbbbbbbbbbb");
 
     new OzoneRepair().run(argv);
+  }
+
+  public static String getSystemUserName() {
+    System.out.println("*****________ lalalalalalala");
+    return System.getProperty("user.name");
+  }
+
+  public static Console getConsole() {
+    if (console == null) {
+      console = System.console();
+    }
+    return console;
+  }
+
+  public static String getConsoleReadLineWithFormat(String currentUser, String defaultUser) {
+    return getConsole().readLine(String.format("ATTENTION: test to continue (y/N)? ", currentUser, defaultUser));
   }
 
   public static UserGroupInformation getUser() throws IOException {
