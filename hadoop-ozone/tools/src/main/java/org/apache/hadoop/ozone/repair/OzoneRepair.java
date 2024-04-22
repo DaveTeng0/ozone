@@ -22,6 +22,7 @@ import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.hdds.cli.GenericCli;
 import org.apache.hadoop.hdds.cli.HddsVersionProvider;
 import org.apache.hadoop.hdds.conf.OzoneConfiguration;
+import org.apache.hadoop.hdds.tracing.TracingUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import picocli.CommandLine;
 
@@ -50,6 +51,8 @@ public class OzoneRepair extends GenericCli {
 
   public OzoneRepair() {
     super(OzoneRepair.class);
+
+    System.out.println("****______ test");
   }
 
   public OzoneRepair(PrintStream out) {
@@ -78,12 +81,12 @@ public class OzoneRepair extends GenericCli {
    * @throws Exception
    */
   public static void main(String[] argv) throws Exception {
-//    System.out.println("*****_________ or.m, user = " + getUser());
 //    String currentUser = getSystemUserName();
-    String currentUser = "test";
+//    System.out.println("*****_________ or.m, user = " + getUser());
+//    String currentUser = "test";
 
-    boolean shouldProceed = true;
-    if (!currentUser.equals(OZONE_DEFAULT_USER)) {
+//    boolean shouldProceed = true;
+//    if (!currentUser.equals(OZONE_DEFAULT_USER)) {
 //      String s = getConsole().readLine(String.format("ATTENTION: You are currently logged in as user '%s'. " +
 //          " Ozone typically runs as user '%s'." +
 //          " If you proceed with this command, it may change the ownership of RocksDB files used" +
@@ -91,30 +94,57 @@ public class OzoneRepair extends GenericCli {
 //          " This ownership change could prevent OM from starting successfully." +
 //          " Are you sure you want to continue (y/N)? ", currentUser, OZONE_DEFAULT_USER));
 
-      String s = getConsoleReadLineWithFormat(currentUser, OZONE_DEFAULT_USER);
+//      String s = getConsoleReadLineWithFormat(currentUser, OZONE_DEFAULT_USER);
 
 //      String s2 = getConsole().readLine();
 
-      shouldProceed = Boolean.valueOf(s) || "y".equalsIgnoreCase(s);
+//      shouldProceed = Boolean.valueOf(s) || "y".equalsIgnoreCase(s);
 //      if (!shouldProceed) {
 //        System.out.println("Aborting command.");
 //        return;
 //      }
+      new OzoneRepair().run(argv);
+
     }
-    if (shouldProceed) {
-      executeOzoneRepair(argv);
-    } else {
+//    if (shouldProceed) {
+//      executeOzoneRepair(argv);
+//    } else {
+//      System.out.println("Aborting command.");
+//    }
+
+
+  @Override
+  public int execute(String[] argv) {
+    String currentUser = getSystemUserName();
+    boolean shouldProceed = true;
+
+    if (!currentUser.equals(OZONE_DEFAULT_USER)) {
+      String s = getConsoleReadLineWithFormat(currentUser, OZONE_DEFAULT_USER);
+      shouldProceed = Boolean.valueOf(s) || "y".equalsIgnoreCase(s);
+    }
+//    if (shouldProceed) {
+//      executeOzoneRepair(argv);
+//    } else
+      if (!shouldProceed){
       System.out.println("Aborting command.");
+      return 1;
     }
+    System.out.println("Run as user: " + currentUser);
+
+      TracingUtil.initTracing("shell", createOzoneConfiguration());
+    String spanName = "ozone repair " + String.join(" ", argv);
+    return TracingUtil.executeInNewSpan(spanName,
+        () -> super.execute(argv));
   }
 
-  public static void executeOzoneRepair(String[] argv) {
+
+  public  void executeOzoneRepair(String[] argv) {
     System.out.println("*****________ bbbbbbbbbbb");
 
     new OzoneRepair().run(argv);
   }
 
-  public static String getSystemUserName() {
+  public  String getSystemUserName() {
     System.out.println("*****________ lalalalalalala");
     return System.getProperty("user.name");
   }
@@ -126,8 +156,10 @@ public class OzoneRepair extends GenericCli {
     return console;
   }
 
-  public static String getConsoleReadLineWithFormat(String currentUser, String defaultUser) {
-    return getConsole().readLine(String.format("ATTENTION: test to continue (y/N)? ", currentUser, defaultUser));
+  public  String getConsoleReadLineWithFormat(String currentUser, String defaultUser) {
+//    Console console1 = getConsole();
+    Console console1 = System.console();
+    return System.console().readLine(String.format("ATTENTION: test to continue (y/N)? ", currentUser, defaultUser));
   }
 
   public static UserGroupInformation getUser() throws IOException {

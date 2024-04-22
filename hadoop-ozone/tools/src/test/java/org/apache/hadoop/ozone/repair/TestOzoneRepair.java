@@ -18,6 +18,7 @@
 package org.apache.hadoop.ozone.repair;
 
 //import org.jooq.meta.derby.sys.Sys;
+import org.apache.hadoop.ozone.repair.om.SnapshotRepair;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,17 +31,20 @@ import org.mockito.MockedStatic;
 import java.io.ByteArrayOutputStream;
 import java.io.Console;
 import java.io.PrintStream;
+import picocli.CommandLine;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.hadoop.fs.ozone.Constants.OZONE_DEFAULT_USER;
 import static org.assertj.core.api.Assertions.assertThat;
-//import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 //import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.mockStatic;
@@ -56,8 +60,8 @@ public class TestOzoneRepair {
   private static final PrintStream OLD_ERR = System.err;
   private static final String DEFAULT_ENCODING = UTF_8.name();
 
-  @Mock
-  private Console console;
+//  @Mock
+//  private Console console;
 
   @BeforeEach
   public void setup() throws Exception {
@@ -76,24 +80,31 @@ public class TestOzoneRepair {
     System.setErr(OLD_ERR);
   }
 
-//  @Test
+  @Test
   void testMainWhenUserIsOzoneDefaultUser() throws Exception {
     // Arrange
     String[] argv = {};
-//    PrintStream out = mock(PrintStream.class);
-//    when(out.println(anyString())).thenReturn("")
-//    OzoneRepair ozoneRepair = mock(OzoneRepair.class);
     OzoneRepair ozoneRepair = spy(new OzoneRepair());
-
+//    RDBRepair rdbRepair = spy(new RDBRepair());
+//    SnapshotRepair snapshotRepair = spy(new SnapshotRepair());
     doReturn(OZONE_DEFAULT_USER).when(ozoneRepair).getSystemUserName();
 
+//    CommandLine cmd = new CommandLine(ozoneRepair).addSubcommand(rdbRepair);
+//        .addSubcommand(snapshotRepair);
+
+//    String[] args =
+//        new String[] {"", "--db=" + "dbPath"};
+//    int exitCode = cmd.execute(args);
+//    assertEquals(0, exitCode);
     // Act
-    ozoneRepair.main(argv);
+    int res = ozoneRepair.execute(argv);
 
     // Assert
 //    verify(out, times(1)).println("*****_________ or.m, user = " + OZONE_DEFAULT_USER);
-    verify(ozoneRepair, times(1)).run(argv);
-    assertThat(out.toString(DEFAULT_ENCODING)).contains("Aborting command");
+//    verify(ozoneRepair, times(1)).run(argv);
+//    assertEquals(0, res);
+
+    assertThat(out.toString(DEFAULT_ENCODING)).contains("Run as user: pp" + OZONE_DEFAULT_USER);
 
   }
 
@@ -102,55 +113,59 @@ public class TestOzoneRepair {
     // Arrange
     String[] argv = {};
 //    String currentUser = "non-ozone";
-    try (MockedStatic<OzoneRepair> mocked = mockStatic(OzoneRepair.class)) {
-      mocked.when(OzoneRepair::getSystemUserName)
-          .thenReturn(OZONE_DEFAULT_USER);
-//      Console console1 = mock(Console.class);
-//      mocked.when(() -> OzoneRepair.getConsole()).thenReturn(console1);
+//    try (MockedStatic<OzoneRepair> mocked = mockStatic(OzoneRepair.class)) {
 
-//      mockedSystem.when(System::console).thenReturn(console1);
-      mocked.when(() -> OzoneRepair.getConsoleReadLineWithFormat(OZONE_DEFAULT_USER, OZONE_DEFAULT_USER))
-          .thenReturn("y");
+    OzoneRepair ozoneRepair = spy(new OzoneRepair());
+    doReturn("test").when(ozoneRepair).getSystemUserName();
+    doReturn("N").when(ozoneRepair).getConsoleReadLineWithFormat(anyString(), anyString());
 
-      //    when(System.getProperty("user.name")).thenReturn(currentUser);
-//      when(console1.readLine(any())).thenReturn("y");
+//      mocked.when(() -> OzoneRepair.getSystemUserName())
+//          .thenReturn(OZONE_DEFAULT_USER);
+
+//      mocked.when(() -> OzoneRepair.getConsoleReadLineWithFormat(OZONE_DEFAULT_USER, OZONE_DEFAULT_USER))
+//          .thenReturn("y");
 
       // Act
 //      new OzoneRepair().main(argv);
-      OzoneRepair.main(argv);
+    int res = ozoneRepair.execute(argv);
+//      OzoneRepair.main(argv);
 
       // Assert
 //      verify(console1, times(1)).readLine();
 
 //      verify(console1, times(1)).readLine(anyString(), ArgumentMatchers.<Object>any());
-//      verify(new OzoneRepair(), times(1)).run(argv);
-      mocked.verify(() -> OzoneRepair.executeOzoneRepair(any(String[].class)));
-//      assertThat(out.toString(DEFAULT_ENCODING)).contains("Aborting command");
+//      verify(ozoneRepair, times(1)).run(argv);
+//      mocked.verify(() -> OzoneRepair.executeOzoneRepair(any(String[].class)));
+      assertEquals(1, res);
+      assertThat(out.toString(DEFAULT_ENCODING)).contains("Aborting command.ll");
 
-    }
+//    }
   }
 
 
-//  @Test
+  @Test
   void testMainWhenUserDeclinesToProceed() throws Exception {
     // Arrange
     String[] argv = {};
-    String currentUser = "non-ozone";
-    when(System.getProperty("user.name")).thenReturn(currentUser);
-    when(console.readLine(any())).thenReturn("N");
+    OzoneRepair ozoneRepair = spy(new OzoneRepair());
+    doReturn("non-ozone").when(ozoneRepair).getSystemUserName();
+
+    doReturn("y").when(ozoneRepair).getConsoleReadLineWithFormat(anyString(), anyString());
 
     // Act
-    OzoneRepair.main(argv);
+    ozoneRepair.execute(argv);
 
     // Assert
-    verify(System.out, times(1)).println(
-        "ATTENTION: You are currently logged in as user '" + currentUser +
-            "'. Ozone typically runs as user '" + OZONE_DEFAULT_USER + "'." +
-            " If you proceed with this command, it may change the ownership of RocksDB " +
-            "files used by the Ozone Manager (OM)." +
-            " This ownership change could prevent OM from starting successfully." +
-            " Are you sure you want to continue (y/N)? ");
-    verify(System.out, times(1)).println("Aborting command.");
-    verify(new OzoneRepair(), never()).run(argv);
+    assertThat(out.toString(DEFAULT_ENCODING)).contains("Run as user: " + "non-ozone");
+
+//    verify(System.out, times(1)).println(
+//        "ATTENTION: You are currently logged in as user '" + currentUser +
+//            "'. Ozone typically runs as user '" + OZONE_DEFAULT_USER + "'." +
+//            " If you proceed with this command, it may change the ownership of RocksDB " +
+//            "files used by the Ozone Manager (OM)." +
+//            " This ownership change could prevent OM from starting successfully." +
+//            " Are you sure you want to continue (y/N)? ");
+//    verify(System.out, times(1)).println("Aborting command.");
+//    verify(new OzoneRepair(), never()).run(argv);
   }
 }
