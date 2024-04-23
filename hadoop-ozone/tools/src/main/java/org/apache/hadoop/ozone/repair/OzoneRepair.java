@@ -103,9 +103,9 @@ public class OzoneRepair extends GenericCli {
 //        System.out.println("Aborting command.");
 //        return;
 //      }
-      new OzoneRepair().run(argv);
+    new OzoneRepair().run(argv);
 
-    }
+  }
 //    if (shouldProceed) {
 //      executeOzoneRepair(argv);
 //    } else {
@@ -125,13 +125,13 @@ public class OzoneRepair extends GenericCli {
 //    if (shouldProceed) {
 //      executeOzoneRepair(argv);
 //    } else
-      if (!shouldProceed){
+    if (!shouldProceed) {
       System.out.println("Aborting command.");
       return 1;
     }
     System.out.println("Run as user: " + currentUser);
 
-      TracingUtil.initTracing("shell", createOzoneConfiguration());
+    TracingUtil.initTracing("shell", createOzoneConfiguration());
     String spanName = "ozone repair " + String.join(" ", argv);
     return TracingUtil.executeInNewSpan(spanName,
         () -> super.execute(argv));

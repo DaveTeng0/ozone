@@ -1,12 +1,11 @@
 package org.apache.hadoop.ozone.repair;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 
-import static org.apache.hadoop.fs.ozone.Constants.OZONE_DEFAULT_USER;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mockStatic;
 
+/**
+ * SnapshotRepair test cases.
+ */
 public class TestSnapshotRepair {
 
 
@@ -30,7 +29,7 @@ public class TestSnapshotRepair {
       // Act
 //      new OzoneRepair().main(argv);
 //    ozoneRepair.execute(argv);
-      OzoneRepair.main(argv);
+    OzoneRepair.main(argv);
 
       // Assert
 //      verify(console1, times(1)).readLine();

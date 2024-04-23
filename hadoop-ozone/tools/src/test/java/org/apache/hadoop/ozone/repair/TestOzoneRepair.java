@@ -17,37 +17,22 @@
  */
 package org.apache.hadoop.ozone.repair;
 
-//import org.jooq.meta.derby.sys.Sys;
-import org.apache.hadoop.ozone.repair.om.SnapshotRepair;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-//import org.junit.jupiter.api.extension.ExtendWith;
-//import org.mockito.ArgumentMatchers;
-import org.mockito.Mock;
-import org.mockito.MockedStatic;
-//import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.ByteArrayOutputStream;
-import java.io.Console;
 import java.io.PrintStream;
-import picocli.CommandLine;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.hadoop.fs.ozone.Constants.OZONE_DEFAULT_USER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-//import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.mockStatic;
+
 
 /**
  * Tests the ozone repair command.
@@ -136,8 +121,8 @@ public class TestOzoneRepair {
 //      verify(console1, times(1)).readLine(anyString(), ArgumentMatchers.<Object>any());
 //      verify(ozoneRepair, times(1)).run(argv);
 //      mocked.verify(() -> OzoneRepair.executeOzoneRepair(any(String[].class)));
-      assertEquals(1, res);
-      assertThat(out.toString(DEFAULT_ENCODING)).contains("Aborting command.ll");
+    assertEquals(1, res);
+    assertThat(out.toString(DEFAULT_ENCODING)).contains("Aborting command.ll");
 
 //    }
   }
