@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Stack;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.hadoop.ozone.OzoneConsts.OM_KEY_PREFIX;
 
 /**
@@ -521,7 +522,7 @@ public class FSORepairTool {
           reachableDBPath);
       boolean cfFound = false;
       for (byte[] cfNameBytes: availableCFs) {
-        if (new String(cfNameBytes).equals(new String(REACHABLE_TABLE))) {
+        if (new String(cfNameBytes).equals(new String(REACHABLE_TABLE, UTF_8))) {
           cfFound = true;
           break;
         }

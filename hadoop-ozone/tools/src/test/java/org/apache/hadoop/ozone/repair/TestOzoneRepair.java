@@ -82,7 +82,7 @@ public class TestOzoneRepair {
 //    int exitCode = cmd.execute(args);
 //    assertEquals(0, exitCode);
     // Act
-    int res = ozoneRepair.execute(argv);
+    ozoneRepair.execute(argv);
 
     // Assert
 //    verify(out, times(1)).println("*****_________ or.m, user = " + OZONE_DEFAULT_USER);

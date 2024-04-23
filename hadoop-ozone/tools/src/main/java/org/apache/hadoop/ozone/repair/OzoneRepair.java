@@ -157,8 +157,6 @@ public class OzoneRepair extends GenericCli {
   }
 
   public  String getConsoleReadLineWithFormat(String currentUser, String defaultUser) {
-//    Console console1 = getConsole();
-    Console console1 = System.console();
     return System.console().readLine(String.format("ATTENTION: test to continue (y/N)? ", currentUser, defaultUser));
   }
 

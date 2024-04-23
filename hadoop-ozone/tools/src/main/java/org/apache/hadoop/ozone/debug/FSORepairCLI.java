@@ -63,9 +63,13 @@ public class FSORepairCLI implements Callable<Void>, SubcommandWithParent {
         .map(String::toUpperCase)
         .collect(Collectors.toSet());
     if (!validModeStrings.contains(modeString.toUpperCase())) {
-      System.err.printf("Invalid mode %s. Valid modes are {%s}%n",
-          modeString, String.join(",", validModeStrings));
-      System.exit(1);
+//      System.err.printf("Invalid mode %s. Valid modes are {%s}%n",
+//          modeString, String.join(",", validModeStrings));
+//      System.exit(1);
+      throw new IllegalArgumentException(
+          String.format("Invalid mode %s. Valid modes are {%s}%n",
+              modeString, String.join(",", validModeStrings)));
+
     }
 
     try {
@@ -74,8 +78,10 @@ public class FSORepairCLI implements Callable<Void>, SubcommandWithParent {
           FSORepairTool.Mode.valueOf(modeString));
       repairTool.run();
     } catch (Exception ex) {
-      System.err.println("FSO repair failed: " + ex.getMessage());
-      System.exit(1);
+//      System.err.println("FSO repair failed: " + ex.getMessage());
+//      System.exit(1);
+      throw new IllegalArgumentException("FSO repair failed: " + ex.getMessage());
+
     }
 
     System.out.printf("FSO %s finished. See client logs for results.%n",
