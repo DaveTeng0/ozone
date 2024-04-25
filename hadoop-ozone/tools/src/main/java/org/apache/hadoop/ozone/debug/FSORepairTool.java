@@ -522,7 +522,7 @@ public class FSORepairTool {
           reachableDBPath);
       boolean cfFound = false;
       for (byte[] cfNameBytes: availableCFs) {
-        if (new String(cfNameBytes).equals(new String(REACHABLE_TABLE, UTF_8))) {
+        if (new String(cfNameBytes, UTF_8).equals(new String(REACHABLE_TABLE, UTF_8))) {
           cfFound = true;
           break;
         }
