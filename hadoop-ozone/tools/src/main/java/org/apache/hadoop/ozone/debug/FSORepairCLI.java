@@ -18,10 +18,7 @@
 
 package org.apache.hadoop.ozone.debug;
 
-import java.util.Arrays;
-import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.stream.Collectors;
 
 import org.apache.hadoop.hdds.cli.SubcommandWithParent;
 
@@ -46,36 +43,23 @@ public class FSORepairCLI implements Callable<Void>, SubcommandWithParent {
       description = "Path to OM RocksDB")
   private String dbPath;
 
-  @CommandLine.Option(names = {"--mode"},
+  @CommandLine.Option(names = {"--read-mode-only", "-r"},
       required = true,
       description =
-          "Mode to run the tool in. Options are debug or repair.")
-  private String modeString;
+          "Mode to run the tool in. Read-mode will just log information about unreachable files or directories;" +
+              "otherwise the tool will move those files and directories to the deleted tables.",
+      defaultValue = "true")
+  private boolean readModeOnly;
 
   @CommandLine.ParentCommand
   private OzoneDebug parent;
 
   @Override
   public Void call() throws Exception {
-    // Validate Mode.
-    Set<String> validModeStrings = Arrays.stream(FSORepairTool.Mode.values())
-        .map(FSORepairTool.Mode::name)
-        .map(String::toUpperCase)
-        .collect(Collectors.toSet());
-    if (!validModeStrings.contains(modeString.toUpperCase())) {
-//      System.err.printf("Invalid mode %s. Valid modes are {%s}%n",
-//          modeString, String.join(",", validModeStrings));
-//      System.exit(1);
-      throw new IllegalArgumentException(
-          String.format("Invalid mode %s. Valid modes are {%s}%n",
-              modeString, String.join(",", validModeStrings)));
-
-    }
 
     try {
       // TODO case insensitive enum options.
-      FSORepairTool repairTool = new FSORepairTool(dbPath,
-          FSORepairTool.Mode.valueOf(modeString));
+      FSORepairTool repairTool = new FSORepairTool(dbPath, readModeOnly);
       repairTool.run();
     } catch (Exception ex) {
 //      System.err.println("FSO repair failed: " + ex.getMessage());
@@ -85,7 +69,7 @@ public class FSORepairCLI implements Callable<Void>, SubcommandWithParent {
     }
 
     System.out.printf("FSO %s finished. See client logs for results.%n",
-        modeString);
+        readModeOnly ? "read-mode" : "repair-mode");
 
     return null;
   }

@@ -103,7 +103,7 @@ public class FSORepairTool {
   private ColumnFamilyHandle reachableCF;
   private RocksDB reachableDB;
 
-  private final Mode mode;
+  private boolean readModeOnly;
 
   private long reachableBytes;
   private long reachableFiles;
@@ -112,26 +112,9 @@ public class FSORepairTool {
   private long unreachableFiles;
   private long unreachableDirs;
 
-  /**
-   * The mode to run the tool in.
-   */
-  public enum Mode {
-    REPAIR("repair"),
-    DEBUG("debug");
 
-    private final String name;
-
-    Mode(String name) {
-      this.name = name;
-    }
-
-    public String toString() {
-      return name;
-    }
-  }
-
-  public FSORepairTool(String dbPath, Mode mode) throws IOException {
-    this(getStoreFromPath(dbPath), dbPath, mode);
+  public FSORepairTool(String dbPath, boolean readModeOnly) throws IOException {
+    this(getStoreFromPath(dbPath), dbPath, readModeOnly);
   }
 
   /**
@@ -139,8 +122,8 @@ public class FSORepairTool {
    * class for testing.
    */
   @VisibleForTesting
-  public FSORepairTool(DBStore dbStore, String dbPath, Mode mode) throws IOException {
-    this.mode = mode;
+  public FSORepairTool(DBStore dbStore, String dbPath, boolean readModeOnly) throws IOException {
+    this.readModeOnly = readModeOnly;
     // Counters to track as we walk the tree.
     reachableBytes = 0;
     reachableFiles = 0;
@@ -306,7 +289,7 @@ public class FSORepairTool {
           LOG.debug("Found unreachable directory: {}", dirKey);
           unreachableDirs++;
 
-          if (mode == Mode.REPAIR) {
+          if (!readModeOnly) {
             LOG.debug("Marking unreachable directory {} for deletion.", dirKey);
             OmDirectoryInfo dirInfo = dirEntry.getValue();
             markDirectoryForDeletion(volume.getVolume(), bucket.getBucketName(),
@@ -334,7 +317,7 @@ public class FSORepairTool {
           unreachableBytes += fileInfo.getDataSize();
           unreachableFiles++;
 
-          if (mode == Mode.REPAIR) {
+          if (!readModeOnly) {
             LOG.debug("Marking unreachable file {} for deletion.",
                 fileKey);
             markFileForDeletion(fileKey, fileInfo);

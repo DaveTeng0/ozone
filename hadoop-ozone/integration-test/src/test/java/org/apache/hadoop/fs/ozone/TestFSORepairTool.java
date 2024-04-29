@@ -128,7 +128,7 @@ public class TestFSORepairTool {
 
     // Test the connected tree in debug mode.
     FSORepairTool repair = new FSORepairTool(getOmDB(),
-        getOmDBLocation(), FSORepairTool.Mode.DEBUG);
+        getOmDBLocation(), true);
     FSORepairTool.Report debugReport = repair.run();
 
     Assertions.assertEquals(expectedReport, debugReport);
@@ -138,7 +138,7 @@ public class TestFSORepairTool {
     // Running again in repair mode should give same results since the tree
     // is connected.
     repair = new FSORepairTool(getOmDB(),
-        getOmDBLocation(), FSORepairTool.Mode.REPAIR);
+        getOmDBLocation(), false);
     FSORepairTool.Report repairReport = repair.run();
 
     Assertions.assertEquals(expectedReport, repairReport);
@@ -153,7 +153,7 @@ public class TestFSORepairTool {
     FSORepairTool.Report expectedReport = new FSORepairTool.Report(report1, report2);
 
     FSORepairTool repair = new FSORepairTool(getOmDB(),
-        getOmDBLocation(), FSORepairTool.Mode.REPAIR);
+        getOmDBLocation(), false);
     FSORepairTool.Report debugReport = repair.run();
     Assertions.assertEquals(expectedReport, debugReport);
   }
@@ -166,7 +166,7 @@ public class TestFSORepairTool {
         report1, report2);
 
     FSORepairTool repair = new FSORepairTool(getOmDB(),
-        getOmDBLocation(), FSORepairTool.Mode.REPAIR);
+        getOmDBLocation(), false);
     FSORepairTool.Report generatedReport = repair.run();
 
     Assertions.assertEquals(generatedReport, expectedAggregateReport);
@@ -200,7 +200,7 @@ public class TestFSORepairTool {
     disconnectDirectory("dir1");
 
     FSORepairTool repair = new FSORepairTool(getOmDB(),
-        getOmDBLocation(), FSORepairTool.Mode.REPAIR);
+        getOmDBLocation(), false);
     FSORepairTool.Report generatedReport = repair.run();
 
     Assertions.assertEquals(1, generatedReport.getUnreachableDirs());
@@ -213,7 +213,7 @@ public class TestFSORepairTool {
   public void testEmptyFileTrees() throws Exception {
     // Run when there are no file trees.
     FSORepairTool repair = new FSORepairTool(getOmDB(),
-        getOmDBLocation(), FSORepairTool.Mode.DEBUG);
+        getOmDBLocation(), false);
     FSORepairTool.Report generatedReport = repair.run();
     Assertions.assertEquals(generatedReport, new FSORepairTool.Report());
     assertDeleteTablesEmpty();
@@ -224,7 +224,7 @@ public class TestFSORepairTool {
 
     // Run on an empty volume and bucket.
     repair = new FSORepairTool(getOmDB(),
-        getOmDBLocation(), FSORepairTool.Mode.DEBUG);
+        getOmDBLocation(), false);
     generatedReport = repair.run();
     Assertions.assertEquals(generatedReport, new FSORepairTool.Report());
     assertDeleteTablesEmpty();
@@ -263,7 +263,7 @@ public class TestFSORepairTool {
       // Even in repair mode there should be no action. legacy and obs buckets
       // will be skipped and FSO tree is connected.
       FSORepairTool repair = new FSORepairTool(getOmDB(),
-          getOmDBLocation(), FSORepairTool.Mode.REPAIR);
+          getOmDBLocation(), false);
       FSORepairTool.Report generatedReport = repair.run();
 
       Assertions.assertEquals(connectReport, generatedReport);
