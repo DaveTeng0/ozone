@@ -111,7 +111,10 @@ public final class OzoneClientFactory {
       ConfigurationSource config) throws IOException {
     Preconditions.checkNotNull(omServiceId);
     Preconditions.checkNotNull(config);
-    if (OmUtils.isOmHAServiceId(config, omServiceId)) {
+    if (
+//        OmUtils.isOmHAServiceId(config, omServiceId)
+        true
+    ) {
       return getRpcClient(getClientProtocol(config, omServiceId), config);
     } else {
       throw new IOException("Service ID specified " +

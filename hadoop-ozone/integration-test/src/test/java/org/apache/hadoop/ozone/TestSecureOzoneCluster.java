@@ -83,6 +83,7 @@ import org.apache.hadoop.ipc.Client;
 import org.apache.hadoop.ipc.Server;
 import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
 import org.apache.hadoop.minikdc.MiniKdc;
+import org.apache.hadoop.ozone.admin.ratis.OzoneRatisGroupInfoCommand;
 import org.apache.hadoop.ozone.client.OzoneClient;
 import org.apache.hadoop.ozone.client.OzoneClientFactory;
 import org.apache.hadoop.ozone.common.Storage;
@@ -140,14 +141,7 @@ import static org.apache.hadoop.ozone.OzoneConfigKeys.OZONE_ADMINISTRATORS;
 import static org.apache.hadoop.ozone.OzoneConfigKeys.OZONE_CLIENT_FAILOVER_MAX_ATTEMPTS_KEY;
 import static org.apache.hadoop.ozone.OzoneConfigKeys.OZONE_SECURITY_ENABLED_KEY;
 import static org.apache.hadoop.ozone.OzoneConsts.SCM_SUB_CA;
-import static org.apache.hadoop.ozone.om.OMConfigKeys.DELEGATION_TOKEN_MAX_LIFETIME_KEY;
-import static org.apache.hadoop.ozone.om.OMConfigKeys.OZONE_OM_HTTP_KERBEROS_KEYTAB_FILE;
-import static org.apache.hadoop.ozone.om.OMConfigKeys.OZONE_OM_HTTP_KERBEROS_PRINCIPAL_KEY;
-import static org.apache.hadoop.ozone.om.OMConfigKeys.OZONE_OM_KERBEROS_KEYTAB_FILE_KEY;
-import static org.apache.hadoop.ozone.om.OMConfigKeys.OZONE_OM_KERBEROS_PRINCIPAL_KEY;
-import static org.apache.hadoop.ozone.om.OMConfigKeys.OZONE_OM_ADDRESS_KEY;
-import static org.apache.hadoop.ozone.om.OMConfigKeys.OZONE_OM_S3_GPRC_SERVER_ENABLED;
-import static org.apache.hadoop.ozone.om.OMConfigKeys.OZONE_OM_TRANSPORT_CLASS;
+import static org.apache.hadoop.ozone.om.OMConfigKeys.*;
 import static org.apache.hadoop.ozone.om.exceptions.OMException.ResultCodes.TOKEN_EXPIRED;
 import static org.apache.hadoop.ozone.om.exceptions.OMException.ResultCodes.USER_MISMATCH;
 import static org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod.KERBEROS;
@@ -1453,6 +1447,8 @@ final class TestSecureOzoneCluster {
       conf.setBoolean(HDDS_GRPC_TLS_ENABLED, true);
       conf.setBoolean(OZONE_OM_S3_GPRC_SERVER_ENABLED, true);
       conf.setBoolean(HddsConfigKeys.HDDS_GRPC_TLS_TEST_CERT, true);
+      conf.setBoolean(OZONE_SECURITY_ENABLED_KEY, true);
+
       OzoneManager.setTestSecureOmFlag(true);
       UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
       // In this process, SCM has already login using Kerberos. So pass
@@ -1462,25 +1458,10 @@ final class TestSecureOzoneCluster {
       om = OzoneManager.createOm(conf);
       om.start();
 
-      CertificateClient omCertClient = om.getCertificateClient();
-      X509Certificate omCert = omCertClient.getCertificate();
-      X509Certificate caCert = omCertClient.getCACertificate();
-      X509Certificate rootCaCert = omCertClient.getRootCACertificate();
-      List certList = new ArrayList<>();
-      certList.add(caCert);
-      certList.add(rootCaCert);
-      // set certificates in GrpcOmTransport
-      GrpcOmTransport.setCaCerts(certList);
-
+      setCert(om.getOMServiceId(), conf);
       GenericTestUtils.waitFor(() -> om.isLeaderReady(), 500, 10000);
       String transportCls = GrpcOmTransportFactory.class.getName();
       conf.set(OZONE_OM_TRANSPORT_CLASS, transportCls);
-//      try (OzoneClient client = OzoneClientFactory.getRpcClient(conf)) {
-//          ServiceInfoEx serviceInfoEx = client.getObjectStore()
-//              .getClientProxy().getOzoneManagerClient().getServiceInfo();
-//          assertEquals(CertificateCodec.getPEMEncodedString(caCert), serviceInfoEx.getCaCertificate());
-//      }
-
 
       t(om);
     } finally {
@@ -1496,16 +1477,92 @@ final class TestSecureOzoneCluster {
   private static final PrintStream OLD_ERR = System.err;
   private static final String DEFAULT_ENCODING = UTF_8.name();
 
+  public void setCert_v1 () {
+    CertificateClient omCertClient = om.getCertificateClient();
+    X509Certificate omCert = omCertClient.getCertificate();
+//      caCertPems = serviceInfoEx.getCaCertPemList();
+    X509Certificate caCert = omCertClient.getCACertificate();
+//      caCertPem = serviceInfoEx.getCaCertificate();
+
+    X509Certificate rootCaCert = omCertClient.getRootCACertificate();
+    List certList = new ArrayList<>();
+    certList.add(omCert);
+    certList.add(caCert);
+    certList.add(rootCaCert);
+    // set certificates in GrpcOmTransport
+    GrpcOmTransport.setCaCerts(certList);
+  }
+  private void setCert(String omServiceID,
+                              OzoneConfiguration conf)
+      throws IOException {
+
+    // create local copy of config incase exception occurs
+    // with certificate OmRequest
+    OzoneConfiguration config = new OzoneConfiguration(conf);
+    OzoneClient certClient;
+
+      // set OmTransport to hadoop rpc to securely,
+      // get certificates with service list request
+      config.set(OZONE_OM_TRANSPORT_CLASS,
+          OZONE_OM_TRANSPORT_CLASS_DEFAULT);
+
+    System.out.println("****______ tsoc.sc, omServiceID = " + omServiceID);
+      if (
+//          omServiceID == null
+          true
+      ) {
+        certClient = OzoneClientFactory.getRpcClient(config);
+      } else {
+        // As in HA case, we need to pass om service ID.
+        certClient = OzoneClientFactory.getRpcClient(omServiceID,
+            config);
+      }
+      try {
+        ServiceInfoEx serviceInfoEx = certClient
+            .getObjectStore()
+            .getClientProxy()
+            .getOzoneManagerClient()
+            .getServiceInfo();
+
+        if (OzoneSecurityUtil.isSecurityEnabled(conf)) {
+          String caCertPem = null;
+          List<String> caCertPems = null;
+          caCertPem = serviceInfoEx.getCaCertificate();
+          caCertPems = serviceInfoEx.getCaCertPemList();
+          if (caCertPems == null || caCertPems.isEmpty()) {
+            if (caCertPem == null) {
+              LOG.error("S3g received empty caCertPems from serviceInfo");
+              throw new java.security.cert.CertificateException("No caCerts found; caCertPem can" +
+                  " not be null when caCertPems is empty or null");
+            }
+            caCertPems = Collections.singletonList(caCertPem);
+          }
+          GrpcOmTransport.setCaCerts(OzoneSecurityUtil
+              .convertToX509(caCertPems));
+        }
+      } catch (java.security.cert.CertificateException ce) {
+        throw new IOException(ce);
+      } catch (IOException e) {
+        throw e;
+      } finally {
+        if (certClient != null) {
+          certClient.close();
+        }
+      }
+  }
+
+
 
   public void t(OzoneManager om) throws Exception {
     StringBuilder sb = new StringBuilder();
-//    for(OzoneManager om : ls) {
     sb.append(om.getOmRatisServer().getServerDivision().getPeer().getAddress());
-//    }
 
-    String[] args = new String[] {"ratis", "group-test", "info", "-peers", sb.toString()};
-    System.out.println("*****______ ratis cmd args: " + Arrays.toString(args));
-    execute(ozoneAdminShell, args);
+//    String[] args = new String[] {"ratis", "group-test", "info", "-peers", sb.toString()};
+//    execute(ozoneAdminShell, args);
+    OzoneRatisGroupInfoCommand cmd = new OzoneRatisGroupInfoCommand();
+    cmd.setPeers(sb.toString());
+    System.out.println("*****______ setPeers: " + cmd.getPeers());
+    cmd.call();
     assertEquals(out.toString(DEFAULT_ENCODING), "hello!");
   }
 

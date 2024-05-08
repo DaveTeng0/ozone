@@ -12,10 +12,7 @@ import org.apache.hadoop.ozone.admin.om.OMAdmin;
 import org.apache.hadoop.ozone.client.OzoneClientException;
 import org.apache.hadoop.ozone.om.helpers.ServiceInfoEx;
 import org.apache.hadoop.ozone.om.protocol.OzoneManagerProtocol;
-import org.apache.hadoop.ozone.om.protocolPB.OmTransport;
-import org.apache.hadoop.ozone.om.protocolPB.OmTransportFactory;
-import org.apache.hadoop.ozone.om.protocolPB.OzoneManagerClientProtocol;
-import org.apache.hadoop.ozone.om.protocolPB.OzoneManagerProtocolClientSideTranslatorPB;
+import org.apache.hadoop.ozone.om.protocolPB.*;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.ratis.client.RaftClient;
 import org.apache.ratis.conf.Parameters;
@@ -280,6 +277,9 @@ public class OzoneRatisGroupInfoCommand
             .build()
         ).collect(Collectors.toList());
     raftGroup = RaftGroup.valueOf(raftGroupIdFromConfig, peers);
+
+    System.out.println("*****_______ GrpcOmTransport.setCaCerts => " + GrpcOmTransport.getCaCerts().size());
+
     try (final RaftClient client = RaftUtils.createClient(raftGroup)) {
       final RaftGroupId remoteGroupId;
       if (raftGroupIdFromConfig != AbstractRatisCommand.DEFAULT_RAFT_GROUP_ID) {
@@ -346,6 +346,13 @@ public class OzoneRatisGroupInfoCommand
     return null;
   }
 
+  public void setPeers(String peers) {
+    this.peers = peers;
+  }
+
+  public String getPeers() {
+    return peers;
+  }
 
 //  @Override // even override here, mvn still complaint
 //org.apache.hadoop.ozone.admin.ratis.OzoneRatisGroupInfoCommand is not abstract

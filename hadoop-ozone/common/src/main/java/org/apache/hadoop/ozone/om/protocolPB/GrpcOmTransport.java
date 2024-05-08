@@ -97,6 +97,11 @@ public class GrpcOmTransport implements OmTransport {
     caCerts = x509Certificates;
   }
 
+  public static List<X509Certificate> getCaCerts() {
+    return caCerts;
+  }
+
+
   private List<String> oms;
   private RetryPolicy retryPolicy;
   private int failoverCount = 0;

@@ -215,9 +215,12 @@ public final class OmUtils {
    */
   public static boolean isOmHAServiceId(ConfigurationSource conf,
       String serviceId) {
-    Collection<String> omServiceIds = conf.getTrimmedStringCollection(
+//    Collection<String> omServiceIds = conf.getTrimmedStringCollection(
+//        OZONE_OM_SERVICE_IDS_KEY);
+    String omServiceId = conf.getTrimmed(
         OZONE_OM_SERVICE_IDS_KEY);
-    return omServiceIds.contains(serviceId);
+
+    return omServiceId.equals(serviceId);
   }
 
   public static int getOmRpcPort(ConfigurationSource conf) {
