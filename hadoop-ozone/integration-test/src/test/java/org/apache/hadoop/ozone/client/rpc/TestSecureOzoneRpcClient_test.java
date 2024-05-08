@@ -26,10 +26,15 @@ import org.apache.hadoop.hdds.client.ReplicationFactor;
 import org.apache.hadoop.hdds.client.ReplicationType;
 import org.apache.hadoop.hdds.conf.OzoneConfiguration;
 import org.apache.hadoop.hdds.protocol.proto.HddsProtos;
+import org.apache.hadoop.hdds.scm.ScmConfig;
 import org.apache.hadoop.hdds.scm.ScmConfigKeys;
 import org.apache.hadoop.hdds.scm.container.ContainerInfo;
 import org.apache.hadoop.hdds.scm.protocolPB.StorageContainerLocationProtocolClientSideTranslatorPB;
+import org.apache.hadoop.hdds.scm.server.SCMHTTPServerConfig;
+import org.apache.hadoop.hdds.security.SecurityConfig;
 import org.apache.hadoop.hdds.security.x509.certificate.client.CertificateClientTestImpl;
+import org.apache.hadoop.hdds.security.x509.keys.HDDSKeyGenerator;
+import org.apache.hadoop.hdds.security.x509.keys.KeyCodec;
 import org.apache.hadoop.hdds.utils.db.Table;
 import org.apache.hadoop.hdds.utils.db.TableIterator;
 import org.apache.hadoop.hdds.utils.db.cache.CacheKey;
@@ -38,34 +43,17 @@ import org.apache.hadoop.minikdc.MiniKdc;
 import org.apache.hadoop.ozone.ClientVersion;
 import org.apache.hadoop.ozone.MiniOzoneCluster;
 import org.apache.hadoop.ozone.OzoneConfigKeys;
-import org.apache.hadoop.ozone.client.ObjectStore;
-import org.apache.hadoop.ozone.client.OzoneBucket;
-import org.apache.hadoop.ozone.client.OzoneClient;
-import org.apache.hadoop.ozone.client.OzoneClientFactory;
-import org.apache.hadoop.ozone.client.OzoneKey;
-import org.apache.hadoop.ozone.client.OzoneVolume;
 import org.apache.hadoop.ozone.client.BucketArgs;
-import org.apache.hadoop.ozone.client.SecretKeyTestClient;
+import org.apache.hadoop.ozone.client.*;
 import org.apache.hadoop.ozone.client.io.OzoneInputStream;
 import org.apache.hadoop.ozone.client.io.OzoneOutputStream;
 import org.apache.hadoop.ozone.om.OMConfigKeys;
 import org.apache.hadoop.ozone.om.OMMetadataManager;
 import org.apache.hadoop.ozone.om.OzoneManager;
 import org.apache.hadoop.ozone.om.S3SecretManager;
-import org.apache.hadoop.ozone.om.helpers.BucketLayout;
-import org.apache.hadoop.ozone.om.helpers.OmKeyInfo;
-import org.apache.hadoop.ozone.om.helpers.S3SecretValue;
-import org.apache.hadoop.ozone.om.helpers.OmKeyArgs;
-import org.apache.hadoop.ozone.om.helpers.OmKeyLocationInfo;
+import org.apache.hadoop.ozone.om.helpers.*;
 import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos;
-import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.CreateVolumeRequest;
-import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.InfoVolumeRequest;
-import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.OMRequest;
-import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.OMResponse;
-import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.S3Authentication;
-import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.Status;
-import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.VolumeInfo;
-import org.apache.hadoop.ozone.shell.OzoneShell;
+import org.apache.hadoop.ozone.protocol.proto.OzoneManagerProtocolProtos.*;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.ozone.test.GenericTestUtils;
 import org.junit.jupiter.api.*;
@@ -73,27 +61,32 @@ import org.junit.jupiter.api.io.TempDir;
 import picocli.CommandLine;
 
 import java.io.*;
+import java.net.InetAddress;
+import java.security.KeyPair;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.HADOOP_SECURITY_AUTHENTICATION;
 import static org.apache.hadoop.hdds.HddsConfigKeys.*;
-import static org.apache.hadoop.hdds.HddsConfigKeys.HDDS_GRPC_TLS_ENABLED;
+import static org.apache.hadoop.hdds.scm.ScmConfig.ConfigStrings.HDDS_SCM_KERBEROS_KEYTAB_FILE_KEY;
+import static org.apache.hadoop.hdds.scm.ScmConfig.ConfigStrings.HDDS_SCM_KERBEROS_PRINCIPAL_KEY;
 import static org.apache.hadoop.hdds.scm.ScmConfigKeys.OZONE_SCM_HEARTBEAT_PROCESS_INTERVAL;
+import static org.apache.hadoop.hdds.scm.server.SCMHTTPServerConfig.ConfigStrings.HDDS_SCM_HTTP_KERBEROS_KEYTAB_FILE_KEY;
+import static org.apache.hadoop.hdds.scm.server.SCMHTTPServerConfig.ConfigStrings.HDDS_SCM_HTTP_KERBEROS_PRINCIPAL_KEY;
+import static org.apache.hadoop.ozone.OzoneConfigKeys.OZONE_ADMINISTRATORS;
 import static org.apache.hadoop.ozone.OzoneConfigKeys.OZONE_SECURITY_ENABLED_KEY;
+import static org.apache.hadoop.ozone.om.OMConfigKeys.*;
+import static org.apache.hadoop.ozone.om.OMConfigKeys.OZONE_OM_HTTP_KERBEROS_KEYTAB_FILE;
 import static org.apache.ozone.test.GenericTestUtils.getTestStartTime;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * This class is to test all the public facing APIs of Ozone Client.
  */
-public class TestSecureOzoneRpcClient extends TestOzoneRpcClient {
+public class TestSecureOzoneRpcClient_test extends TestOzoneRpcClient {
 
   private static MiniOzoneCluster cluster = null;
   private static OzoneClient ozClient = null;
@@ -120,10 +113,75 @@ public class TestSecureOzoneRpcClient extends TestOzoneRpcClient {
 
   private static MiniKdc miniKdc;
 
+  private static File scmKeytab;
+  private static File spnegoKeytab;
+  private static File omKeyTab;
+  private static File testUserKeytab;
+  private static String testUserPrincipal;
+  private static String host;
+  private static KeyPair keyPair;
+  private static final String COMPONENT = "om";
+
+
+  private static void createPrincipal(File keytab, String... principal)
+      throws Exception {
+    miniKdc.createPrincipal(keytab, principal);
+  }
+
+
   private static void startMiniKdc() throws Exception {
     Properties securityProperties = MiniKdc.createConf();
     miniKdc = new MiniKdc(securityProperties, workDir);
     miniKdc.start();
+  }
+  private static void setSecureConfig() throws IOException {
+    conf.setBoolean(OZONE_SECURITY_ENABLED_KEY, true);
+    host = InetAddress.getLocalHost().getCanonicalHostName()
+        .toLowerCase();
+
+    conf.set(HADOOP_SECURITY_AUTHENTICATION, "kerberos");
+
+    String curUser = UserGroupInformation.getCurrentUser().getUserName();
+    conf.set(OZONE_ADMINISTRATORS, curUser);
+
+    String realm = miniKdc.getRealm();
+    String hostAndRealm = host + "@" + realm;
+    conf.set(HDDS_SCM_KERBEROS_PRINCIPAL_KEY, "scm/" + hostAndRealm);
+    conf.set(HDDS_SCM_HTTP_KERBEROS_PRINCIPAL_KEY, "HTTP_SCM/" + hostAndRealm);
+    conf.set(OZONE_OM_KERBEROS_PRINCIPAL_KEY, "om/" + hostAndRealm);
+    conf.set(OZONE_OM_HTTP_KERBEROS_PRINCIPAL_KEY, "HTTP_OM/" + hostAndRealm);
+
+    scmKeytab = new File(workDir, "scm.keytab");
+    spnegoKeytab = new File(workDir, "http.keytab");
+    omKeyTab = new File(workDir, "om.keytab");
+    testUserKeytab = new File(workDir, "testuser.keytab");
+    testUserPrincipal = "test@" + realm;
+
+    conf.set(HDDS_SCM_KERBEROS_KEYTAB_FILE_KEY,
+        scmKeytab.getAbsolutePath());
+    conf.set(HDDS_SCM_HTTP_KERBEROS_KEYTAB_FILE_KEY,
+        spnegoKeytab.getAbsolutePath());
+    conf.set(OZONE_OM_KERBEROS_KEYTAB_FILE_KEY,
+        omKeyTab.getAbsolutePath());
+    conf.set(OZONE_OM_HTTP_KERBEROS_KEYTAB_FILE,
+        spnegoKeytab.getAbsolutePath());
+  }
+  private static void createCredentialsInKDC() throws Exception {
+    ScmConfig scmConfig = conf.getObject(ScmConfig.class);
+    SCMHTTPServerConfig httpServerConfig =
+        conf.getObject(SCMHTTPServerConfig.class);
+    createPrincipal(scmKeytab, scmConfig.getKerberosPrincipal());
+    createPrincipal(spnegoKeytab, httpServerConfig.getKerberosPrincipal());
+    createPrincipal(testUserKeytab, testUserPrincipal);
+    createPrincipal(omKeyTab,
+        conf.get(OZONE_OM_KERBEROS_PRINCIPAL_KEY));
+  }
+  private static void generateKeyPair() throws Exception {
+    SecurityConfig securityConfig = new SecurityConfig(conf);
+    HDDSKeyGenerator keyGenerator = new HDDSKeyGenerator(securityConfig);
+    keyPair = keyGenerator.generateKey();
+    KeyCodec pemWriter = new KeyCodec(securityConfig, COMPONENT);
+    pemWriter.writeKey(keyPair, true);
   }
 
 
@@ -135,9 +193,9 @@ public class TestSecureOzoneRpcClient extends TestOzoneRpcClient {
    * @throws IOException
    */
   @BeforeAll
-  public static void init() throws Exception {
+  public static void init(String test) throws Exception {
     testDir = GenericTestUtils.getTestDir(
-        TestSecureOzoneRpcClient.class.getSimpleName());
+        TestSecureOzoneRpcClient_test.class.getSimpleName());
     OzoneManager.setTestSecureOmFlag(true);
     conf = new OzoneConfiguration();
     conf.set(HddsConfigKeys.OZONE_METADATA_DIRS, testDir.getAbsolutePath());
@@ -164,11 +222,9 @@ public class TestSecureOzoneRpcClient extends TestOzoneRpcClient {
     ////
     workDir = new File(tempDir, "workdir");
     startMiniKdc();
-//    setSecureConfig();
-//    createCredentialsInKDC();
-//    generateKeyPair();
-
-
+    setSecureConfig();
+    createCredentialsInKDC();
+    generateKeyPair();
     ////
 
     CertificateClientTestImpl certificateClientTest =

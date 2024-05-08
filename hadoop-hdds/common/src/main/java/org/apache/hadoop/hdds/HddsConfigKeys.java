@@ -293,8 +293,7 @@ public final class HddsConfigKeys {
 
   // Test only settings for using test signed certificate, authority assume to
   // be localhost.
-  public static final String HDDS_GRPC_TLS_TEST_CERT = "hdds.grpc.tls" +
-      ".test.cert";
+  public static final String HDDS_GRPC_TLS_TEST_CERT = "hdds.grpc.tls.test.cert";
   public static final boolean HDDS_GRPC_TLS_TEST_CERT_DEFAULT = false;
 
   // Comma separated acls (users, groups) allowing clients accessing

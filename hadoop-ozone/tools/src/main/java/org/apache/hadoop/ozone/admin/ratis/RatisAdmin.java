@@ -83,13 +83,17 @@ public class RatisAdmin extends GenericCli implements SubcommandWithParent {
     return null;
   }
 
-  public OzoneManagerProtocolClientSideTranslatorPB createOmClient(
+//  public OzoneManagerProtocolClientSideTranslatorPB createOmClient(String omServiceID) {
+//
+//  }
+
+  public OzoneManagerProtocolClientSideTranslatorPB createOmClient_(
       String omServiceID
   ) throws Exception {
-    return createOmClient(omServiceID, null, true);
+    return createOmClient_(omServiceID, null, true);
   }
 
-  public OzoneManagerProtocolClientSideTranslatorPB createOmClient(
+  public OzoneManagerProtocolClientSideTranslatorPB createOmClient_(
       String omServiceID,
       String omHost,
       boolean forceHA

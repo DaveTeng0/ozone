@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.crypto.key.KeyProvider;
 import org.apache.hadoop.crypto.key.kms.KMSClientProvider;
@@ -74,9 +75,13 @@ import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY;
 import static org.apache.hadoop.fs.FileSystem.FS_DEFAULT_NAME_KEY;
 import static org.apache.hadoop.fs.FileSystem.TRASH_PREFIX;
+import static org.apache.hadoop.hdds.HddsConfigKeys.*;
+import static org.apache.hadoop.hdds.HddsConfigKeys.HDDS_CONTAINER_REPORT_INTERVAL;
+import static org.apache.hadoop.hdds.scm.ScmConfigKeys.OZONE_SCM_HEARTBEAT_PROCESS_INTERVAL;
 import static org.apache.hadoop.ozone.OzoneConfigKeys.OZONE_FS_LISTING_PAGE_SIZE;
 import static org.apache.hadoop.ozone.OzoneConsts.OZONE_OFS_URI_SCHEME;
 
@@ -182,10 +187,23 @@ public class TestOzoneShellHA {
     // Init HA cluster
     omServiceId = "om-service-test1";
     numOfOMs = 3;
-    final int numDNs = 5;
+    final int numDNs = 3;
     conf.set(CommonConfigurationKeysPublic.HADOOP_SECURITY_KEY_PROVIDER_PATH,
         getKeyProviderURI(miniKMS));
     conf.setBoolean(OMConfigKeys.OZONE_OM_ENABLE_FILESYSTEM_PATHS, true);
+
+    //copy from TestOzoneDebugShell
+    conf.setTimeDuration(OZONE_SCM_HEARTBEAT_PROCESS_INTERVAL,
+        100, TimeUnit.MILLISECONDS);
+    conf.setTimeDuration(HDDS_HEARTBEAT_INTERVAL, 1, SECONDS);
+    conf.setTimeDuration(HDDS_PIPELINE_REPORT_INTERVAL, 1, SECONDS);
+    conf.setTimeDuration(HDDS_COMMAND_STATUS_REPORT_INTERVAL, 1, SECONDS);
+    conf.setTimeDuration(HDDS_CONTAINER_REPORT_INTERVAL, 1, SECONDS);
+    LOG.warn("****________ tos.sc, ==> " + conf.get(HDDS_GRPC_TLS_ENABLED));
+
+    ///////
+    conf.setBoolean(HDDS_GRPC_TLS_ENABLED, true);
+    //////
     MiniOzoneHAClusterImpl.Builder builder = MiniOzoneCluster.newHABuilder(conf);
     builder.setOMServiceId(omServiceId)
         .setNumOfOzoneManagers(numOfOMs)
@@ -222,8 +240,8 @@ public class TestOzoneShellHA {
   public void setup() throws UnsupportedEncodingException {
     ozoneShell = new OzoneShell();
     ozoneAdminShell = new OzoneAdmin();
-    System.setOut(new PrintStream(out, false, DEFAULT_ENCODING));
-    System.setErr(new PrintStream(err, false, DEFAULT_ENCODING));
+//    System.setOut(new PrintStream(out, false, DEFAULT_ENCODING));
+//    System.setErr(new PrintStream(err, false, DEFAULT_ENCODING));
   }
 
   @AfterEach
@@ -487,7 +505,7 @@ public class TestOzoneShellHA {
   /**
    * Test ozone shell list command.
    */
-  @Test
+  @Test //may 7 2024, passed
   public void testOzoneShCmdList() throws UnsupportedEncodingException {
     // Part of listing keys test.
     generateKeys("/volume4", "/bucket", "");
@@ -536,9 +554,27 @@ public class TestOzoneShellHA {
     assertEquals(0, getNumOfBuckets("testbucket"));
   }
 
-  /**
-   * Test ozone admin list command.
-   */
+  @Test
+  public void t() throws Exception {
+
+    List<OzoneManager> ls = cluster.getOzoneManagersList();
+//    List<String> ls2 = new ArrayList<>();
+    StringBuilder sb = new StringBuilder();
+    for(OzoneManager om : ls) {
+      sb.append(om.getOmRpcServerAddr().toString()).append(",");
+    }
+    sb.deleteCharAt(sb.length() - 1);
+
+    String[] args = new String[] {"ratis", "group-test", "info", "-peers", sb.toString()};
+    execute(ozoneAdminShell, args);
+    assertEquals(out.toString(DEFAULT_ENCODING), "hello!");
+
+  }
+
+
+    /**
+     * Test ozone admin list command.
+     */
   @Test
   public void testOzoneAdminCmdList() throws UnsupportedEncodingException {
     // Part of listing keys test.

@@ -196,8 +196,11 @@ public class SecurityConfig {
     if (grpcTlsEnabled) {
       this.grpcTlsUseTestCert = configuration.getBoolean(
           HDDS_GRPC_TLS_TEST_CERT, HDDS_GRPC_TLS_TEST_CERT_DEFAULT);
+      LOG.warn("****______ sc.const-01, grpcTlsEnabled: " + grpcTlsEnabled + ", grpcTlsUseTestCert: " + grpcTlsUseTestCert);
     } else {
       this.grpcTlsUseTestCert = false;
+      LOG.warn("****______ sc.const-02, grpcTlsEnabled: " + grpcTlsEnabled + ", grpcTlsUseTestCert: " + grpcTlsUseTestCert);
+
     }
 
     this.isSecurityEnabled = configuration.getBoolean(

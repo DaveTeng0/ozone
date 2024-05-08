@@ -39,6 +39,7 @@ import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
+import java.util.List;
 import java.util.UUID;
 
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.HADOOP_SECURITY_AUTHENTICATION;
@@ -84,6 +85,25 @@ class TestSecureOzoneManager {
     OzoneManager.setTestSecureOmFlag(true);
     omInfo = OzoneManager.getOmDetailsProto(conf, omId);
   }
+
+
+//  @Test
+//  public void t() throws Exception {
+//
+//    OzoneManager om = cluster.getOzoneManagersList();
+////    List<String> ls2 = new ArrayList<>();
+//    StringBuilder sb = new StringBuilder();
+////    for(OzoneManager om : ls) {
+//      sb.append(om.getOmRpcServerAddr().toString()).append(",");
+////    }
+//    sb.deleteCharAt(sb.length() - 1);
+//
+//    String[] args = new String[] {"ratis", "group-test", "info", "-peers", sb.toString()};
+//    execute(ozoneAdminShell, args);
+//    assertEquals(out.toString(DEFAULT_ENCODING), "hello!");
+//
+//  }
+
 
   /**
    * Test failure cases for secure OM initialization.

@@ -58,9 +58,9 @@ public class OzoneRatisGroupInfoCommand
   private String peers;
 
   @CommandLine.Option(names = { "-groupid" },
-      defaultValue = "false",
+      defaultValue = "test_group",
       description = "groupid")
-  private boolean groupid;
+  private String groupid;
 
   @CommandLine.Option(names = {"-id", "--service-id"},
       description = "OM Service ID",
@@ -135,9 +135,10 @@ public class OzoneRatisGroupInfoCommand
   @Override
   public Void call() throws Exception {
     try {
-      ozoneManagerClient =  parent.getParent().createOmClient(omServiceId);
+//      ozoneManagerClient =  parent.getParent().createOmClient(omServiceId);
 
-      this.conf = parent.getParent().getParent().getOzoneConf();
+
+//      this.conf = parent.getParent().getParent().getOzoneConf();
 //      OmTransport omTransport = createOmTransport(omServiceId);
 //      OzoneManagerProtocolClientSideTranslatorPB
 //          ozoneManagerProtocolClientSideTranslatorPB =
@@ -149,14 +150,16 @@ public class OzoneRatisGroupInfoCommand
 
       this.ugi = UserGroupInformation.getCurrentUser();
       System.out.println("*****______________orgc.call, ugi:  " + ugi);
-      System.out.println("*****______________orgc.call, conf:  " + conf.toString());
+//      System.out.println("*****______________orgc.call, conf:  " + conf.toString());
+//      ozoneManagerClient =  RatisUtil.createOmClient(omServiceId, conf, ugi);
 
 //      if (json) {
 //        printOmServerRolesAsJson(ozoneManagerClient.getServiceList());
 //      } else {
 //        printOmServerRoles(ozoneManagerClient.getServiceList());
 //      }
-      tls();
+
+//      tls();
 
       t();
 
@@ -178,15 +181,15 @@ public class OzoneRatisGroupInfoCommand
   }
 
   public void p() {
-    println("group id: " + raftGroup.getGroupId().getUuid());
+    println("*****_______ ORGC.p-01, group id: " + raftGroup.getGroupId().getUuid());
     final GroupInfoReply reply = groupInfoReply;
-    RaftProtos.RaftPeerProto leader = getLeader(reply.getRoleInfoProto());
+    RaftProtos.RaftPeerProto leader = getLeader(reply == null ? null : reply.getRoleInfoProto());
     if (leader == null) {
       println("leader not found");
     } else {
       println(String.format("leader info: %s(%s)%n%n", leader.getId().toStringUtf8(), leader.getAddress()));
     }
-    println(reply.getCommitInfos().toString());
+    println(reply != null ? reply.getCommitInfos().toString() : null);
 
   }
 
@@ -206,7 +209,7 @@ public class OzoneRatisGroupInfoCommand
   }
 
 
-  public int t() throws Exception{
+  public int t_v1() throws Exception{
     List<InetSocketAddress> addresses = new ArrayList<>();
     String peersStr = peers;
     String[] peersArray = peersStr.split(",");
@@ -246,6 +249,63 @@ public class OzoneRatisGroupInfoCommand
       }
 
       groupInfoReply = run(peers, p -> client.getGroupManagementApi((p.getId())).info(remoteGroupId));
+      println(String.format("******__________ ORGIC.t_v1-01,,,, %s. %n", groupInfoReply));
+
+      processReply(groupInfoReply,
+          () -> "Failed to get group info for group id " + remoteGroupId.getUuid() + " from " + peers);
+      raftGroup = groupInfoReply.getGroup();
+    }
+    return 0;
+
+  }
+
+
+  public int t() throws Exception{
+    List<InetSocketAddress> addresses = new ArrayList<>();
+    String peersStr = peers;
+    String[] peersArray = peersStr.split(",");
+    for (String peer : peersArray) {
+      addresses.add(AbstractRatisCommand.parseInetSocketAddress(peer));
+    }
+
+    final RaftGroupId raftGroupIdFromConfig =
+//        cl.hasOption(GROUPID_OPTION_NAME)?
+//        RaftGroupId.valueOf(UUID.fromString(cl.getOptionValue(GROUPID_OPTION_NAME))) :
+        AbstractRatisCommand.DEFAULT_RAFT_GROUP_ID;
+
+    List<RaftPeer> peers = addresses.stream()
+        .map(addr -> RaftPeer.newBuilder()
+            .setId(RaftUtils.getPeerId(addr))
+            .setAddress(addr)
+            .build()
+        ).collect(Collectors.toList());
+    raftGroup = RaftGroup.valueOf(raftGroupIdFromConfig, peers);
+    try (final RaftClient client = RaftUtils.createClient(raftGroup)) {
+      final RaftGroupId remoteGroupId;
+      if (raftGroupIdFromConfig != AbstractRatisCommand.DEFAULT_RAFT_GROUP_ID) {
+        remoteGroupId = raftGroupIdFromConfig;
+      } else {
+        final List<RaftGroupId> groupIds = run(peers,
+            p -> client.getGroupManagementApi((p.getId())).list().getGroupIds()
+//            p -> ozoneManagerClient.getGroupManagementApi((p.getId())).list().getGroupIds()
+        );
+        println(String.format("******__________ ORGIC.t()-01,,,, remoteGroupId = %s. %n", groupIds != null ? Arrays.toString(groupIds.toArray()) : null));
+
+        if (groupIds == null) {
+          println("Failed to get group ID from " + peers);
+          return -1;
+        } else if (groupIds.size() == 1) {
+          remoteGroupId = groupIds.get(0);
+        } else {
+          println("There are more than one groups, you should specific one. " + groupIds);
+          return -2;
+        }
+      }
+      println(String.format("******__________ ORGIC.t()-02,,,, remoteGroupId = %s. %n", remoteGroupId));
+
+      groupInfoReply = run(peers, p -> client.getGroupManagementApi((p.getId())).info(remoteGroupId));
+      println(String.format("******__________ ORGIC.t()-03,,,, %s. %n", groupInfoReply));
+
       processReply(groupInfoReply,
           () -> "Failed to get group info for group id " + remoteGroupId.getUuid() + " from " + peers);
       raftGroup = groupInfoReply.getGroup();
@@ -262,7 +322,7 @@ public class OzoneRatisGroupInfoCommand
           .map(RaftClientReply::getException)
           .orElseGet(() -> new RaftException("Reply: " + reply));
       final String message = messageSupplier.get();
-      println(String.format("%s. Error: %s%n", message, e));
+      println(String.format("******__________ ORGIC.pr-01,,,, %s. Error: %s%n", message, e));
       throw new IOException(message, e);
     }
   }

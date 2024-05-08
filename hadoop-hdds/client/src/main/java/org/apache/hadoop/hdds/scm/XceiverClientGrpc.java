@@ -194,7 +194,7 @@ public class XceiverClientGrpc extends XceiverClientSpi {
         sslContextBuilder.trustManager(trustManager);
       }
       if (secConfig.useTestCert()) {
-        channelBuilder.overrideAuthority("localhost");
+//        channelBuilder.overrideAuthority("localhost");
       }
       channelBuilder.useTransportSecurity().
           sslContext(sslContextBuilder.build());

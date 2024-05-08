@@ -21,6 +21,7 @@ package org.apache.hadoop.ozone.shell;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hdds.cli.OzoneAdmin;
 import org.apache.hadoop.hdds.client.ReplicationFactor;
 import org.apache.hadoop.hdds.client.ReplicationType;
 import org.apache.hadoop.hdds.conf.OzoneConfiguration;
@@ -31,6 +32,9 @@ import org.apache.hadoop.hdds.utils.IOUtils;
 import org.apache.hadoop.ozone.MiniOzoneCluster;
 import org.apache.hadoop.ozone.OzoneTestUtils;
 import org.apache.hadoop.ozone.TestDataUtil;
+import org.apache.hadoop.ozone.admin.ratis.OzoneRatisGroupCommand;
+import org.apache.hadoop.ozone.admin.ratis.OzoneRatisGroupInfoCommand;
+import org.apache.hadoop.ozone.admin.ratis.RatisAdmin;
 import org.apache.hadoop.ozone.client.OzoneClient;
 import org.apache.hadoop.ozone.client.OzoneClientFactory;
 import org.apache.hadoop.ozone.client.OzoneSnapshot;
@@ -40,6 +44,7 @@ import org.apache.hadoop.ozone.debug.RDBParser;
 import org.apache.hadoop.ozone.om.OMConfigKeys;
 import org.apache.hadoop.ozone.om.OMStorage;
 import org.apache.hadoop.ozone.om.helpers.BucketLayout;
+import org.apache.hadoop.ozone.om.helpers.OMNodeDetails;
 import org.apache.hadoop.ozone.om.helpers.OmKeyArgs;
 import org.apache.hadoop.ozone.om.helpers.OmKeyLocationInfo;
 import org.apache.ozone.test.GenericTestUtils;
@@ -53,6 +58,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.Duration;
+import java.util.List;
 import java.util.UUID;
 import java.util.Set;
 import java.util.HashSet;
@@ -60,10 +66,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.apache.hadoop.hdds.HddsConfigKeys.HDDS_CONTAINER_REPORT_INTERVAL;
-import static org.apache.hadoop.hdds.HddsConfigKeys.HDDS_HEARTBEAT_INTERVAL;
-import static org.apache.hadoop.hdds.HddsConfigKeys.HDDS_PIPELINE_REPORT_INTERVAL;
-import static org.apache.hadoop.hdds.HddsConfigKeys.HDDS_COMMAND_STATUS_REPORT_INTERVAL;
+import static org.apache.hadoop.hdds.HddsConfigKeys.*;
 import static org.apache.hadoop.hdds.scm.ScmConfigKeys.OZONE_SCM_HEARTBEAT_PROCESS_INTERVAL;
 import static org.apache.hadoop.ozone.OzoneConsts.OM_KEY_PREFIX;
 import static org.apache.hadoop.ozone.OzoneConsts.OM_SNAPSHOT_CHECKPOINT_DIR;
@@ -104,6 +107,11 @@ public class TestOzoneDebugShell {
     conf.setTimeDuration(HDDS_PIPELINE_REPORT_INTERVAL, 1, SECONDS);
     conf.setTimeDuration(HDDS_COMMAND_STATUS_REPORT_INTERVAL, 1, SECONDS);
     conf.setTimeDuration(HDDS_CONTAINER_REPORT_INTERVAL, 1, SECONDS);
+
+
+    conf.setBoolean(HDDS_GRPC_TLS_ENABLED, true);
+
+
     ReplicationManager.ReplicationManagerConfiguration replicationConf =
         conf.getObject(
             ReplicationManager.ReplicationManagerConfiguration.class);
@@ -111,6 +119,32 @@ public class TestOzoneDebugShell {
     conf.setFromObject(replicationConf);
     startCluster();
   }
+
+  @Test
+  public void r() {
+    List<OMNodeDetails> ls = cluster.getOzoneManager().getAllOMNodesInMemory();
+    String node1 = ls.get(0).getHostAddress() + ":" + ls.get(0).getRatisPort();
+//    String node2 = ls.get(1).getHostAddress() + ":" + ls.get(1).getRatisPort();
+//    String node3 = ls.get(2).getHostAddress() + ":" + ls.get(2).getRatisPort();
+
+    String[] args = new String[] {
+        "-peers",
+        node1
+//            + "," + node2 + "," + node3
+    };
+    StringWriter stdout = new StringWriter();
+    PrintWriter pstdout = new PrintWriter(stdout);
+    CommandLine cmd = new CommandLine(new OzoneRatisGroupInfoCommand()
+      ).setOut(pstdout);
+//        .addSubcommand(new OzoneRatisGroupInfoCommand()
+//        );
+    int exitCode = cmd.execute(args);
+//    OzoneAdmin adminShell = new OzoneAdmin(conf);
+//    int exitCode = adminShell.execute(args);
+    assertEquals("hello", stdout.toString());
+
+  }
+
 
   @Test
   public void testChunkInfoCmdBeforeAfterCloseContainer() throws Exception {

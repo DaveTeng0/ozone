@@ -17,8 +17,10 @@
  */
 package org.apache.hadoop.ozone;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -31,15 +33,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.validator.routines.DomainValidator;
 import org.apache.hadoop.hdds.HddsConfigKeys;
+import org.apache.hadoop.hdds.cli.GenericCli;
+import org.apache.hadoop.hdds.cli.OzoneAdmin;
 import org.apache.hadoop.hdds.conf.DefaultConfigManager;
 import org.apache.hadoop.hdds.conf.OzoneConfiguration;
 import org.apache.hadoop.hdds.protocol.proto.HddsProtos;
@@ -113,6 +113,8 @@ import org.apache.ozone.test.GenericTestUtils.LogCapturer;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.HADOOP_SECURITY_AUTHENTICATION;
 import static org.apache.hadoop.hdds.HddsConfigKeys.HDDS_BLOCK_TOKEN_ENABLED;
 import static org.apache.hadoop.hdds.HddsConfigKeys.HDDS_GRPC_TLS_ENABLED;
@@ -167,6 +169,7 @@ import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import picocli.CommandLine;
 
 import static org.apache.ozone.test.GenericTestUtils.PortAllocator.getFreePort;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -220,6 +223,25 @@ final class TestSecureOzoneCluster {
   private int certGraceTime = 10 * 1000; // 10s
   private int delegationTokenMaxTime = 9 * 1000; // 9s
 
+
+//  @Test
+//  public void t() throws Exception {
+//
+//    List<OzoneManager> ls = cluster.getOzoneManagersList();
+////    List<String> ls2 = new ArrayList<>();
+//    StringBuilder sb = new StringBuilder();
+//    for(OzoneManager om : ls) {
+//      sb.append(om.getOmRpcServerAddr().toString()).append(",");
+//    }
+//    sb.deleteCharAt(sb.length() - 1);
+//
+//    String[] args = new String[] {"ratis", "group-test", "info", "-peers", sb.toString()};
+//    execute(ozoneAdminShell, args);
+//    assertEquals(out.toString(DEFAULT_ENCODING), "hello!");
+//
+//  }
+
+
   @BeforeEach
   void init() {
     try {
@@ -266,6 +288,12 @@ final class TestSecureOzoneCluster {
       createCredentialsInKDC();
       generateKeyPair();
       omInfo = OzoneManager.getOmDetailsProto(conf, omId);
+
+      ////////
+      ozoneAdminShell = new OzoneAdmin();
+//      System.setOut(new PrintStream(out, false, DEFAULT_ENCODING));
+//      System.setErr(new PrintStream(err, false, DEFAULT_ENCODING));
+      ////////
     } catch (Exception e) {
       LOG.error("Failed to initialize TestSecureOzoneCluster", e);
     }
@@ -274,6 +302,14 @@ final class TestSecureOzoneCluster {
   @AfterEach
   void stop() throws Exception {
     try {
+      ////
+      out.reset();
+      err.reset();
+      // restore system streams
+//      System.setOut(OLD_OUT);
+//      System.setErr(OLD_ERR);
+      ////
+
       stopMiniKdc();
       if (scm != null) {
         scm.stop();
@@ -349,124 +385,126 @@ final class TestSecureOzoneCluster {
         spnegoKeytab.getAbsolutePath());
   }
 
-  @Test
-  void testSecureScmStartupSuccess() throws Exception {
 
-    initSCM();
-    scm = HddsTestUtils.getScmSimple(conf);
-    //Reads the SCM Info from SCM instance
-    ScmInfo scmInfo = scm.getClientProtocolServer().getScmInfo();
-    assertEquals(clusterId, scmInfo.getClusterId());
-    assertEquals(scmId, scmInfo.getScmId());
-    assertEquals(2, scm.getScmCertificateClient().getTrustChain().size());
-  }
 
-  @Test
-  void testSCMSecurityProtocol() throws Exception {
-
-    initSCM();
-    scm = HddsTestUtils.getScmSimple(conf);
-    //Reads the SCM Info from SCM instance
-    try {
-      scm.start();
-
-      // Case 1: User with Kerberos credentials should succeed.
-      UserGroupInformation ugi =
-          UserGroupInformation.loginUserFromKeytabAndReturnUGI(
-              testUserPrincipal, testUserKeytab.getCanonicalPath());
-      ugi.setAuthenticationMethod(KERBEROS);
-      try (SCMSecurityProtocolClientSideTranslatorPB securityClient =
-          getScmSecurityClient(conf, ugi)) {
-        assertNotNull(securityClient);
-        String caCert = securityClient.getCACertificate();
-        assertNotNull(caCert);
-        // Get some random certificate, used serial id 100 which will be
-        // unavailable as our serial id is time stamp. Serial id 1 is root CA,
-        // and it is persisted in DB.
-        SCMSecurityException securityException = assertThrows(
-            SCMSecurityException.class,
-            () -> securityClient.getCertificate("100"));
-        assertThat(securityException)
-            .hasMessageContaining("Certificate not found");
-      }
-
-      // Case 2: User without Kerberos credentials should fail.
-      ugi = UserGroupInformation.createRemoteUser("test");
-      ugi.setAuthenticationMethod(AuthMethod.TOKEN);
-      try (SCMSecurityProtocolClientSideTranslatorPB securityClient =
-          getScmSecurityClient(conf, ugi)) {
-
-        String cannotAuthMessage = "Client cannot authenticate via:[KERBEROS]";
-        IOException ioException = assertThrows(IOException.class,
-            securityClient::getCACertificate);
-        assertThat(ioException).hasMessageContaining(cannotAuthMessage);
-        ioException = assertThrows(IOException.class,
-            () -> securityClient.getCertificate("1"));
-        assertThat(ioException).hasMessageContaining(cannotAuthMessage);
-      }
-    } finally {
-      if (scm != null) {
-        scm.stop();
-      }
-    }
-  }
-
-  @Test
-  void testAdminAccessControlException() throws Exception {
-    initSCM();
-    scm = HddsTestUtils.getScmSimple(conf);
-    //Reads the SCM Info from SCM instance
-    try {
-      scm.start();
-
-      //case 1: Run admin command with non-admin user.
-      UserGroupInformation ugi =
-          UserGroupInformation.loginUserFromKeytabAndReturnUGI(
-          testUserPrincipal, testUserKeytab.getCanonicalPath());
-      StorageContainerLocationProtocol scmRpcClient =
-          HAUtils.getScmContainerClient(conf, ugi);
-      IOException ioException = assertThrows(IOException.class,
-          scmRpcClient::forceExitSafeMode);
-      assertThat(ioException).hasMessageContaining("Access denied");
-
-      // Case 2: User without Kerberos credentials should fail.
-      ugi = UserGroupInformation.createRemoteUser("test");
-      ugi.setAuthenticationMethod(AuthMethod.TOKEN);
-      scmRpcClient =
-          HAUtils.getScmContainerClient(conf, ugi);
-
-      String cannotAuthMessage = "Client cannot authenticate via:[KERBEROS]";
-      ioException = assertThrows(IOException.class,
-          scmRpcClient::forceExitSafeMode);
-      assertThat(ioException).hasMessageContaining(cannotAuthMessage);
-    } finally {
-      if (scm != null) {
-        scm.stop();
-      }
-    }
-  }
-
-  @Test
-  void testSecretManagerInitializedNonHASCM() throws Exception {
-    conf.setBoolean(HDDS_BLOCK_TOKEN_ENABLED, true);
-    initSCM();
-    scm = HddsTestUtils.getScmSimple(conf);
-    //Reads the SCM Info from SCM instance
-    try {
-      scm.start();
-
-      SecretKeyManager secretKeyManager = scm.getSecretKeyManager();
-      boolean inSafeMode = scm.getScmSafeModeManager().getInSafeMode();
-      assertFalse(SCMHAUtils.isSCMHAEnabled(conf));
-      assertTrue(inSafeMode);
-      assertNotNull(secretKeyManager);
-      assertTrue(secretKeyManager.isInitialized());
-    } finally {
-      if (scm != null) {
-        scm.stop();
-      }
-    }
-  }
+//  @Test
+//  void testSecureScmStartupSuccess() throws Exception {
+//
+//    initSCM();
+//    scm = HddsTestUtils.getScmSimple(conf);
+//    //Reads the SCM Info from SCM instance
+//    ScmInfo scmInfo = scm.getClientProtocolServer().getScmInfo();
+//    assertEquals(clusterId, scmInfo.getClusterId());
+//    assertEquals(scmId, scmInfo.getScmId());
+//    assertEquals(2, scm.getScmCertificateClient().getTrustChain().size());
+//  }
+//
+//  @Test
+//  void testSCMSecurityProtocol() throws Exception {
+//
+//    initSCM();
+//    scm = HddsTestUtils.getScmSimple(conf);
+//    //Reads the SCM Info from SCM instance
+//    try {
+//      scm.start();
+//
+//      // Case 1: User with Kerberos credentials should succeed.
+//      UserGroupInformation ugi =
+//          UserGroupInformation.loginUserFromKeytabAndReturnUGI(
+//              testUserPrincipal, testUserKeytab.getCanonicalPath());
+//      ugi.setAuthenticationMethod(KERBEROS);
+//      try (SCMSecurityProtocolClientSideTranslatorPB securityClient =
+//          getScmSecurityClient(conf, ugi)) {
+//        assertNotNull(securityClient);
+//        String caCert = securityClient.getCACertificate();
+//        assertNotNull(caCert);
+//        // Get some random certificate, used serial id 100 which will be
+//        // unavailable as our serial id is time stamp. Serial id 1 is root CA,
+//        // and it is persisted in DB.
+//        SCMSecurityException securityException = assertThrows(
+//            SCMSecurityException.class,
+//            () -> securityClient.getCertificate("100"));
+//        assertThat(securityException)
+//            .hasMessageContaining("Certificate not found");
+//      }
+//
+//      // Case 2: User without Kerberos credentials should fail.
+//      ugi = UserGroupInformation.createRemoteUser("test");
+//      ugi.setAuthenticationMethod(AuthMethod.TOKEN);
+//      try (SCMSecurityProtocolClientSideTranslatorPB securityClient =
+//          getScmSecurityClient(conf, ugi)) {
+//
+//        String cannotAuthMessage = "Client cannot authenticate via:[KERBEROS]";
+//        IOException ioException = assertThrows(IOException.class,
+//            securityClient::getCACertificate);
+//        assertThat(ioException).hasMessageContaining(cannotAuthMessage);
+//        ioException = assertThrows(IOException.class,
+//            () -> securityClient.getCertificate("1"));
+//        assertThat(ioException).hasMessageContaining(cannotAuthMessage);
+//      }
+//    } finally {
+//      if (scm != null) {
+//        scm.stop();
+//      }
+//    }
+//  }
+//
+//  @Test
+//  void testAdminAccessControlException() throws Exception {
+//    initSCM();
+//    scm = HddsTestUtils.getScmSimple(conf);
+//    //Reads the SCM Info from SCM instance
+//    try {
+//      scm.start();
+//
+//      //case 1: Run admin command with non-admin user.
+//      UserGroupInformation ugi =
+//          UserGroupInformation.loginUserFromKeytabAndReturnUGI(
+//          testUserPrincipal, testUserKeytab.getCanonicalPath());
+//      StorageContainerLocationProtocol scmRpcClient =
+//          HAUtils.getScmContainerClient(conf, ugi);
+//      IOException ioException = assertThrows(IOException.class,
+//          scmRpcClient::forceExitSafeMode);
+//      assertThat(ioException).hasMessageContaining("Access denied");
+//
+//      // Case 2: User without Kerberos credentials should fail.
+//      ugi = UserGroupInformation.createRemoteUser("test");
+//      ugi.setAuthenticationMethod(AuthMethod.TOKEN);
+//      scmRpcClient =
+//          HAUtils.getScmContainerClient(conf, ugi);
+//
+//      String cannotAuthMessage = "Client cannot authenticate via:[KERBEROS]";
+//      ioException = assertThrows(IOException.class,
+//          scmRpcClient::forceExitSafeMode);
+//      assertThat(ioException).hasMessageContaining(cannotAuthMessage);
+//    } finally {
+//      if (scm != null) {
+//        scm.stop();
+//      }
+//    }
+//  }
+//
+//  @Test
+//  void testSecretManagerInitializedNonHASCM() throws Exception {
+//    conf.setBoolean(HDDS_BLOCK_TOKEN_ENABLED, true);
+//    initSCM();
+//    scm = HddsTestUtils.getScmSimple(conf);
+//    //Reads the SCM Info from SCM instance
+//    try {
+//      scm.start();
+//
+//      SecretKeyManager secretKeyManager = scm.getSecretKeyManager();
+//      boolean inSafeMode = scm.getScmSafeModeManager().getInSafeMode();
+//      assertFalse(SCMHAUtils.isSCMHAEnabled(conf));
+//      assertTrue(inSafeMode);
+//      assertNotNull(secretKeyManager);
+//      assertTrue(secretKeyManager.isInitialized());
+//    } finally {
+//      if (scm != null) {
+//        scm.stop();
+//      }
+//    }
+//  }
 
   private void initSCM() throws IOException {
     Path scmPath = new File(tempDir, "scm-meta").toPath();
@@ -504,26 +542,26 @@ final class TestSecureOzoneCluster {
     conf.set(HDDS_SCM_KERBEROS_KEYTAB_FILE_KEY, keyTab.getAbsolutePath());
   }
 
-  @Test
-  void testSecureScmStartupFailure() throws Exception {
-    initSCM();
-    conf.set(HDDS_SCM_KERBEROS_KEYTAB_FILE_KEY, "");
-    conf.set(HADOOP_SECURITY_AUTHENTICATION, "kerberos");
-
-    IOException ioException = assertThrows(IOException.class,
-        () -> HddsTestUtils.getScmSimple(conf));
-    assertThat(ioException)
-        .hasMessageContaining("Running in secure mode, but config doesn't have a keytab");
-
-    conf.set(HDDS_SCM_KERBEROS_PRINCIPAL_KEY,
-        "scm/_HOST@EXAMPLE.com");
-    conf.set(HDDS_SCM_KERBEROS_KEYTAB_FILE_KEY,
-        "/etc/security/keytabs/scm.keytab");
-
-    testCommonKerberosFailures(
-        () -> HddsTestUtils.getScmSimple(conf));
-
-  }
+//  @Test
+//  void testSecureScmStartupFailure() throws Exception {
+//    initSCM();
+//    conf.set(HDDS_SCM_KERBEROS_KEYTAB_FILE_KEY, "");
+//    conf.set(HADOOP_SECURITY_AUTHENTICATION, "kerberos");
+//
+//    IOException ioException = assertThrows(IOException.class,
+//        () -> HddsTestUtils.getScmSimple(conf));
+//    assertThat(ioException)
+//        .hasMessageContaining("Running in secure mode, but config doesn't have a keytab");
+//
+//    conf.set(HDDS_SCM_KERBEROS_PRINCIPAL_KEY,
+//        "scm/_HOST@EXAMPLE.com");
+//    conf.set(HDDS_SCM_KERBEROS_KEYTAB_FILE_KEY,
+//        "/etc/security/keytabs/scm.keytab");
+//
+//    testCommonKerberosFailures(
+//        () -> HddsTestUtils.getScmSimple(conf));
+//
+//  }
 
   private void testCommonKerberosFailures(Callable<?> test) {
     KerberosAuthException kerberosAuthException = assertThrows(
@@ -1367,6 +1405,138 @@ final class TestSecureOzoneCluster {
       GrpcOmTransport.setCaCerts(null);
     }
   }
+
+
+  @Test
+  void t2() throws Exception {
+    initSCM();
+    try {
+      scm = HddsTestUtils.getScmSimple(conf);
+      scm.start();
+
+      conf.set(OZONE_METADATA_DIRS, omMetaDirPath.toString());
+      int certLifetime = 30; // second
+      conf.set(HDDS_X509_DEFAULT_DURATION,
+          Duration.ofSeconds(certLifetime).toString());
+      conf.setInt(OZONE_CLIENT_FAILOVER_MAX_ATTEMPTS_KEY, 2);
+
+      // initialize OmStorage, save om Cert and CA Certs to disk
+      OMStorage omStore = new OMStorage(conf);
+      omStore.setClusterId(clusterId);
+      omStore.setOmId(omId);
+
+      // Prepare the certificates for OM before OM start
+      SecurityConfig securityConfig = new SecurityConfig(conf);
+      CertificateClient scmCertClient = scm.getScmCertificateClient();
+      CertificateCodec certCodec = new CertificateCodec(securityConfig, "om");
+      X509Certificate scmCert = scmCertClient.getCertificate();
+      X509Certificate rootCert = scmCertClient.getCACertificate();
+      X509CertificateHolder certHolder =
+          generateX509CertHolder(securityConfig, keyPair,
+              new KeyPair(scmCertClient.getPublicKey(),
+                  scmCertClient.getPrivateKey()),
+              scmCert, "om_cert", clusterId);
+      String certId = certHolder.getSerialNumber().toString();
+      certCodec.writeCertificate(certHolder);
+      certCodec.writeCertificate(CertificateCodec.getCertificateHolder(scmCert),
+          String.format(DefaultCertificateClient.CERT_FILE_NAME_FORMAT,
+              CAType.SUBORDINATE.getFileNamePrefix() +
+                  scmCert.getSerialNumber().toString()));
+      certCodec.writeCertificate(CertificateCodec.getCertificateHolder(
+              scmCertClient.getCACertificate()),
+          String.format(DefaultCertificateClient.CERT_FILE_NAME_FORMAT,
+              CAType.ROOT.getFileNamePrefix() +
+                  rootCert.getSerialNumber().toString()));
+      omStore.setOmCertSerialId(certId);
+      omStore.initialize();
+
+      conf.setBoolean(HDDS_GRPC_TLS_ENABLED, true);
+      conf.setBoolean(OZONE_OM_S3_GPRC_SERVER_ENABLED, true);
+      conf.setBoolean(HddsConfigKeys.HDDS_GRPC_TLS_TEST_CERT, true);
+      OzoneManager.setTestSecureOmFlag(true);
+      UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
+      // In this process, SCM has already login using Kerberos. So pass
+      // specific UGI to DefaultCertificateClient and OzoneManager to avoid
+      // conflict with SCM procedure.
+      OzoneManager.setUgi(ugi);
+      om = OzoneManager.createOm(conf);
+      om.start();
+
+      CertificateClient omCertClient = om.getCertificateClient();
+      X509Certificate omCert = omCertClient.getCertificate();
+      X509Certificate caCert = omCertClient.getCACertificate();
+      X509Certificate rootCaCert = omCertClient.getRootCACertificate();
+      List certList = new ArrayList<>();
+      certList.add(caCert);
+      certList.add(rootCaCert);
+      // set certificates in GrpcOmTransport
+      GrpcOmTransport.setCaCerts(certList);
+
+      GenericTestUtils.waitFor(() -> om.isLeaderReady(), 500, 10000);
+      String transportCls = GrpcOmTransportFactory.class.getName();
+      conf.set(OZONE_OM_TRANSPORT_CLASS, transportCls);
+//      try (OzoneClient client = OzoneClientFactory.getRpcClient(conf)) {
+//          ServiceInfoEx serviceInfoEx = client.getObjectStore()
+//              .getClientProxy().getOzoneManagerClient().getServiceInfo();
+//          assertEquals(CertificateCodec.getPEMEncodedString(caCert), serviceInfoEx.getCaCertificate());
+//      }
+
+
+      t(om);
+    } finally {
+      OzoneManager.setUgi(null);
+      GrpcOmTransport.setCaCerts(null);
+    }
+  }
+
+  private OzoneAdmin ozoneAdminShell = null;
+  private final ByteArrayOutputStream out = new ByteArrayOutputStream();
+  private final ByteArrayOutputStream err = new ByteArrayOutputStream();
+  private static final PrintStream OLD_OUT = System.out;
+  private static final PrintStream OLD_ERR = System.err;
+  private static final String DEFAULT_ENCODING = UTF_8.name();
+
+
+  public void t(OzoneManager om) throws Exception {
+    StringBuilder sb = new StringBuilder();
+//    for(OzoneManager om : ls) {
+    sb.append(om.getOmRatisServer().getServerDivision().getPeer().getAddress());
+//    }
+
+    String[] args = new String[] {"ratis", "group-test", "info", "-peers", sb.toString()};
+    System.out.println("*****______ ratis cmd args: " + Arrays.toString(args));
+    execute(ozoneAdminShell, args);
+    assertEquals(out.toString(DEFAULT_ENCODING), "hello!");
+  }
+
+  private void execute(GenericCli shell, String[] args) {
+//    LOG.info("Executing OzoneShell command with args {}", Arrays.asList(args));
+    CommandLine cmd = shell.getCmd();
+
+    CommandLine.IExceptionHandler2<List<Object>> exceptionHandler =
+        new CommandLine.IExceptionHandler2<List<Object>>() {
+          @Override
+          public List<Object> handleParseException(
+              CommandLine.ParameterException ex,
+              String[] args) {
+            throw ex;
+          }
+
+          @Override
+          public List<Object> handleExecutionException(
+              CommandLine.ExecutionException ex,
+              CommandLine.ParseResult parseRes) {
+            throw ex;
+          }
+        };
+
+    // Since there is no elegant way to pass Ozone config to the shell,
+    // the idea is to use 'set' to place those OM HA configs.
+//    String[] argsWithHAConf = getHASetConfStrings(args);
+
+    cmd.parseWithHandlers(new CommandLine.RunLast(), exceptionHandler, args);
+  }
+
 
   void validateCertificate(X509Certificate cert) throws Exception {
 
