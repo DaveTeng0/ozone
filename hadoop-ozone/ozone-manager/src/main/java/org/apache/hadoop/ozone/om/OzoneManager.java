@@ -771,7 +771,9 @@ public final class OzoneManager extends ServiceRuntimeInfoImpl
    */
   public static OzoneManager createOm(OzoneConfiguration conf)
       throws IOException, AuthenticationException {
-    return new OzoneManager(conf, StartupOption.REGUALR);
+    OzoneManager om = new OzoneManager(conf, StartupOption.REGUALR);
+    LOG.warn("*****_______ om.co, ");
+    return om;
   }
 
   public static OzoneManager createOm(OzoneConfiguration conf,
@@ -2165,6 +2167,9 @@ public final class OzoneManager extends ServiceRuntimeInfoImpl
             configuration, this, omNodeDetails, peerNodesMap,
             secConfig, certClient, shouldBootstrap);
       }
+
+      LOG.warn("****_________ om.irs, ");
+
       LOG.info("OzoneManager Ratis server initialized at port {}",
           omRatisServer.getServerPort());
     } else {

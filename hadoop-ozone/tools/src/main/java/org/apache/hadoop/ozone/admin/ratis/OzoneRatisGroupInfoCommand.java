@@ -15,6 +15,7 @@ import org.apache.hadoop.ozone.om.protocol.OzoneManagerProtocol;
 import org.apache.hadoop.ozone.om.protocolPB.*;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.ratis.client.RaftClient;
+import org.apache.ratis.client.api.GroupManagementApi;
 import org.apache.ratis.conf.Parameters;
 import org.apache.ratis.grpc.GrpcTlsConfig;
 import org.apache.ratis.netty.NettyConfigKeys;
@@ -285,10 +286,28 @@ public class OzoneRatisGroupInfoCommand
       if (raftGroupIdFromConfig != AbstractRatisCommand.DEFAULT_RAFT_GROUP_ID) {
         remoteGroupId = raftGroupIdFromConfig;
       } else {
+//        final List<RaftGroupId> groupIds = run(peers,
+//            p -> client.getGroupManagementApi((p.getId())).list().getGroupIds()
+////            p -> ozoneManagerClient.getGroupManagementApi((p.getId())).list().getGroupIds()
+//        );
+
         final List<RaftGroupId> groupIds = run(peers,
-            p -> client.getGroupManagementApi((p.getId())).list().getGroupIds()
-//            p -> ozoneManagerClient.getGroupManagementApi((p.getId())).list().getGroupIds()
-        );
+            p -> {
+              GroupManagementApi api = client.getGroupManagementApi((p.getId()));
+              println("******_________ arc.run-01,");
+              GroupListReply r;
+              try {
+                r = api.list();
+              } catch (Exception e) {
+                println("******_________ arc.run-03-catch-err, e = " + e.toString());
+                throw e;
+              }
+              println("******_________ arc.run-02, GroupListReply = " + r);
+
+              List<RaftGroupId> ls = r.getGroupIds();
+              return ls;
+            });
+
         println(String.format("******__________ ORGIC.t()-01,,,, remoteGroupId = %s. %n", groupIds != null ? Arrays.toString(groupIds.toArray()) : null));
 
         if (groupIds == null) {

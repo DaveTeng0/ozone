@@ -497,7 +497,7 @@ public final class OzoneManagerRatisUtils {
     if (conf.isSecurityEnabled() && conf.isGrpcTlsEnabled()) {
       KeyStoresFactory serverKeyFactory = caClient.getServerKeyStoresFactory();
       return new GrpcTlsConfig(serverKeyFactory.getKeyManagers()[0],
-          serverKeyFactory.getTrustManagers()[0], true);
+          serverKeyFactory.getTrustManagers()[0], true); // tttttttttttttttttttttttt
     }
 
     return null;

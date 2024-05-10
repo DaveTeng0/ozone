@@ -1444,9 +1444,9 @@ final class TestSecureOzoneCluster {
       omStore.setOmCertSerialId(certId);
       omStore.initialize();
 
-      conf.setBoolean(HDDS_GRPC_TLS_ENABLED, true);
       conf.setBoolean(OZONE_OM_S3_GPRC_SERVER_ENABLED, true);
       conf.setBoolean(HddsConfigKeys.HDDS_GRPC_TLS_TEST_CERT, true);
+      conf.setBoolean(HDDS_GRPC_TLS_ENABLED, true);
       conf.setBoolean(OZONE_SECURITY_ENABLED_KEY, true);
 
       OzoneManager.setTestSecureOmFlag(true);
@@ -1557,11 +1557,17 @@ final class TestSecureOzoneCluster {
     StringBuilder sb = new StringBuilder();
     sb.append(om.getOmRatisServer().getServerDivision().getPeer().getAddress());
 
+    int idx = sb.indexOf(":");
+    String tmp = sb.substring(0, idx);
+//    tmp += ":8981";
+//    tmp += ":15006";
+
 //    String[] args = new String[] {"ratis", "group-test", "info", "-peers", sb.toString()};
 //    execute(ozoneAdminShell, args);
     OzoneRatisGroupInfoCommand cmd = new OzoneRatisGroupInfoCommand();
     cmd.setPeers(sb.toString());
-    System.out.println("*****______ setPeers: " + cmd.getPeers());
+//    System.out.println("*****______ setPeers: " + cmd.getPeers());
+    LOG.warn("*****______ setPeers: " + cmd.getPeers());
     cmd.call();
     assertEquals(out.toString(DEFAULT_ENCODING), "hello!");
   }
