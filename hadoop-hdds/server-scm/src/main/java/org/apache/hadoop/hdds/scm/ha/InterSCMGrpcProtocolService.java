@@ -74,6 +74,7 @@ public class InterSCMGrpcProtocolService {
         SslContextBuilder sslServerContextBuilder =
             forServer(keyStores.getKeyManagers()[0])
                 .trustManager(keyStores.getTrustManagers()[0]);
+//        LOG.warn("***_____" + securityConfig.getGrpcSslProvider().);
         SslContextBuilder sslContextBuilder = GrpcSslContexts.configure(
             sslServerContextBuilder, securityConfig.getGrpcSslProvider());
         sslContextBuilder.clientAuth(ClientAuth.REQUIRE);

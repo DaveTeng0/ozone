@@ -161,7 +161,7 @@ public class GrpcOzoneManagerServer {
             new GrpcMetricsServerTransportFilter(omS3gGrpcMetrics));
 
     SecurityConfig secConf = new SecurityConfig(omServerConfig);
-    if (secConf.isSecurityEnabled() && secConf.isGrpcTlsEnabled()) {
+    if (true && secConf.isSecurityEnabled() && secConf.isGrpcTlsEnabled()) {
       try {
         KeyStoresFactory factory = caClient.getServerKeyStoresFactory();
         SslContextBuilder sslClientContextBuilder =

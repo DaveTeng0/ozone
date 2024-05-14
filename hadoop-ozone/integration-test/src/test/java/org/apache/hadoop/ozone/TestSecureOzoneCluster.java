@@ -117,14 +117,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.HADOOP_SECURITY_AUTHENTICATION;
-import static org.apache.hadoop.hdds.HddsConfigKeys.HDDS_BLOCK_TOKEN_ENABLED;
-import static org.apache.hadoop.hdds.HddsConfigKeys.HDDS_GRPC_TLS_ENABLED;
-import static org.apache.hadoop.hdds.HddsConfigKeys.HDDS_X509_CA_ROTATION_ACK_TIMEOUT;
-import static org.apache.hadoop.hdds.HddsConfigKeys.HDDS_X509_CA_ROTATION_CHECK_INTERNAL;
-import static org.apache.hadoop.hdds.HddsConfigKeys.HDDS_X509_DEFAULT_DURATION;
-import static org.apache.hadoop.hdds.HddsConfigKeys.HDDS_X509_GRACE_DURATION_TOKEN_CHECKS_ENABLED;
-import static org.apache.hadoop.hdds.HddsConfigKeys.HDDS_X509_RENEW_GRACE_DURATION;
-import static org.apache.hadoop.hdds.HddsConfigKeys.OZONE_METADATA_DIRS;
+import static org.apache.hadoop.hdds.HddsConfigKeys.*;
+import static org.apache.hadoop.hdds.HddsConfigKeys.HDDS_GRPC_TLS_TEST_CERT_DEFAULT;
 import static org.apache.hadoop.hdds.scm.ScmConfig.ConfigStrings.HDDS_SCM_KERBEROS_KEYTAB_FILE_KEY;
 import static org.apache.hadoop.hdds.scm.ScmConfig.ConfigStrings.HDDS_SCM_KERBEROS_PRINCIPAL_KEY;
 import static org.apache.hadoop.hdds.scm.ScmConfigKeys.OZONE_SCM_BLOCK_CLIENT_PORT_KEY;
@@ -1414,10 +1408,20 @@ final class TestSecureOzoneCluster {
           Duration.ofSeconds(certLifetime).toString());
       conf.setInt(OZONE_CLIENT_FAILOVER_MAX_ATTEMPTS_KEY, 2);
 
+
+      conf.setBoolean(OZONE_OM_S3_GPRC_SERVER_ENABLED, true);
+      conf.setBoolean(HddsConfigKeys.HDDS_GRPC_TLS_TEST_CERT, true);
+      conf.setBoolean(HDDS_GRPC_TLS_ENABLED, true);
+      conf.setBoolean(OZONE_SECURITY_ENABLED_KEY, true);
+      conf.setBoolean(
+          HDDS_GRPC_TLS_TEST_CERT, true);
+
       // initialize OmStorage, save om Cert and CA Certs to disk
       OMStorage omStore = new OMStorage(conf);
       omStore.setClusterId(clusterId);
       omStore.setOmId(omId);
+
+
 
       // Prepare the certificates for OM before OM start
       SecurityConfig securityConfig = new SecurityConfig(conf);
@@ -1444,10 +1448,6 @@ final class TestSecureOzoneCluster {
       omStore.setOmCertSerialId(certId);
       omStore.initialize();
 
-      conf.setBoolean(OZONE_OM_S3_GPRC_SERVER_ENABLED, true);
-      conf.setBoolean(HddsConfigKeys.HDDS_GRPC_TLS_TEST_CERT, true);
-      conf.setBoolean(HDDS_GRPC_TLS_ENABLED, true);
-      conf.setBoolean(OZONE_SECURITY_ENABLED_KEY, true);
 
       OzoneManager.setTestSecureOmFlag(true);
       UserGroupInformation ugi = UserGroupInformation.getCurrentUser();

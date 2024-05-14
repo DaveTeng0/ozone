@@ -152,7 +152,7 @@ public class GrpcOmTransport implements OmTransport {
               .usePlaintext()
               .maxInboundMessageSize(maxSize);
 
-      if (secConfig.isSecurityEnabled() && secConfig.isGrpcTlsEnabled()) {
+      if ( true && secConfig.isSecurityEnabled() && secConfig.isGrpcTlsEnabled()) { // hhhhhhhhh
         try {
           SslContextBuilder sslContextBuilder = GrpcSslContexts.forClient();
           if (caCerts != null) {

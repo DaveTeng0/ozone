@@ -261,7 +261,7 @@ public final class RatisHelper {
   }
 
   @SuppressWarnings("checkstyle:ParameterNumber")
-  private static RaftClient newRaftClient(RpcType rpcType, RaftPeerId leader,
+  public static RaftClient newRaftClient(RpcType rpcType, RaftPeerId leader,
       RaftPeer primary, RaftGroup group, RetryPolicy retryPolicy,
       GrpcTlsConfig tlsConfig, ConfigurationSource ozoneConfiguration) {
     if (LOG.isTraceEnabled()) {

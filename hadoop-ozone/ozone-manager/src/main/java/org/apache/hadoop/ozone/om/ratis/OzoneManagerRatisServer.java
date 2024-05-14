@@ -25,17 +25,13 @@ import com.google.protobuf.ServiceException;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.TimeUnit;
@@ -83,6 +79,7 @@ import org.apache.ratis.protocol.RaftPeer;
 import org.apache.ratis.protocol.RaftPeerId;
 import org.apache.ratis.rpc.RpcType;
 import org.apache.ratis.rpc.SupportedRpcType;
+import org.apache.ratis.security.TlsConf;
 import org.apache.ratis.server.RaftServer;
 import org.apache.ratis.server.RaftServerConfigKeys;
 import org.apache.ratis.server.protocol.TermIndex;
@@ -169,12 +166,41 @@ public final class OzoneManagerRatisServer {
     }
     this.omStateMachine = getStateMachine(conf);
 
+//    new TlsConf.Builder()
+//        .setName("server")
+//        .setPrivateKey(new TlsConf.PrivateKeyConf(getResource("ssl/server.pem")))
+//        .setKeyCertificates(new TlsConf.CertificatesConf(getResource("ssl/server.crt")))
+//        .setTrustCertificates(new TlsConf.CertificatesConf(getResource("ssl/client.crt")))
+//        .setMutualTls(mutualAuthn)
+//        .build();
+
+    LOG.warn("*****_______ omrs.const, secConfig.getCertificateFileName: " + secConfig.getCertificateFileName());
+    LOG.warn("*****_______ omrs.const, secConfig.getExternalRootCaCert: " + secConfig.getExternalRootCaCert());
+    LOG.warn("*****_______ omrs.const, secConfig.getExternalRootCaPublicKeyPath: " + secConfig.getExternalRootCaPublicKeyPath());
+    LOG.warn("*****_______ omrs.const, secConfig.getExternalRootCaPrivateKeyPath: " + secConfig.getExternalRootCaPrivateKeyPath());
+    LOG.warn("*****_______ omrs.const, secConfig.getPublicKeyFileName: " + secConfig.getPublicKeyFileName());
+    LOG.warn("*****_______ omrs.const, secConfig.getExternalRootCaCert: " + secConfig.getExternalRootCaCert());
+    LOG.warn("*****_______ omrs.const, secConfig.getGrpcSslProvider: " + secConfig.getGrpcSslProvider().toString());
+
     Parameters parameters = createServerTlsParameters(secConfig, certClient);
+    try {
+      Field f = parameters.getClass().getDeclaredField("map");
+      f.setAccessible(true);
+      ConcurrentHashMap<String, Object> map = (ConcurrentHashMap) f.get(parameters);
+      StringBuilder sb = new StringBuilder();
+      for(Map.Entry<String, Object> en : map.entrySet()) {
+        sb.append("k, v => " + en.getKey() + " : " + en.getValue()).append(",,,,,   ");
+      }
+      LOG.warn("****______ omrs.const, ratis.param: " + sb.toString());
+    } catch (Exception e) {
+      //
+    }
+
     this.server = RaftServer.newBuilder()
         .setServerId(this.raftPeerId)
         .setGroup(this.raftGroup)
         .setProperties(serverProperties)
-        .setParameters(parameters)
+//        .setParameters(parameters)
         .setStateMachine(omStateMachine)
         .setOption(RaftStorage.StartupOption.RECOVER)
         .build();
@@ -862,6 +888,7 @@ public final class OzoneManagerRatisServer {
   private static Parameters createServerTlsParameters(SecurityConfig conf,
       CertificateClient caClient) throws IOException {
     GrpcTlsConfig config = createServerTlsConfig(conf, caClient);
+
     return config == null ? null : RatisHelper.setServerTlsConf(config);
   }
 }

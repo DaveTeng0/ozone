@@ -494,8 +494,11 @@ public final class OzoneManagerRatisUtils {
 
   public static GrpcTlsConfig createServerTlsConfig(SecurityConfig conf,
       CertificateClient caClient) throws IOException {
-    if (conf.isSecurityEnabled() && conf.isGrpcTlsEnabled()) {
+    if (true && conf.isSecurityEnabled() && conf.isGrpcTlsEnabled()) {
       KeyStoresFactory serverKeyFactory = caClient.getServerKeyStoresFactory();
+      LOG.warn("****______ omru.cstc, serverKeyFactory.getKeyManagers()[0]: " + serverKeyFactory.getKeyManagers()[0]);
+      LOG.warn("****______ omru.cstc, serverKeyFactory.getTrustManagers()[0]: " + serverKeyFactory.getTrustManagers()[0]);
+
       return new GrpcTlsConfig(serverKeyFactory.getKeyManagers()[0],
           serverKeyFactory.getTrustManagers()[0], true); // tttttttttttttttttttttttt
     }
