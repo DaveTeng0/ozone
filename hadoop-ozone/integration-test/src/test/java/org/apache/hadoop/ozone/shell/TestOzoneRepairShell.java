@@ -86,9 +86,8 @@ public class TestOzoneRepairShell {
   public void testUpdateTransactionInfoTable() throws Exception {
     StringWriter stdout = new StringWriter();
     PrintWriter pstdout = new PrintWriter(stdout);
-    CommandLine cmd = new CommandLine(new RDBRepair()).addSubcommand(new TransactionInfoRepair())
-//        .setOut(pstdout)
-        ;
+    CommandLine cmd = new CommandLine(new RDBRepair()).addSubcommand(new TransactionInfoRepair());
+//        .setOut(pstdout);
     String dbPath = OMStorage.getOmDbDir(conf) + OM_KEY_PREFIX + OM_DB_NAME;
 
     cluster.getOzoneManager().stop();
@@ -115,9 +114,8 @@ public class TestOzoneRepairShell {
   private String scanTransactionInfoTable(String dbPath) {
     StringWriter stdout = new StringWriter();
     PrintWriter pstdout = new PrintWriter(stdout);
-    CommandLine cmdDBScanner = new CommandLine(new RDBParser()).addSubcommand(new DBScanner())
-//        .setOut(pstdout)
-        ;
+    CommandLine cmdDBScanner = new CommandLine(new RDBParser()).addSubcommand(new DBScanner());
+//        .setOut(pstdout);
     String[] argsDBScanner =
         new String[] {"--db=" + dbPath, "scan", "--column_family", "transactionInfoTable"};
     cmdDBScanner.execute(argsDBScanner);
