@@ -24,15 +24,20 @@ import org.apache.hadoop.ozone.debug.RDBParser;
 import org.apache.hadoop.ozone.om.OMStorage;
 import org.apache.hadoop.ozone.repair.RDBRepair;
 import org.apache.hadoop.ozone.repair.TransactionInfoRepair;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import picocli.CommandLine;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.hadoop.ozone.OzoneConsts.OM_DB_NAME;
 import static org.apache.hadoop.ozone.OzoneConsts.OM_KEY_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,6 +48,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 public class TestOzoneRepairShell {
 
+  private final ByteArrayOutputStream out = new ByteArrayOutputStream();
+  private final ByteArrayOutputStream err = new ByteArrayOutputStream();
+  private static final PrintStream OLD_OUT = System.out;
+  private static final PrintStream OLD_ERR = System.err;
+  private static final String DEFAULT_ENCODING = UTF_8.name();
   private static MiniOzoneCluster cluster = null;
   private static OzoneConfiguration conf = null;
 
@@ -55,12 +65,30 @@ public class TestOzoneRepairShell {
     cluster.waitForClusterToBeReady();
   }
 
+  @BeforeEach
+  public void setup() throws Exception {
+    System.setOut(new PrintStream(out, false, DEFAULT_ENCODING));
+    System.setErr(new PrintStream(err, false, DEFAULT_ENCODING));
+  }
+
+  @AfterEach
+  public void reset() {
+    // reset stream after each unit test
+    out.reset();
+    err.reset();
+
+    // restore system streams
+    System.setOut(OLD_OUT);
+    System.setErr(OLD_ERR);
+  }
+
   @Test
   public void testUpdateTransactionInfoTable() throws Exception {
     StringWriter stdout = new StringWriter();
     PrintWriter pstdout = new PrintWriter(stdout);
     CommandLine cmd = new CommandLine(new RDBRepair()).addSubcommand(new TransactionInfoRepair())
-        .setOut(pstdout);
+//        .setOut(pstdout)
+        ;
     String dbPath = OMStorage.getOmDbDir(conf) + OM_KEY_PREFIX + OM_DB_NAME;
 
     cluster.getOzoneManager().stop();
@@ -87,11 +115,13 @@ public class TestOzoneRepairShell {
   private String scanTransactionInfoTable(String dbPath) {
     StringWriter stdout = new StringWriter();
     PrintWriter pstdout = new PrintWriter(stdout);
-    CommandLine cmdDBScanner = new CommandLine(new RDBParser()).addSubcommand(new DBScanner()).setOut(pstdout);
+    CommandLine cmdDBScanner = new CommandLine(new RDBParser()).addSubcommand(new DBScanner())
+//        .setOut(pstdout)
+        ;
     String[] argsDBScanner =
         new String[] {"--db=" + dbPath, "scan", "--column_family", "transactionInfoTable"};
     cmdDBScanner.execute(argsDBScanner);
-    return stdout.toString();
+    return out.toString();
   }
 
   private String parseScanOutput(String output) {
