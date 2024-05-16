@@ -84,8 +84,8 @@ public class TestOzoneRepairShell {
 
   @Test
   public void testUpdateTransactionInfoTable() throws Exception {
-    StringWriter stdout = new StringWriter();
-    PrintWriter pstdout = new PrintWriter(stdout);
+//    StringWriter stdout = new StringWriter();
+//    PrintWriter pstdout = new PrintWriter(stdout);
     CommandLine cmd = new CommandLine(new RDBRepair()).addSubcommand(new TransactionInfoRepair());
 //        .setOut(pstdout);
     String dbPath = OMStorage.getOmDbDir(conf) + OM_KEY_PREFIX + OM_DB_NAME;
@@ -101,8 +101,8 @@ public class TestOzoneRepairShell {
         new String[] {"--db=" + dbPath, "transaction", "--highest-transaction", testTerm + "#" + testIndex};
     int exitCode = cmd.execute(args);
     assertEquals(0, exitCode);
-    assertThat(stdout.toString()).contains("The original highest transaction Info was " + originalHighestTermIndex);
-    assertThat(stdout.toString()).contains(
+    assertThat(out.toString()).contains("The original highest transaction Info was " + originalHighestTermIndex);
+    assertThat(out.toString()).contains(
         String.format("The highest transaction info has been updated to: (t:%s, i:%s)",
         testTerm, testIndex));
 
@@ -111,15 +111,15 @@ public class TestOzoneRepairShell {
     cluster.getOzoneManager().restart();
   }
 
-  private String scanTransactionInfoTable(String dbPath) {
-    StringWriter stdout = new StringWriter();
-    PrintWriter pstdout = new PrintWriter(stdout);
+  private String scanTransactionInfoTable(String dbPath) throws Exception {
+//    StringWriter stdout = new StringWriter();
+//    PrintWriter pstdout = new PrintWriter(stdout);
     CommandLine cmdDBScanner = new CommandLine(new RDBParser()).addSubcommand(new DBScanner());
 //        .setOut(pstdout);
     String[] argsDBScanner =
         new String[] {"--db=" + dbPath, "scan", "--column_family", "transactionInfoTable"};
     cmdDBScanner.execute(argsDBScanner);
-    return out.toString();
+    return out.toString(DEFAULT_ENCODING);
   }
 
   private String parseScanOutput(String output) {
