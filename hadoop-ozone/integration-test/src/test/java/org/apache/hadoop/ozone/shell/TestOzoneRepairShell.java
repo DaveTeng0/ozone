@@ -101,7 +101,8 @@ public class TestOzoneRepairShell {
         new String[] {"--db=" + dbPath, "transaction", "--highest-transaction", testTerm + "#" + testIndex};
     int exitCode = cmd.execute(args);
     assertEquals(0, exitCode);
-    assertThat(out.toString(DEFAULT_ENCODING)).contains("The original highest transaction Info was " + originalHighestTermIndex);
+    assertThat(out.toString(DEFAULT_ENCODING))
+        .contains("The original highest transaction Info was " + originalHighestTermIndex);
     assertThat(out.toString(DEFAULT_ENCODING)).contains(
         String.format("The highest transaction info has been updated to: (t:%s, i:%s)",
         testTerm, testIndex));
