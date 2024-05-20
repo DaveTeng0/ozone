@@ -4,7 +4,6 @@ package org.apache.hadoop.ozone.admin.ratis;
 import org.apache.hadoop.hdds.cli.HddsVersionProvider;
 import org.apache.hadoop.hdds.conf.OzoneConfiguration;
 import org.apache.hadoop.hdds.ratis.RatisHelper;
-import org.apache.hadoop.hdds.scm.XceiverClientManager;
 import org.apache.hadoop.hdds.scm.client.ClientTrustManager;
 import org.apache.hadoop.hdds.security.SecurityConfig;
 import org.apache.hadoop.hdds.security.x509.certificate.client.CACertificateProvider;
@@ -12,7 +11,9 @@ import org.apache.hadoop.hdds.tracing.TracingUtil;
 import org.apache.hadoop.hdds.utils.HAUtils;
 import org.apache.hadoop.ozone.OzoneSecurityUtil;
 import org.apache.hadoop.ozone.admin.om.OMAdmin;
+import org.apache.hadoop.ozone.client.OzoneClient;
 import org.apache.hadoop.ozone.client.OzoneClientException;
+import org.apache.hadoop.ozone.client.OzoneClientFactory;
 import org.apache.hadoop.ozone.om.helpers.ServiceInfoEx;
 import org.apache.hadoop.ozone.om.protocol.OzoneManagerProtocol;
 import org.apache.hadoop.ozone.om.protocolPB.*;
@@ -44,6 +45,10 @@ import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static org.apache.hadoop.hdds.HddsConfigKeys.HDDS_GRPC_TLS_ENABLED;
+import static org.apache.hadoop.hdds.HddsConfigKeys.HDDS_GRPC_TLS_ENABLED_DEFAULT;
+import static org.apache.hadoop.ozone.OzoneConfigKeys.OZONE_SECURITY_ENABLED_DEFAULT;
+import static org.apache.hadoop.ozone.OzoneConfigKeys.OZONE_SECURITY_ENABLED_KEY;
 import static org.apache.hadoop.ozone.om.OMConfigKeys.OZONE_OM_TRANSPORT_CLASS;
 import static org.apache.hadoop.ozone.om.OMConfigKeys.OZONE_OM_TRANSPORT_CLASS_DEFAULT;
 
@@ -70,6 +75,14 @@ public class OzoneRatisGroupInfoCommand
       description = "groupid")
   private String groupid;
 
+  public String getOmServiceId() {
+    return omServiceId;
+  }
+
+  public void setOmServiceId(String omServiceId) {
+    this.omServiceId = omServiceId;
+  }
+
   @CommandLine.Option(names = {"-id", "--service-id"},
       description = "OM Service ID",
       required = false)
@@ -82,9 +95,19 @@ public class OzoneRatisGroupInfoCommand
 
 //  private final PrintStream printStream;
 
+  public OzoneConfiguration getConf() {
+    return conf;
+  }
+
+  public void setConf(OzoneConfiguration conf) {
+    this.conf = conf;
+  }
+
   OzoneConfiguration conf;
   ClientId clientId = ClientId.randomId();
   UserGroupInformation ugi;
+
+  OzoneClient certClient;
 
   static ClassLoader CLASS_LOADER = OzoneRatisGroupInfoCommand.class.getClassLoader();
 
@@ -99,22 +122,38 @@ public class OzoneRatisGroupInfoCommand
   }
 
   public void tls() throws Exception {
-////    config.set(OZONE_OM_TRANSPORT_CLASS,
-////        OZONE_OM_TRANSPORT_CLASS_DEFAULT);
-//      String caCertPem = null;
-//      List<String> caCertPems = null;
-//      caCertPem = serviceInfoEx.getCaCertificate();
-//      caCertPems = serviceInfoEx.getCaCertPemList();
-//      if (caCertPems == null || caCertPems.isEmpty()) {
-//        if (caCertPem == null) {
-////          LOG.error("S3g received empty caCertPems from serviceInfo");
-//          throw new CertificateException("No caCerts found; caCertPem can" +
-//              " not be null when caCertPems is empty or null");
-//        }
-//        caCertPems = Collections.singletonList(caCertPem);
-//      }
-//      GrpcOmTransport.setCaCerts(OzoneSecurityUtil
-//          .convertToX509(caCertPems));
+    System.out.println("****_________ ttttttttt 04");
+
+//    ServiceInfoEx serviceInfoEx = ozoneManagerClient.getServiceInfo();
+    certClient = OzoneClientFactory.getRpcClient(omServiceId,
+        conf);
+
+    ServiceInfoEx serviceInfoEx = certClient
+        .getObjectStore()
+        .getClientProxy()
+        .getOzoneManagerClient()
+        .getServiceInfo();
+
+    System.out.println("****_________ ttttttttt 01");
+//    config.set(OZONE_OM_TRANSPORT_CLASS,
+//        OZONE_OM_TRANSPORT_CLASS_DEFAULT);
+      String caCertPem = null;
+      List<String> caCertPems = null;
+      caCertPem = serviceInfoEx.getCaCertificate();
+      caCertPems = serviceInfoEx.getCaCertPemList();
+    System.out.println("****_________ ttttttttt 02");
+
+      if (caCertPems == null || caCertPems.isEmpty()) {
+        if (caCertPem == null) {
+//          LOG.error("S3g received empty caCertPems from serviceInfo");
+          throw new CertificateException("No caCerts found; caCertPem can" +
+              " not be null when caCertPems is empty or null");
+        }
+        caCertPems = Collections.singletonList(caCertPem);
+      }
+      GrpcOmTransport.setCaCerts(OzoneSecurityUtil
+          .convertToX509(caCertPems));
+    System.out.println("****_________ ttttttttt 03");
 
   }
 
@@ -154,19 +193,22 @@ public class OzoneRatisGroupInfoCommand
 
   }
 
-//  protected OmTransport createOmTransport(String omServiceId)
-//      throws IOException {
-//    return OmTransportFactory.create(conf, ugi, omServiceId);
-//  }
+  protected OmTransport createOmTransport(String omServiceId)
+      throws IOException {
+    return OmTransportFactory.create(conf, ugi, omServiceId);
+  }
 
 
   @Override
   public Void call() throws Exception {
     try { //createOmClient
-      ozoneManagerClient =  parent.getParent().createOmClient(omServiceId);
+//      ozoneManagerClient =  parent.getParent().createOmClient(omServiceId);
 
 
-//      this.conf = parent.getParent().getParent().getOzoneConf();
+      this.conf = (parent != null ? parent.getParent().getParent().getOzoneConf() :
+          new OzoneConfiguration()); // prevent null point exception on 'parent'
+      conf.set(OZONE_OM_TRANSPORT_CLASS, OZONE_OM_TRANSPORT_CLASS_DEFAULT);
+
 //      OmTransport omTransport = createOmTransport(omServiceId);
 //      OzoneManagerProtocolClientSideTranslatorPB
 //          ozoneManagerProtocolClientSideTranslatorPB =
@@ -179,7 +221,8 @@ public class OzoneRatisGroupInfoCommand
       this.ugi = UserGroupInformation.getCurrentUser();
       System.out.println("*****______________orgc.call, ugi:  " + ugi);
 //      System.out.println("*****______________orgc.call, conf:  " + conf.toString());
-//      ozoneManagerClient =  RatisUtil.createOmClient(omServiceId, conf, ugi);
+
+      ozoneManagerClient =  RatisUtil.createOmClient(omServiceId, conf, ugi);
 
 //      if (json) {
 //        printOmServerRolesAsJson(ozoneManagerClient.getServiceList());
@@ -293,22 +336,32 @@ public class OzoneRatisGroupInfoCommand
 //      SecurityConfig(ozoneConf), trustManager);
 
   private GrpcTlsConfig createGrpcTlsConf() throws Exception {
-    //////// //////
 
-    CACertificateProvider caCerts =
-        () -> HAUtils.buildCAX509List(null, parent.getParent().getParent().getOzoneConf());
-    ClientTrustManager trustManager = new ClientTrustManager(caCerts, null);
 
-    /////// //////
+    ////
+//    CACertificateProvider localCaCerts =
+//        () -> HAUtils.buildCAX509List(certClient, conf);
+//    CACertificateProvider remoteCacerts =
+//        () -> HAUtils.buildCAX509List(null, conf);
+//    trustManager = new ClientTrustManager(remoteCacerts, localCaCerts);
+
+
+    ////
     ServiceInfoEx serviceInfoEx = ozoneManagerClient.getServiceInfo();
     CACertificateProvider remoteCAProvider =
         () -> ozoneManagerClient.getServiceInfo().provideCACerts();
-    ClientTrustManager trustManager_ = new ClientTrustManager(remoteCAProvider, serviceInfoEx);
+    ClientTrustManager trustManager = new ClientTrustManager(remoteCAProvider, serviceInfoEx);
 //    ClientTrustManager trustManager = new ClientTrustManager(remoteCAProvider, null);
-
+    System.out.println("****_____ cccccccccccc trustManager = "  + trustManager);
 
     GrpcTlsConfig tlsConfig = RatisHelper.createTlsClientConfig(new
-        SecurityConfig(parent.getParent().getParent().getOzoneConf()), trustManager);
+        SecurityConfig(
+//            parent.getParent().getParent().getOzoneConf()
+            conf
+    ), trustManager);
+
+    System.out.println("****_____ cccccccccccc-02 trustManager = "  + tlsConfig);
+
     return tlsConfig;
   }
 
@@ -334,11 +387,15 @@ public class OzoneRatisGroupInfoCommand
         ).collect(Collectors.toList());
     raftGroup = RaftGroup.valueOf(raftGroupIdFromConfig, peers);
 
-    System.out.println("*****_______ GrpcOmTransport.setCaCerts => " + GrpcOmTransport.getCaCerts().size());
-    OzoneConfiguration conf = new OzoneConfiguration();
+//    System.out.println("*****_______ GrpcOmTransport.setCaCerts => " + GrpcOmTransport.getCaCerts().size());
+//    OzoneConfiguration conf = new OzoneConfiguration();
 //    SecurityConfig secConfig = new SecurityConfig(configuration);
-
-    GrpcTlsConfig tlsConfig = createGrpcTlsConf();
+    GrpcTlsConfig tlsConfig = null;
+    if (conf.getBoolean(OZONE_SECURITY_ENABLED_KEY, OZONE_SECURITY_ENABLED_DEFAULT) &&
+        conf.getBoolean(HDDS_GRPC_TLS_ENABLED, HDDS_GRPC_TLS_ENABLED_DEFAULT)) {
+      tlsConfig = createGrpcTlsConf();
+    }
+    System.out.println("*****__________ eeeeeee, tlsConfig = " + tlsConfig + ", " + (tlsConfig != null ?tlsConfig.getTrustManager() : null));
 
 //    try (final RaftClient client = RaftUtils.createClient(raftGroup)) {
     try (RaftClient client = RatisHelper.newRaftClient(SupportedRpcType.GRPC, null,
@@ -383,8 +440,6 @@ public class OzoneRatisGroupInfoCommand
         }
       }
       println(String.format("******__________ ORGIC.t()-02,,,, remoteGroupId = %s. %n", remoteGroupId));
-      println(String.format("******__________ ORGIC.t()-02.5,,,, default random id = %s. %n", AbstractRatisCommand.DEFAULT_RAFT_GROUP_ID));
-
 
       groupInfoReply = run(peers, p -> client.getGroupManagementApi((p.getId())).info(remoteGroupId));
       println(String.format("******__________ ORGIC.t()-03,,,, %s. %n", groupInfoReply));
@@ -436,14 +491,5 @@ public class OzoneRatisGroupInfoCommand
   public String getPeers() {
     return peers;
   }
-
-//  @Override // even override here, mvn still complaint
-//org.apache.hadoop.ozone.admin.ratis.OzoneRatisGroupInfoCommand is not abstract
-// and does not override abstract method getDescription()
-// in org.apache.ratis.shell.cli.Command
-
-//  public String description() {
-//    return "Print ratis group info";
-//  }
 
 }

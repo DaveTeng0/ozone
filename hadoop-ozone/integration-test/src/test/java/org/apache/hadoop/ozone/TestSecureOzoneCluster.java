@@ -1566,6 +1566,8 @@ final class TestSecureOzoneCluster {
 //    execute(ozoneAdminShell, args);
     OzoneRatisGroupInfoCommand cmd = new OzoneRatisGroupInfoCommand();
     cmd.setPeers(sb.toString());
+    cmd.setOmServiceId(om.getOMServiceId());
+    cmd.setConf(conf);
 //    System.out.println("*****______ setPeers: " + cmd.getPeers());
     LOG.warn("*****______ setPeers: " + cmd.getPeers());
     cmd.call();

@@ -220,7 +220,7 @@ public final class OmUtils {
     String omServiceId = conf.getTrimmed(
         OZONE_OM_SERVICE_IDS_KEY);
 
-    return omServiceId.equals(serviceId);
+    return omServiceId == null || omServiceId.equals(serviceId);
   }
 
   public static int getOmRpcPort(ConfigurationSource conf) {
