@@ -230,7 +230,7 @@ public class OzoneRatisGroupInfoCommand
 //        printOmServerRoles(ozoneManagerClient.getServiceList());
 //      }
 
-      tls();
+//      tls();
 
       t();
 
@@ -344,12 +344,20 @@ public class OzoneRatisGroupInfoCommand
 //    CACertificateProvider remoteCacerts =
 //        () -> HAUtils.buildCAX509List(null, conf);
 //    trustManager = new ClientTrustManager(remoteCacerts, localCaCerts);
-
-
     ////
-    ServiceInfoEx serviceInfoEx = ozoneManagerClient.getServiceInfo();
+    certClient = OzoneClientFactory.getRpcClient(omServiceId,
+        conf);
+
+    ServiceInfoEx serviceInfoEx = certClient
+        .getObjectStore()
+        .getClientProxy()
+        .getOzoneManagerClient()
+        .getServiceInfo();
+    ////
+//    ServiceInfoEx serviceInfoEx = ozoneManagerClient.getServiceInfo();
     CACertificateProvider remoteCAProvider =
-        () -> ozoneManagerClient.getServiceInfo().provideCACerts();
+//        () -> ozoneManagerClient.getServiceInfo().provideCACerts();
+        () -> serviceInfoEx.provideCACerts();
     ClientTrustManager trustManager = new ClientTrustManager(remoteCAProvider, serviceInfoEx);
 //    ClientTrustManager trustManager = new ClientTrustManager(remoteCAProvider, null);
     System.out.println("****_____ cccccccccccc trustManager = "  + trustManager);
@@ -361,6 +369,7 @@ public class OzoneRatisGroupInfoCommand
     ), trustManager);
 
     System.out.println("****_____ cccccccccccc-02 trustManager = "  + tlsConfig);
+    System.out.println("****_____ cccccccccccc-0333 trustManager = "  + tlsConfig);
 
     return tlsConfig;
   }
@@ -391,6 +400,8 @@ public class OzoneRatisGroupInfoCommand
 //    OzoneConfiguration conf = new OzoneConfiguration();
 //    SecurityConfig secConfig = new SecurityConfig(configuration);
     GrpcTlsConfig tlsConfig = null;
+    conf.setBoolean(OZONE_SECURITY_ENABLED_KEY, true);
+    conf.setBoolean(HDDS_GRPC_TLS_ENABLED, true);
     if (conf.getBoolean(OZONE_SECURITY_ENABLED_KEY, OZONE_SECURITY_ENABLED_DEFAULT) &&
         conf.getBoolean(HDDS_GRPC_TLS_ENABLED, HDDS_GRPC_TLS_ENABLED_DEFAULT)) {
       tlsConfig = createGrpcTlsConf();
