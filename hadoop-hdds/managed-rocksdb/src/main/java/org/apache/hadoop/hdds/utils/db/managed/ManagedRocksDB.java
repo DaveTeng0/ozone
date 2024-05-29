@@ -128,7 +128,7 @@ public class ManagedRocksDB extends ManagedObject<RocksDB> {
 //    return this.get().createColumnFamily(columnFamilyDescriptor);
 //  }
 //
-  public void dropColumnFamily_tmp(ColumnFamilyHandle columnFamilyHandle)
+  public void dropColumnFamilyTmp(ColumnFamilyHandle columnFamilyHandle)
       throws RocksDBException {
     this.get().dropColumnFamily(columnFamilyHandle);
   }

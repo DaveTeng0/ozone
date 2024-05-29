@@ -932,7 +932,7 @@ public final class RocksDatabase implements Closeable {
     return db;
   }
 
-  public List<byte[]> listColumnFamilies_tmp(String path) throws IOException {
+  public List<byte[]> listColumnFamiliesTmp(String path) throws IOException {
     try (UncheckedAutoCloseable ignored = acquire()) {
       return db.get().listColumnFamilies(new ManagedOptions(), path);
     } catch (RocksDBException e) {
