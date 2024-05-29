@@ -2,6 +2,9 @@ package org.apache.hadoop.ozone.common;
 
 import picocli.CommandLine;
 
+/**
+ * FSORepairOptions.
+ */
 public class FSORepairOptions {
   @CommandLine.Option(names = {"--db"},
       required = true,

@@ -20,8 +20,8 @@ package org.apache.hadoop.ozone.repair.om;
 
 import org.apache.hadoop.hdds.cli.SubcommandWithParent;
 //import org.apache.hadoop.ozone.common.FSOBaseCLI;
-import org.apache.hadoop.hdds.utils.db.RocksDatabase;
-import org.apache.hadoop.ozone.common.FSORepairOptions;
+//import org.apache.hadoop.hdds.utils.db.RocksDatabase;
+//import org.apache.hadoop.ozone.common.FSORepairOptions;
 import org.apache.hadoop.ozone.repair.OzoneRepair;
 import org.kohsuke.MetaInfServices;
 import org.slf4j.Logger;
