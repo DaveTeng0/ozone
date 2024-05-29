@@ -25,7 +25,7 @@ import picocli.CommandLine;
 import java.util.concurrent.Callable;
 
 /**
- * Parser for scm.db file.
+ * Parser for om.db file.
  */
 @CommandLine.Command(
     name = "fso-tree",

@@ -19,13 +19,14 @@
 package org.apache.hadoop.ozone.debug;
 
 import org.apache.hadoop.hdds.cli.SubcommandWithParent;
-import org.apache.hadoop.ozone.common.FSOBaseCLI;
+//import org.apache.hadoop.ozone.common.FSOBaseCLI;
 import org.apache.hadoop.ozone.common.FSOBaseTool;
+import org.apache.hadoop.ozone.common.FSORepairOptions;
 import org.kohsuke.MetaInfServices;
 import picocli.CommandLine;
 
 /**
- * Parser for scm.db file.
+ * Parser for om.db file.
  */
 @CommandLine.Command(
     name = "fso-tree",
@@ -35,31 +36,35 @@ import picocli.CommandLine;
         "INFO and DEBUG levels."
 )
 @MetaInfServices(SubcommandWithParent.class)
-public class FSODebugCLI extends FSOBaseCLI {
+public class FSODebugCLI {
 
   @CommandLine.ParentCommand
   private OzoneDebug parent;
 
-  @Override
+  @CommandLine.Mixin
+  private FSORepairOptions options = new FSORepairOptions();
+
+
+//  @Override
   public Void call() throws Exception {
 
     try {
       // TODO case insensitive enum options.
       FSOBaseTool
-          baseTool = new FSOBaseTool(getDbPath(), true);
+          baseTool = new FSOBaseTool(options.getDbPath(), true);
       baseTool.run();
     } catch (Exception ex) {
       throw new IllegalArgumentException("FSO inspection failed: " + ex.getMessage());
     }
 
-    if (getVerbose()) {
+    if (options.getVerbose()) {
       System.out.println("FSO inspection finished. See client logs for results.");
     }
 
     return null;
   }
 
-  @Override
+//  @Override
   public Class<?> getParentType() {
     return OzoneDebug.class;
   }

@@ -19,13 +19,19 @@
 package org.apache.hadoop.ozone.repair.om;
 
 import org.apache.hadoop.hdds.cli.SubcommandWithParent;
-import org.apache.hadoop.ozone.common.FSOBaseCLI;
+//import org.apache.hadoop.ozone.common.FSOBaseCLI;
+import org.apache.hadoop.hdds.utils.db.RocksDatabase;
+import org.apache.hadoop.ozone.common.FSORepairOptions;
 import org.apache.hadoop.ozone.repair.OzoneRepair;
 import org.kohsuke.MetaInfServices;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
+import java.util.concurrent.Callable;
+
 /**
- * Parser for scm.db file.
+ * Parser for om.db file.
  */
 @CommandLine.Command(
     name = "fso-tree-repair",
@@ -35,25 +41,39 @@ import picocli.CommandLine;
         "INFO and DEBUG levels."
 )
 @MetaInfServices(SubcommandWithParent.class)
-public class FSORepairCLI extends FSOBaseCLI {
+public class FSORepairCLI implements Callable<Void>, SubcommandWithParent  {
+
+  static final Logger LOG = LoggerFactory.getLogger(FSORepairCLI.class);
 
   @CommandLine.ParentCommand
   private OzoneRepair parent;
+
+  @CommandLine.Option(names = {"--dry-run"},
+      description = "Path to OM RocksDB")
+  private boolean dryRun;
+
+
+  @CommandLine.Option(names = {"--db"},
+      required = true,
+      description = "Path to OM RocksDB")
+  private String dbPath;
+
+  @CommandLine.Option(names = {"--verbose"},
+      description = "More verbose output. ")
+  private boolean verbose;
 
   @Override
   public Void call() throws Exception {
 
     try {
-      // TODO case insensitive enum options.
-      FSORepairTool
-          repairTool = new FSORepairTool(getDbPath(), false);
+      FSORepairTool repairTool = new FSORepairTool(dbPath, dryRun);
       repairTool.run();
     } catch (Exception ex) {
       throw new IllegalArgumentException("FSO repair failed: " + ex.getMessage());
     }
 
-    if (getVerbose()) {
-      System.out.println("FSO repair finished. See client logs for results.");
+    if (verbose) {
+      LOG.info("FSO repair finished. See client logs for results.");
     }
 
     return null;
