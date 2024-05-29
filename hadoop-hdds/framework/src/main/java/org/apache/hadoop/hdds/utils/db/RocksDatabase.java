@@ -50,6 +50,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+//import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -85,6 +86,7 @@ public final class RocksDatabase implements Closeable {
   }
   private static final ManagedReadOptions DEFAULT_READ_OPTION =
       new ManagedReadOptions();
+
 
   static String bytes2String(byte[] bytes) {
     return StringCodec.get().fromPersistedFormat(bytes);
@@ -140,7 +142,7 @@ public final class RocksDatabase implements Closeable {
     }
   }
 
-  static RocksDatabase open(File dbFile, ManagedDBOptions dbOptions,
+  public static RocksDatabase open(File dbFile, ManagedDBOptions dbOptions,
         ManagedWriteOptions writeOptions, Set<TableConfig> families,
         boolean readOnly) throws IOException {
     List<ColumnFamilyDescriptor> descriptors = null;
@@ -260,7 +262,7 @@ public final class RocksDatabase implements Closeable {
     private final String name;
     private final ColumnFamilyHandle handle;
 
-    private ColumnFamily(ColumnFamilyHandle handle) throws RocksDBException {
+    public ColumnFamily(ColumnFamilyHandle handle) throws RocksDBException {
       this.nameBytes = handle.getName();
       this.name = bytes2String(nameBytes);
       this.handle = handle;
@@ -461,8 +463,19 @@ public final class RocksDatabase implements Closeable {
 
   public void put(ColumnFamily family, byte[] key, byte[] value)
       throws IOException {
+    put(family.getHandle(), key, value);
+//    try (UncheckedAutoCloseable ignored = acquire()) {
+//      db.get().put(family.getHandle(), writeOptions, key, value);
+//    } catch (RocksDBException e) {
+//      closeOnError(e);
+//      throw toIOException(this, "put " + bytes2String(key), e);
+//    }
+  }
+
+  public void put(ColumnFamilyHandle handle, byte[] key, byte[] value)
+      throws IOException {
     try (UncheckedAutoCloseable ignored = acquire()) {
-      db.get().put(family.getHandle(), writeOptions, key, value);
+      db.get().put(handle, writeOptions, key, value);
     } catch (RocksDBException e) {
       closeOnError(e);
       throw toIOException(this, "put " + bytes2String(key), e);
@@ -620,7 +633,7 @@ public final class RocksDatabase implements Closeable {
    *         otherwise, return a {@link Supplier}.
    * @see org.rocksdb.RocksDB#keyMayExist(ColumnFamilyHandle, byte[], Holder)
    */
-  Supplier<byte[]> keyMayExist(ColumnFamily family, byte[] key)
+  public Supplier<byte[]> keyMayExist(ColumnFamily family, byte[] key)
       throws IOException {
     try (UncheckedAutoCloseable ignored = acquire()) {
       final Holder<byte[]> out = new Holder<>();
@@ -628,6 +641,16 @@ public final class RocksDatabase implements Closeable {
           out::getValue : null;
     }
   }
+
+  public Supplier<byte[]> keyMayExist(ColumnFamilyHandle handle, byte[] key)
+      throws IOException {
+    try (UncheckedAutoCloseable ignored = acquire()) {
+      final Holder<byte[]> out = new Holder<>();
+      return db.get().keyMayExist(handle, key, out) ?
+          out::getValue : null;
+    }
+  }
+
 
   Supplier<Integer> keyMayExist(ColumnFamily family,
       ByteBuffer key, ByteBuffer out) throws IOException {
@@ -653,12 +676,23 @@ public final class RocksDatabase implements Closeable {
     return Collections.unmodifiableCollection(columnFamilies.values());
   }
 
-  byte[] get(ColumnFamily family, byte[] key) throws IOException {
+  public byte[] get(ColumnFamily family, byte[] key) throws IOException {
+    return get(family.getHandle(), key, family.getName());
+//    try (UncheckedAutoCloseable ignored = acquire()) {
+//      return db.get().get(family.getHandle(), key);
+//    } catch (RocksDBException e) {
+//      closeOnError(e);
+//      final String message = "get " + bytes2String(key) + " from " + family;
+//      throw toIOException(this, message, e);
+//    }
+  }
+
+  public byte[] get(ColumnFamilyHandle handle, byte[] key, String familyName) throws IOException {
     try (UncheckedAutoCloseable ignored = acquire()) {
-      return db.get().get(family.getHandle(), key);
+      return db.get().get(handle, key);
     } catch (RocksDBException e) {
       closeOnError(e);
-      final String message = "get " + bytes2String(key) + " from " + family;
+      final String message = "get " + bytes2String(key) + " from " + familyName;
       throw toIOException(this, message, e);
     }
   }
@@ -896,5 +930,32 @@ public final class RocksDatabase implements Closeable {
 
   public ManagedRocksDB getManagedRocksDb() {
     return db;
+  }
+
+  public List<byte[]> listColumnFamilies_tmp(String path) throws IOException {
+    try (UncheckedAutoCloseable ignored = acquire()) {
+      return db.get().listColumnFamilies(new ManagedOptions(), path);
+    } catch (RocksDBException e) {
+      closeOnError(e);
+      throw toIOException(this, "listColumnFamilies", e);
+    }
+  }
+
+  public void dropColumnFamily(ColumnFamilyHandle handle) throws IOException {
+    try (UncheckedAutoCloseable ignored = acquire()) {
+      db.get().dropColumnFamily(handle);
+    } catch (RocksDBException e) {
+      closeOnError(e);
+      throw toIOException(this, "dropColumnFamily", e);
+    }
+  }
+
+  public ColumnFamilyHandle createColumnFamily(ColumnFamilyDescriptor descriptor) throws IOException {
+    try (UncheckedAutoCloseable ignored = acquire()) {
+      return db.get().createColumnFamily(descriptor);
+    } catch (RocksDBException e) {
+      closeOnError(e);
+      throw toIOException(this, "createColumnFamily", e);
+    }
   }
 }

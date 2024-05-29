@@ -21,12 +21,16 @@ package org.apache.hadoop.ozone.common;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.hdds.conf.OzoneConfiguration;
-import org.apache.hadoop.hdds.utils.db.BatchOperation;
-import org.apache.hadoop.hdds.utils.db.DBStore;
+import org.apache.hadoop.hdds.utils.db.RocksDatabase;
 import org.apache.hadoop.hdds.utils.db.Table;
+import org.apache.hadoop.hdds.utils.db.DBStore;
 import org.apache.hadoop.hdds.utils.db.TableIterator;
-import org.apache.hadoop.hdds.utils.db.managed.ManagedOptions;
-import org.apache.hadoop.hdds.utils.db.managed.ManagedRocksDB;
+import org.apache.hadoop.hdds.utils.db.BatchOperation;
+import org.apache.hadoop.hdds.utils.db.TableConfig;
+import org.apache.hadoop.hdds.utils.db.DBProfile;
+
+//import org.apache.hadoop.hdds.utils.db.managed.ManagedOptions;
+import org.apache.hadoop.hdds.utils.db.managed.ManagedWriteOptions;
 import org.apache.hadoop.ozone.OmUtils;
 import org.apache.hadoop.ozone.om.OmMetadataManagerImpl;
 import org.apache.hadoop.ozone.om.helpers.BucketLayout;
@@ -40,8 +44,10 @@ import org.apache.hadoop.ozone.om.request.file.OMFileRequest;
 import org.apache.hadoop.ozone.repair.om.FSORepairTool;
 import org.apache.ratis.util.Preconditions;
 import org.rocksdb.ColumnFamilyDescriptor;
+//import org.rocksdb.ColumnFamilyHandle;
+//import org.rocksdb.ColumnFamily;
+
 import org.rocksdb.ColumnFamilyHandle;
-import org.rocksdb.Holder;
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,13 +55,17 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
+import java.util.Stack;
 import java.util.Collection;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Stack;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.hadoop.hdds.HddsConfigKeys.HDDS_DB_PROFILE;
+import static org.apache.hadoop.hdds.utils.db.DBStoreBuilder.HDDS_DEFAULT_DB_PROFILE;
 import static org.apache.hadoop.ozone.OzoneConsts.OM_KEY_PREFIX;
 
 /**
@@ -97,10 +107,15 @@ public class FSOBaseTool {
   // Since usage of this DB is simple, use it directly from
   // RocksDB.
   private String reachableDBPath;
-  private static final byte[] REACHABLE_TABLE =
-      "reachable".getBytes(StandardCharsets.UTF_8);
-  private ColumnFamilyHandle reachableCF;
-  private ManagedRocksDB reachableDB;
+
+  private static final String REACHABLE_TABLE = "reachable";
+  private static final byte[] REACHABLE_TABLE_BYTES =
+      REACHABLE_TABLE.getBytes(StandardCharsets.UTF_8);
+  private ColumnFamilyHandle reachableCFHandle;
+//  private RocksDatabase.ColumnFamily reachableCF;
+
+//  private ManagedRocksDB reachableDB;
+  private RocksDatabase reachableDB;
 
   private long reachableBytes;
   private long reachableFiles;
@@ -407,12 +422,12 @@ public class FSOBaseTool {
                                  OmBucketInfo bucket, WithObjectID object) throws IOException {
     byte[] reachableKey = buildReachableKey(volume, bucket, object)
         .getBytes(StandardCharsets.UTF_8);
-    try {
+//    try {
       // No value is needed for this table.
-      reachableDB.put(reachableCF, reachableKey, new byte[]{});
-    } catch (RocksDBException ex) {
-      throw new IOException(ex.getMessage(), ex);
-    }
+    reachableDB.put(reachableCFHandle, reachableKey, new byte[]{});
+//    } catch (RocksDBException ex) {
+//      throw new IOException(ex.getMessage(), ex);
+//    }
   }
 
   /**
@@ -437,16 +452,16 @@ public class FSOBaseTool {
   protected boolean isReachable(String fileOrDirKey) throws IOException {
     byte[] reachableParentKey =
         buildReachableParentKey(fileOrDirKey).getBytes(StandardCharsets.UTF_8);
-    try {
-      if (reachableDB.keyMayExist(
-          reachableCF, reachableParentKey, new Holder<>())) {
-        return reachableDB.get(reachableCF, reachableParentKey) != null;
-      } else {
-        return false;
-      }
-    } catch (RocksDBException ex) {
-      throw new IOException(ex.getMessage(), ex);
+//    try {
+    if (reachableDB.keyMayExist(
+        reachableCFHandle, reachableParentKey).get() != null) {
+      return reachableDB.get(reachableCFHandle, reachableParentKey, REACHABLE_TABLE) != null;
+    } else {
+      return false;
     }
+//    } catch (RocksDBException ex) {
+//      throw new IOException(ex.getMessage(), ex);
+//    }
   }
 
   /**
@@ -475,20 +490,27 @@ public class FSOBaseTool {
         "reachable.db");
     LOG.info("Creating database of reachable directories at {}",
         reachableDBFile);
-    try {
-      // Delete the DB from the last run if it exists.
-      if (reachableDBFile.exists()) {
-        FileUtils.deleteDirectory(reachableDBFile);
-      }
-      reachableDBPath = reachableDBFile.toString();
-      reachableDB = ManagedRocksDB.open(reachableDBPath);
-    } catch (RocksDBException ex) {
-      if (reachableDB != null) {
-        reachableDB.close();
-      }
-      throw new IOException(ex.getMessage(), ex);
+    // Delete the DB from the last run if it exists.
+    if (reachableDBFile.exists()) {
+      FileUtils.deleteDirectory(reachableDBFile);
     }
+    reachableDBPath = reachableDBFile.toString();
+//      reachableDB = RocksDatabase.open(reachableDBPath);
+    reachableDB = buildReachableRocksDB(reachableDBFile);
   }
+
+  private RocksDatabase buildReachableRocksDB(File reachableDBFile) throws IOException {
+    DBProfile profile = new OzoneConfiguration().getEnum(HDDS_DB_PROFILE, HDDS_DEFAULT_DB_PROFILE);
+    Set<TableConfig> tableConfigs = new HashSet<>();
+    tableConfigs.add(new TableConfig("default", profile.getColumnFamilyOptions()));
+
+    return RocksDatabase.open(reachableDBFile,
+        profile.getDBOptions(),
+        new ManagedWriteOptions(),
+        tableConfigs, false);
+  }
+
+
 
   private void closeReachableDB() {
     if (reachableDB != null) {
@@ -499,38 +521,38 @@ public class FSOBaseTool {
   private void dropReachableTableIfExists() throws IOException {
     try {
       List<byte[]>
-          availableCFs = ManagedRocksDB.listColumnFamilies(new ManagedOptions(),
-          reachableDBPath);
+          availableCFs = reachableDB.listColumnFamiliesEmptyOptions(reachableDBPath);
       boolean cfFound = false;
       for (byte[] cfNameBytes: availableCFs) {
-        if (new String(cfNameBytes, UTF_8).equals(new String(REACHABLE_TABLE, UTF_8))) {
+        if (new String(cfNameBytes, UTF_8).equals(new String(
+            REACHABLE_TABLE_BYTES, UTF_8))) {
           cfFound = true;
           break;
         }
       }
 
       if (cfFound) {
-        reachableDB.dropColumnFamily(reachableCF);
+        reachableDB.dropColumnFamily(reachableCFHandle);
       }
     } catch (RocksDBException ex) {
       throw new IOException(ex.getMessage(), ex);
     } finally {
-      if (reachableCF != null) {
-        reachableCF.close();
+      if (reachableCFHandle != null) {
+        reachableCFHandle.close();
       }
     }
   }
 
   private void createReachableTable() throws IOException {
-    try {
-      reachableCF = reachableDB.createColumnFamily(
-          new ColumnFamilyDescriptor(REACHABLE_TABLE));
-    } catch (RocksDBException ex) {
-      if (reachableCF != null) {
-        reachableCF.close();
-      }
-      throw new IOException(ex.getMessage(), ex);
-    }
+//    try {
+    reachableCFHandle = reachableDB.createColumnFamily(
+        new ColumnFamilyDescriptor(REACHABLE_TABLE_BYTES));
+//    } catch (RocksDBException ex) {
+//      if (reachableCFHandle != null) {
+//        reachableCFHandle.close();
+//      }
+//      throw new IOException(ex.getMessage(), ex);
+//    }
   }
 
   /**
