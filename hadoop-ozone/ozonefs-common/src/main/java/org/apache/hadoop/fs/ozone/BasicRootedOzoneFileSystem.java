@@ -719,7 +719,7 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
         LOG.warn("Recursive volume delete using ofs is not supported");
         throw new IOException("Recursive volume delete using " +
             "ofs is not supported. " +
-            "Instead use 'ozone sh volume delete -r -skipTrash " +
+            "Instead use 'ozone sh volume delete -r " +
             "-id <OM_SERVICE_ID> <Volume_URI>' command");
       }
       return deleteVolume(f, ofsPath);
@@ -968,6 +968,12 @@ public class BasicRootedOzoneFileSystem extends FileSystem {
   @Override
   public Path getWorkingDirectory() {
     return workingDir;
+  }
+
+  @Override
+  public Path getHomeDirectory() {
+    return makeQualified(new Path(OZONE_USER_DIR + "/"
+        + this.userName));
   }
 
   @Override
