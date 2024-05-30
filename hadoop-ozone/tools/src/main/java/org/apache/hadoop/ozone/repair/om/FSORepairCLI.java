@@ -33,55 +33,55 @@ import java.util.concurrent.Callable;
 /**
  * Parser for om.db file.
  */
-@CommandLine.Command(
-    name = "fso-tree-repair",
-    description = "Identify and repair a disconnected FSO tree, and mark " +
-        "unreachable entries for deletion. OM should be " +
-        "stopped while this tool is run. Information will be logged at " +
-        "INFO and DEBUG levels."
-)
-@MetaInfServices(SubcommandWithParent.class)
-public class FSORepairCLI implements Callable<Void>, SubcommandWithParent  {
-
-  static final Logger LOG = LoggerFactory.getLogger(FSORepairCLI.class);
-
-  @CommandLine.ParentCommand
-  private OzoneRepair parent;
-
-  @CommandLine.Option(names = {"--dry-run"},
-      description = "Path to OM RocksDB")
-  private boolean dryRun;
-
-
-  @CommandLine.Option(names = {"--db"},
-      required = true,
-      description = "Path to OM RocksDB")
-  private String dbPath;
-
-  @CommandLine.Option(names = {"--verbose"},
-      description = "More verbose output. ")
-  private boolean verbose;
-
-  @Override
-  public Void call() throws Exception {
-
-    try {
-      FSORepairTool repairTool = new FSORepairTool(dbPath, dryRun);
-      repairTool.run();
-    } catch (Exception ex) {
-      throw new IllegalArgumentException("FSO repair failed: " + ex.getMessage());
-    }
-
-    if (verbose) {
-      LOG.info("FSO repair finished. See client logs for results.");
-    }
-
-    return null;
-  }
-
-  @Override
-  public Class<?> getParentType() {
-    return OzoneRepair.class;
-  }
-}
-
+//@CommandLine.Command(
+//    name = "fso-tree-repair",
+//    description = "Identify and repair a disconnected FSO tree, and mark " +
+//        "unreachable entries for deletion. OM should be " +
+//        "stopped while this tool is run. Information will be logged at " +
+//        "INFO and DEBUG levels."
+//)
+//@MetaInfServices(SubcommandWithParent.class)
+//public class FSORepairCLI implements Callable<Void>, SubcommandWithParent  {
+//
+//  static final Logger LOG = LoggerFactory.getLogger(FSORepairCLI.class);
+//
+//  @CommandLine.ParentCommand
+//  private OzoneRepair parent;
+//
+//  @CommandLine.Option(names = {"--dry-run"},
+//      description = "Path to OM RocksDB")
+//  private boolean dryRun;
+//
+//
+//  @CommandLine.Option(names = {"--db"},
+//      required = true,
+//      description = "Path to OM RocksDB")
+//  private String dbPath;
+//
+//  @CommandLine.Option(names = {"--verbose"},
+//      description = "More verbose output. ")
+//  private boolean verbose;
+//
+//  @Override
+//  public Void call() throws Exception {
+//
+//    try {
+//      FSORepairTool repairTool = new FSORepairTool(dbPath, dryRun);
+//      repairTool.run();
+//    } catch (Exception ex) {
+//      throw new IllegalArgumentException("FSO repair failed: " + ex.getMessage());
+//    }
+//
+//    if (verbose) {
+//      LOG.info("FSO repair finished. See client logs for results.");
+//    }
+//
+//    return null;
+//  }
+//
+//  @Override
+//  public Class<?> getParentType() {
+//    return OzoneRepair.class;
+//  }
+//}
+//
