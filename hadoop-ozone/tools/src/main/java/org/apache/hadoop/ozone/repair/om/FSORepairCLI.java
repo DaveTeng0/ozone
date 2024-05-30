@@ -41,7 +41,9 @@ package org.apache.hadoop.ozone.repair.om;
 //        "INFO and DEBUG levels."
 //)
 //@MetaInfServices(SubcommandWithParent.class)
-//public class FSORepairCLI implements Callable<Void>, SubcommandWithParent  {
+public class FSORepairCLI
+//    implements Callable<Void>, SubcommandWithParent
+{
 //
 //  static final Logger LOG = LoggerFactory.getLogger(FSORepairCLI.class);
 //
@@ -83,5 +85,5 @@ package org.apache.hadoop.ozone.repair.om;
 //  public Class<?> getParentType() {
 //    return OzoneRepair.class;
 //  }
-//}
+}
 //
