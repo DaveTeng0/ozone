@@ -18,66 +18,67 @@
 
 package org.apache.hadoop.ozone.common;
 
-import org.apache.hadoop.hdds.cli.SubcommandWithParent;
-import org.kohsuke.MetaInfServices;
-import picocli.CommandLine;
-
-import java.util.concurrent.Callable;
+//import org.apache.hadoop.hdds.cli.SubcommandWithParent;
+//import org.kohsuke.MetaInfServices;
+//import picocli.CommandLine;
+//
+//import java.util.concurrent.Callable;
 
 /**
  * Parser for om.db file.
  */
-@CommandLine.Command(
-    name = "fso-tree",
-    description = "Identify a disconnected FSO tree, and optionally mark " +
-        "unreachable entries for deletion. OM should be " +
-        "stopped while this tool is run. Information will be logged at " +
-        "INFO and DEBUG levels."
-)
-@MetaInfServices(SubcommandWithParent.class)
-public class FSOBaseCLI implements Callable<Void>, SubcommandWithParent {
-
-  @CommandLine.Option(names = {"--db"},
-      required = true,
-      description = "Path to OM RocksDB")
-  private String dbPath;
-
-  @CommandLine.Option(names = {"--verbose"},
-      description = "More verbose output. ")
-  private boolean verbose;
-
-
-  @Override
-  public Void call() throws Exception {
-
-    try {
-      // TODO case insensitive enum options.
-      FSOBaseTool
-          baseTool = new FSOBaseTool(dbPath, true);
-      baseTool.run();
-    } catch (Exception ex) {
-      throw new IllegalArgumentException("FSO inspection failed: " + ex.getMessage());
-    }
-
-    if (verbose) {
-      System.out.println("FSO inspection finished. See client logs for results.");
-    }
-
-    return null;
-  }
-
-  @Override
-  public Class<?> getParentType() {
-    throw new UnsupportedOperationException("Should not be called from " +
-        "FSOBaseCLI directly.");
-  }
-
-  public String getDbPath() {
-    return dbPath;
-  }
-
-  public boolean getVerbose() {
-    return verbose;
-  }
+//@CommandLine.Command(
+//    name = "fso-tree",
+//    description = "Identify a disconnected FSO tree, and optionally mark " +
+//        "unreachable entries for deletion. OM should be " +
+//        "stopped while this tool is run. Information will be logged at " +
+//        "INFO and DEBUG levels."
+//)
+//@MetaInfServices(SubcommandWithParent.class)
+public class FSOBaseCLI {
+//    implements Callable<Void>, SubcommandWithParent {
+//
+//  @CommandLine.Option(names = {"--db"},
+//      required = true,
+//      description = "Path to OM RocksDB")
+//  private String dbPath;
+//
+//  @CommandLine.Option(names = {"--verbose"},
+//      description = "More verbose output. ")
+//  private boolean verbose;
+//
+//
+//  @Override
+//  public Void call() throws Exception {
+//
+//    try {
+//      // TODO case insensitive enum options.
+//      FSOBaseTool
+//          baseTool = new FSOBaseTool(dbPath, true);
+//      baseTool.run();
+//    } catch (Exception ex) {
+//      throw new IllegalArgumentException("FSO inspection failed: " + ex.getMessage());
+//    }
+//
+//    if (verbose) {
+//      System.out.println("FSO inspection finished. See client logs for results.");
+//    }
+//
+//    return null;
+//  }
+//
+//  @Override
+//  public Class<?> getParentType() {
+//    throw new UnsupportedOperationException("Should not be called from " +
+//        "FSOBaseCLI directly.");
+//  }
+//
+//  public String getDbPath() {
+//    return dbPath;
+//  }
+//
+//  public boolean getVerbose() {
+//    return verbose;
+//  }
 }
 
