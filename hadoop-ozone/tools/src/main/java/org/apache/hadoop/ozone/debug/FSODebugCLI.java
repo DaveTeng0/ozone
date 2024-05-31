@@ -18,55 +18,55 @@
 
 package org.apache.hadoop.ozone.debug;
 
-import org.apache.hadoop.hdds.cli.SubcommandWithParent;
-//import org.apache.hadoop.ozone.common.FSOBaseCLI;
-import org.apache.hadoop.ozone.common.FSOBaseTool;
-import org.apache.hadoop.ozone.common.FSORepairOptions;
-import org.kohsuke.MetaInfServices;
-import picocli.CommandLine;
+//import org.apache.hadoop.hdds.cli.SubcommandWithParent;
+////import org.apache.hadoop.ozone.common.FSOBaseCLI;
+//import org.apache.hadoop.ozone.common.FSOBaseTool;
+//import org.apache.hadoop.ozone.common.FSORepairOptions;
+//import org.kohsuke.MetaInfServices;
+//import picocli.CommandLine;
 
 /**
  * Parser for om.db file.
  */
-@CommandLine.Command(
-    name = "fso-tree",
-    description = "Identify a disconnected FSO tree, and optionally mark " +
-        "unreachable entries for deletion. OM should be " +
-        "stopped while this tool is run. Information will be logged at " +
-        "INFO and DEBUG levels."
-)
-@MetaInfServices(SubcommandWithParent.class)
+//@CommandLine.Command(
+//    name = "fso-tree",
+//    description = "Identify a disconnected FSO tree, and optionally mark " +
+//        "unreachable entries for deletion. OM should be " +
+//        "stopped while this tool is run. Information will be logged at " +
+//        "INFO and DEBUG levels."
+//)
+//@MetaInfServices(SubcommandWithParent.class)
 public class FSODebugCLI {
 
-  @CommandLine.ParentCommand
-  private OzoneDebug parent;
-
-  @CommandLine.Mixin
-  private FSORepairOptions options = new FSORepairOptions();
-
-
-//  @Override
-  public Void call() throws Exception {
-
-    try {
-      // TODO case insensitive enum options.
-      FSOBaseTool
-          baseTool = new FSOBaseTool(options.getDbPath(), true);
-      baseTool.run();
-    } catch (Exception ex) {
-      throw new IllegalArgumentException("FSO inspection failed: " + ex.getMessage());
-    }
-
-    if (options.getVerbose()) {
-      System.out.println("FSO inspection finished. See client logs for results.");
-    }
-
-    return null;
-  }
-
-//  @Override
-  public Class<?> getParentType() {
-    return OzoneDebug.class;
-  }
+//  @CommandLine.ParentCommand
+//  private OzoneDebug parent;
+//
+//  @CommandLine.Mixin
+//  private FSORepairOptions options = new FSORepairOptions();
+//
+//
+////  @Override
+//  public Void call() throws Exception {
+//
+//    try {
+//      // TODO case insensitive enum options.
+//      FSOBaseTool
+//          baseTool = new FSOBaseTool(options.getDbPath(), true);
+//      baseTool.run();
+//    } catch (Exception ex) {
+//      throw new IllegalArgumentException("FSO inspection failed: " + ex.getMessage());
+//    }
+//
+//    if (options.getVerbose()) {
+//      System.out.println("FSO inspection finished. See client logs for results.");
+//    }
+//
+//    return null;
+//  }
+//
+////  @Override
+//  public Class<?> getParentType() {
+//    return OzoneDebug.class;
+//  }
 }
 
